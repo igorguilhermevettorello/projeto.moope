@@ -1,4 +1,4 @@
-﻿namespace Projeto.Moope.Auth.Core.Enums
+﻿namespace Projeto.Moope.Core.Enums
 {
     public enum TipoUsuario
     {

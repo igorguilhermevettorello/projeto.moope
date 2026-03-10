@@ -1,10 +1,4 @@
-﻿using Projeto.Moope.Auth.Api.Configurations;
-using Projeto.Moope.Auth.Api.Utils;
-using Projeto.Moope.Auth.Core.Interfaces.Repositories;
-using Projeto.Moope.Auth.Core.Interfaces.Services;
-using Projeto.Moope.Auth.Core.Services;
-using Projeto.Moope.Auth.Infrastructure.Repositories;
-using Projeto.Moope.Core.Interfaces.Notificacao;
+﻿using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Notifications;
 
 namespace Projeto.Moope.Cliente.Api.Configurations
@@ -25,7 +19,7 @@ namespace Projeto.Moope.Cliente.Api.Configurations
         {
             //service.AddScoped<AppDbContext>();
             service.AddScoped<INotificador, Notificador>();
-            service.Configure<JwtSettings>(configuration.GetSection("Jwt"));
+            //service.Configure<JwtSettings>(configuration.GetSection("Jwt"));
             //service.Configure<EncryptionSettings>(configuration.GetSection(EncryptionSettings.SectionName));
             service.Configure<SwaggerAuthConfig>(configuration.GetSection("SwaggerAuth"));
             //service.Configure<EmailSettings>(configuration.GetSection("Email"));
@@ -45,9 +39,9 @@ namespace Projeto.Moope.Cliente.Api.Configurations
             //service.AddScoped<IVendedorRepository, VendedorRepository>();
             //service.AddScoped<IEnderecoRepository, EnderecoRepository>();
             //service.AddScoped<IUsuarioRepository, UsuarioRepository>();
-            service.AddScoped<IPessoaFisicaRepository, PessoaFisicaRepository>();
-            service.AddScoped<IPessoaJuridicaRepository, PessoaJuridicaRepository>();
-            service.AddScoped<IPapelRepository, PapelRepository>();
+            //service.AddScoped<IPessoaFisicaRepository, PessoaFisicaRepository>();
+            //service.AddScoped<IPessoaJuridicaRepository, PessoaJuridicaRepository>();
+            //service.AddScoped<IPapelRepository, PapelRepository>();
             //service.AddScoped<IPedidoRepository, PedidoRepository>();
             //service.AddScoped<ITransacaoRepository, TransacaoRepository>();
             //service.AddScoped<IDescontoRepository, DescontoRepository>();
@@ -72,7 +66,7 @@ namespace Projeto.Moope.Cliente.Api.Configurations
             //service.AddScoped<IEmailService, EmailService>();
             //service.AddScoped<IWhatsAppService, WhatsAppService>();
             //service.AddHttpClient<IEmailGateway, EmailGateway>();
-            service.AddHttpClient<IGoogleRecaptchaService, GoogleRecaptchaService>();
+            //service.AddHttpClient<IGoogleRecaptchaService, GoogleRecaptchaService>();
         }
 
         private static void RegisterValidators(IServiceCollection service)

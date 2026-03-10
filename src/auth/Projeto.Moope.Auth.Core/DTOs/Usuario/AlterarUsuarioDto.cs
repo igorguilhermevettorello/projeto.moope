@@ -1,0 +1,32 @@
+﻿using Projeto.Moope.Api.Attributes;
+using Projeto.Moope.Core.Enums;
+using System.ComponentModel.DataAnnotations;
+
+namespace Projeto.Moope.Auth.Core.DTOs.Usuario
+{
+    public class AlterarUsuarioDto
+    {
+        [Required(ErrorMessage = "O campo ID é obrigatório")]
+        public Guid Id { get; set; }
+        [Required(ErrorMessage = "O campo Nome é obrigatório")]
+        public string Nome { get; set; }
+        [Required(ErrorMessage = "O campo Email é obrigatório")]
+        [EmailAddress(ErrorMessage = "Email deve ter um formato válido")]
+        public string Email { get; set; }
+        [Documento("TipoPessoa")]
+        public string CpfCnpj { get; set; }
+        [Required(ErrorMessage = "O campo Telefone é obrigatório")]
+        public string Telefone { get; set; }
+        [Required(ErrorMessage = "O campo TipoPessoa é obrigatório")]
+        public TipoPessoa TipoPessoa { get; set; }
+        [Required(ErrorMessage = "O campo Senha é obrigatório")]
+        [MinLength(6, ErrorMessage = "A senha deve ter no mínimo 6 caracteres")]
+        public string Senha { get; set; }
+        [Required(ErrorMessage = "O campo Confirmação é obrigatório")]
+        [Compare("Senha", ErrorMessage = "A confirmação deve ser igual à senha")]
+        public string Confirmacao { get; set; }
+        public string NomeFantasia { get; set; }
+        public string InscricaoEstadual { get; set; }
+        public Guid? VendedorId { get; set; }
+    }
+}

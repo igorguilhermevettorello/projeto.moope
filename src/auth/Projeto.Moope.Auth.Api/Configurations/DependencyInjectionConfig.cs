@@ -1,7 +1,5 @@
 ﻿using Projeto.Moope.Auth.Api.Utils;
 using Projeto.Moope.Auth.Core.Interfaces.Repositories;
-using Projeto.Moope.Auth.Core.Interfaces.Services;
-using Projeto.Moope.Auth.Core.Services;
 using Projeto.Moope.Auth.Infrastructure.Repositories;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Notifications;
@@ -39,9 +37,8 @@ namespace Projeto.Moope.Auth.Api.Configurations
 
         private static void RegisterRepositories(IServiceCollection service)
         {
-            service.AddScoped<Projeto.Moope.Auth.Core.Interfaces.Repositories.IUserRepository, Projeto.Moope.Auth.Infrastructure.Repositories.UserRepository>();
+            service.AddScoped<IUserRepository, UserRepository>();
             // other...
-        }
             //service.AddScoped<ITransacaoRepository, TransacaoRepository>();
             //service.AddScoped<IDescontoRepository, DescontoRepository>();
             //service.AddScoped<IEmailRepository, EmailRepository>();
@@ -51,9 +48,7 @@ namespace Projeto.Moope.Auth.Api.Configurations
 
         private static void RegisterServices(IServiceCollection service)
         {
-            service.AddScoped<Projeto.Moope.Auth.Core.Interfaces.Services.IUserService, Projeto.Moope.Auth.Infrastructure.Services.UserService>();
-            service.AddScoped<Projeto.Moope.RabbitMQ.Infrastructure.Interfaces.IMessageBus, Projeto.Moope.RabbitMQ.Infrastructure.Services.RabbitMqMessageBus>();
-            // other...
+            service.AddScoped<Projeto.Moope.Auth.Core.Interfaces.Services.IUserService, Infrastructure.Services.UserService>();
         }
 
         private static void RegisterValidators(IServiceCollection service)

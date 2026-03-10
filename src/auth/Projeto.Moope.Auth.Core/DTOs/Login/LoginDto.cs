@@ -1,4 +1,4 @@
-﻿using Projeto.Moope.Auth.Core.Enums;
+﻿using Projeto.Moope.Core.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Projeto.Moope.Auth.Core.DTOs.Login

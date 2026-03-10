@@ -1,4 +1,4 @@
-﻿using Projeto.Moope.Auth.Core.Enums;
+﻿using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Data;
 using Projeto.Moope.Core.Models;
 using System.ComponentModel.DataAnnotations;

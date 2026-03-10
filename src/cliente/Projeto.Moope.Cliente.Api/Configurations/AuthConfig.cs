@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Projeto.Moope.Cliente.Api.Utils;
+using System.Text;
 
 namespace Projeto.Moope.Cliente.Api.Configurations
 {

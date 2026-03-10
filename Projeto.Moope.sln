@@ -53,6 +53,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pagamento", "pagamento", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Pagamento.Api", "src\pagamento\Projeto.Moope.Pagamento.Api\Projeto.Moope.Pagamento.Api.csproj", "{8D8F712B-EADE-472D-B48B-43A8437E452C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "endereco", "endereco", "{4914BF98-A859-4343-AB75-CD38A3E53229}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Endereco.Api", "src\endereco\Projeto.Moope.Endereco.Api\Projeto.Moope.Endereco.Api.csproj", "{41440941-C862-4E70-B138-AF8947C16AB9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Endereco.Core", "src\endereco\Projeto.Moope.Endereco.Core\Projeto.Moope.Endereco.Core.csproj", "{85CB7F63-4AD6-4578-A548-917A50D0595A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Endereco.Infrastructure", "src\endereco\Projeto.Moope.Endereco.Infrastructure\Projeto.Moope.Endereco.Infrastructure.csproj", "{1BE89CE7-486F-4C79-862C-44E9064295C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +131,18 @@ Global
 		{8D8F712B-EADE-472D-B48B-43A8437E452C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D8F712B-EADE-472D-B48B-43A8437E452C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D8F712B-EADE-472D-B48B-43A8437E452C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41440941-C862-4E70-B138-AF8947C16AB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41440941-C862-4E70-B138-AF8947C16AB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41440941-C862-4E70-B138-AF8947C16AB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41440941-C862-4E70-B138-AF8947C16AB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85CB7F63-4AD6-4578-A548-917A50D0595A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85CB7F63-4AD6-4578-A548-917A50D0595A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85CB7F63-4AD6-4578-A548-917A50D0595A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85CB7F63-4AD6-4578-A548-917A50D0595A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BE89CE7-486F-4C79-862C-44E9064295C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BE89CE7-486F-4C79-862C-44E9064295C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BE89CE7-486F-4C79-862C-44E9064295C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BE89CE7-486F-4C79-862C-44E9064295C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -150,6 +170,10 @@ Global
 		{9E326A00-3D85-45A8-85C2-307042C7F809} = {77467C76-6567-471F-9A6E-8638EDC9053A}
 		{2BD386E8-B494-4B8D-91E0-12E21B097D11} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{8D8F712B-EADE-472D-B48B-43A8437E452C} = {2BD386E8-B494-4B8D-91E0-12E21B097D11}
+		{4914BF98-A859-4343-AB75-CD38A3E53229} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{41440941-C862-4E70-B138-AF8947C16AB9} = {4914BF98-A859-4343-AB75-CD38A3E53229}
+		{85CB7F63-4AD6-4578-A548-917A50D0595A} = {4914BF98-A859-4343-AB75-CD38A3E53229}
+		{1BE89CE7-486F-4C79-862C-44E9064295C5} = {4914BF98-A859-4343-AB75-CD38A3E53229}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6555006-1889-4CB7-9F89-217CC2EAA389}
