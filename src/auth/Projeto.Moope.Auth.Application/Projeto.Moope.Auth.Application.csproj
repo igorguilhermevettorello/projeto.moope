@@ -7,18 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Queries\" />
+    <Compile Remove="Queries\**" />
+    <EmbeddedResource Remove="Queries\**" />
+    <None Remove="Queries\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Validators\Usuario\Alterar\" />
     <Folder Include="Validators\Usuario\Deletar\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="MediatR" Version="14.1.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\core\Projeto.Moope.Core\Projeto.Moope.Core.csproj" />
-    <ProjectReference Include="..\src\auth\Projeto.Moope.Auth.Core\Projeto.Moope.Auth.Core.csproj" />
+    <ProjectReference Include="..\..\..\core\Projeto.Moope.Core\Projeto.Moope.Core.csproj" />
+    <ProjectReference Include="..\Projeto.Moope.Auth.Core\Projeto.Moope.Auth.Core.csproj" />
   </ItemGroup>
 
 </Project>

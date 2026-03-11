@@ -61,7 +61,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Endereco.Core
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Endereco.Infrastructure", "src\endereco\Projeto.Moope.Endereco.Infrastructure\Projeto.Moope.Endereco.Infrastructure.csproj", "{1BE89CE7-486F-4C79-862C-44E9064295C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Auth.Application", "Projeto.Moope.Auth.Application\Projeto.Moope.Auth.Application.csproj", "{CB9DE7E0-367C-443A-94C8-95986C62B475}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Auth.Application", "src\auth\Projeto.Moope.Auth.Application\Projeto.Moope.Auth.Application.csproj", "{CB9DE7E0-367C-443A-94C8-95986C62B475}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
