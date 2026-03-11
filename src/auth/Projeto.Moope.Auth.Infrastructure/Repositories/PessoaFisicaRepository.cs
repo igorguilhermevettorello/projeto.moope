@@ -10,12 +10,12 @@ namespace Projeto.Moope.Auth.Infrastructure.Repositories
     {
         private readonly AppAuthContext _context;
 
-        public IUnitOfWork UnitOfWork => throw new NotImplementedException();
-
         public PessoaFisicaRepository(AppAuthContext context)
         {
             _context = context;
         }
+
+        public IUnitOfWork UnitOfWork => (IUnitOfWork) _context;
 
         public async Task<PessoaFisica> BuscarPorIdAsync(Guid id)
         {
@@ -30,14 +30,12 @@ namespace Projeto.Moope.Auth.Infrastructure.Repositories
         public async Task<PessoaFisica> SalvarAsync(PessoaFisica entity)
         {
             await _context.PessoasFisicas.AddAsync(entity);
-            await _context.SaveChangesAsync();
             return entity;
         }
 
         public async Task<PessoaFisica> AtualizarAsync(PessoaFisica entity)
         {
             _context.PessoasFisicas.Update(entity);
-            await _context.SaveChangesAsync();
             return entity;
         }
 
@@ -47,7 +45,6 @@ namespace Projeto.Moope.Auth.Infrastructure.Repositories
             if (pessoaFisica != null)
             {
                 _context.PessoasFisicas.Remove(pessoaFisica);
-                await _context.SaveChangesAsync();
                 return true;
             }
             return false;
@@ -65,7 +62,7 @@ namespace Projeto.Moope.Auth.Infrastructure.Repositories
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _context.Dispose();
         }
     }
 }

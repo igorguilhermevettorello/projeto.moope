@@ -10,16 +10,16 @@ namespace Projeto.Moope.Auth.Infrastructure.Repositories
     {
         private readonly AppAuthContext _context;
 
-        public IUnitOfWork UnitOfWork => throw new NotImplementedException();
-
         public PessoaJuridicaRepository(AppAuthContext context)
         {
             _context = context;
         }
 
+        public IUnitOfWork UnitOfWork => (IUnitOfWork) _context;
+
         public async Task<PessoaJuridica> BuscarPorIdAsync(Guid id)
         {
-            return await _context.PessoasJuridicas.FirstOrDefaultAsync(pj => pj.Id == id);
+            return await _context.PessoasJuridicas.FirstOrDefaultAsync(pj => pj.Id == id) ?? new PessoaJuridica();
         }
 
         public async Task<IEnumerable<PessoaJuridica>> BuscarTodosAsync()
@@ -30,14 +30,12 @@ namespace Projeto.Moope.Auth.Infrastructure.Repositories
         public async Task<PessoaJuridica> SalvarAsync(PessoaJuridica entity)
         {
             await _context.PessoasJuridicas.AddAsync(entity);
-            await _context.SaveChangesAsync();
             return entity;
         }
 
         public async Task<PessoaJuridica> AtualizarAsync(PessoaJuridica entity)
         {
             _context.PessoasJuridicas.Update(entity);
-            await _context.SaveChangesAsync();
             return entity;
         }
 
@@ -47,7 +45,6 @@ namespace Projeto.Moope.Auth.Infrastructure.Repositories
             if (pessoaJuridica != null)
             {
                 _context.PessoasJuridicas.Remove(pessoaJuridica);
-                await _context.SaveChangesAsync();
                 return true;
             }
             return false;
@@ -55,17 +52,17 @@ namespace Projeto.Moope.Auth.Infrastructure.Repositories
 
         public async Task<PessoaJuridica> BuscarPorCnpjAsync(string cnpj)
         {
-            return await _context.PessoasJuridicas.FirstOrDefaultAsync(pj => pj.Cnpj.Equals(cnpj));
+            return await _context.PessoasJuridicas.FirstOrDefaultAsync(pj => pj.Cnpj.Equals(cnpj)) ?? new PessoaJuridica();
         }
 
         public async Task<PessoaJuridica> BuscarPorIdAsNotrackingAsync(Guid id)
         {
-            return await _context.PessoasJuridicas.AsNoTracking().FirstOrDefaultAsync(pj => pj.Id == id);
+            return await _context.PessoasJuridicas.AsNoTracking().FirstOrDefaultAsync(pj => pj.Id == id) ?? new PessoaJuridica();
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _context?.Dispose();
         }
     }
 }

@@ -1,6 +1,9 @@
 ﻿using Projeto.Moope.Auth.Api.Utils;
+using Projeto.Moope.Auth.Application.Commands.Usuario.Criar;
 using Projeto.Moope.Auth.Core.Interfaces.Repositories;
+using Projeto.Moope.Auth.Infrastructure.Data;
 using Projeto.Moope.Auth.Infrastructure.Repositories;
+using Projeto.Moope.Core.Interfaces.Data;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Notifications;
 
@@ -37,7 +40,10 @@ namespace Projeto.Moope.Auth.Api.Configurations
 
         private static void RegisterRepositories(IServiceCollection service)
         {
-            service.AddScoped<IUserRepository, UserRepository>();
+            service.AddScoped<IUsuarioRepository, UsuarioRepository>();
+            service.AddScoped<IPessoaFisicaRepository, PessoaFisicaRepository>();
+            service.AddScoped<IPessoaJuridicaRepository, PessoaJuridicaRepository>();
+            service.AddScoped<IPapelRepository, PapelRepository>();
             // other...
             //service.AddScoped<ITransacaoRepository, TransacaoRepository>();
             //service.AddScoped<IDescontoRepository, DescontoRepository>();
@@ -48,7 +54,7 @@ namespace Projeto.Moope.Auth.Api.Configurations
 
         private static void RegisterServices(IServiceCollection service)
         {
-            service.AddScoped<Projeto.Moope.Auth.Core.Interfaces.Services.IUserService, Infrastructure.Services.UserService>();
+            service.AddScoped<Core.Interfaces.Services.IIdentityUserService, Infrastructure.Services.IdentityUserService>();
         }
 
         private static void RegisterValidators(IServiceCollection service)
@@ -63,6 +69,7 @@ namespace Projeto.Moope.Auth.Api.Configurations
 
         private static void RegisterMediatR(IServiceCollection service)
         {
+            service.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CriarUsuarioCommand).Assembly));
             //service.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(ProcessarVendaCommand).Assembly));
             //service.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(SalvarEmailCommand).Assembly));
             //service.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AtualizarClienteCommand).Assembly));

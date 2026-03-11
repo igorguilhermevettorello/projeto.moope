@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Projeto.Moope.Auth.Core.Commands.Usuario.Criar
+namespace Projeto.Moope.Auth.Application.Commands.Usuario.Alterar
 {
-    internal class CriarUsuarioCommandHandler
+    internal class AlterarUsuarioCommandHandler
     {
     }
 }

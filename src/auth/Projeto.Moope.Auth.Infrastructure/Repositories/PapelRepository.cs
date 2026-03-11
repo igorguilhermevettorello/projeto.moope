@@ -10,16 +10,16 @@ namespace Projeto.Moope.Auth.Infrastructure.Repositories
     {
         private readonly AppAuthContext _context;
 
-        public IUnitOfWork UnitOfWork => throw new NotImplementedException();
-
         public PapelRepository(AppAuthContext context)
         {
             _context = context;
         }
 
+        public IUnitOfWork UnitOfWork => (IUnitOfWork)_context;
+
         public async Task<Papel> BuscarPorIdAsync(Guid id)
         {
-            return await _context.Papeis.FirstOrDefaultAsync(p => p.Id == id);
+            return await _context.Papeis.FirstOrDefaultAsync(p => p.Id == id) ?? new Papel();
         }
 
         public async Task<IEnumerable<Papel>> BuscarTodosAsync()
@@ -37,14 +37,12 @@ namespace Projeto.Moope.Auth.Infrastructure.Repositories
         public async Task<Papel> SalvarAsync(Papel entity)
         {
             await _context.Papeis.AddAsync(entity);
-            await _context.SaveChangesAsync();
             return entity;
         }
 
         public async Task<Papel> AtualizarAsync(Papel entity)
         {
             _context.Papeis.Update(entity);
-            await _context.SaveChangesAsync();
             return entity;
         }
 
@@ -54,7 +52,6 @@ namespace Projeto.Moope.Auth.Infrastructure.Repositories
             if (pedido != null)
             {
                 _context.Papeis.Remove(pedido);
-                await _context.SaveChangesAsync();
                 return true;
             }
             return false;
@@ -62,7 +59,7 @@ namespace Projeto.Moope.Auth.Infrastructure.Repositories
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _context.Dispose();
         }
     }
 }

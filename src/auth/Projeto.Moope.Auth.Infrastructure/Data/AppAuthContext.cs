@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Projeto.Moope.Auth.Core.Models;
+using Projeto.Moope.Core.Interfaces.Data;
 
 namespace Projeto.Moope.Auth.Infrastructure.Data
 {
-    public class AppAuthContext : DbContext
+    public class AppAuthContext : DbContext, IUnitOfWork
     {
         public AppAuthContext(DbContextOptions<AppAuthContext> options) : base(options) { }
         public DbSet<Usuario> Usuarios { get; set; }
@@ -28,6 +29,11 @@ namespace Projeto.Moope.Auth.Infrastructure.Data
             }
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppAuthContext).Assembly);
+        }
+
+        public async Task<bool> Commit()
+        {
+            return await SaveChangesAsync() > 0;
         }
     }
 }
