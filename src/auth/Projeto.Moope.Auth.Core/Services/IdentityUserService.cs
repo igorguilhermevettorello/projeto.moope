@@ -1,20 +1,17 @@
 using Microsoft.AspNetCore.Identity;
 using Projeto.Moope.Auth.Core.DTOs;
 using Projeto.Moope.Auth.Core.Interfaces.Services;
-using Projeto.Moope.Auth.Infrastructure.Data;
 using Projeto.Moope.Core.Enums;
 
-namespace Projeto.Moope.Auth.Infrastructure.Services
+namespace Projeto.Moope.Auth.Core.Services
 {
     public class IdentityUserService : IIdentityUserService
     {
         private readonly UserManager<IdentityUser<Guid>> _userManager;
-        private readonly AppIdentityDbContext _identityContext;
-
-        public IdentityUserService(UserManager<IdentityUser<Guid>> userManager, AppIdentityDbContext identityContext)
+        
+        public IdentityUserService(UserManager<IdentityUser<Guid>> userManager)
         {
             _userManager = userManager;
-            _identityContext = identityContext;
         }
 
         public async Task<ResultUser<IdentityUser<Guid>>> CriarUsuarioAsync(
@@ -85,6 +82,53 @@ namespace Projeto.Moope.Auth.Infrastructure.Services
         public async Task<IdentityUser<Guid>> BuscarPorEmailAsync(string email)
         {
             return await _userManager.FindByEmailAsync(email);
+        }
+
+        public async Task<IdentityUser<Guid>?> BuscarPorIdAsync(Guid id)
+        {
+            return await _userManager.FindByIdAsync(id.ToString());
+        }
+
+        public async Task<Result> AlterarSenhaAsync(Guid userId, string senhaAtual, string novaSenha)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                return new Result { Status = false, Mensagem = "Usuário não encontrado" };
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, senhaAtual, novaSenha);
+            if (result.Succeeded)
+            {
+                return new Result { Status = true };
+            }
+
+            return new Result
+            {
+                Status = false,
+                Mensagem = string.Join("; ", result.Errors.Select(e => e.Description))
+            };
+        }
+
+        public async Task<Result> RemoverUsuarioAsync(Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                return new Result { Status = false, Mensagem = "Usuário não encontrado" };
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+            if (result.Succeeded)
+            {
+                return new Result { Status = true };
+            }
+
+            return new Result
+            {
+                Status = false,
+                Mensagem = string.Join("; ", result.Errors.Select(e => e.Description))
+            };
         }
     }
 }

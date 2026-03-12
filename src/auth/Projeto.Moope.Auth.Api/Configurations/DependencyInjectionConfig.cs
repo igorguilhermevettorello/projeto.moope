@@ -1,9 +1,9 @@
-﻿using Projeto.Moope.Auth.Api.Utils;
+using Projeto.Moope.Auth.Api.Utils;
 using Projeto.Moope.Auth.Application.Commands.Usuario.Criar;
 using Projeto.Moope.Auth.Core.Interfaces.Repositories;
-using Projeto.Moope.Auth.Infrastructure.Data;
+using Projeto.Moope.Auth.Core.Interfaces.Services;
+using Projeto.Moope.Auth.Core.Services;
 using Projeto.Moope.Auth.Infrastructure.Repositories;
-using Projeto.Moope.Core.Interfaces.Data;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Notifications;
 
@@ -44,6 +44,7 @@ namespace Projeto.Moope.Auth.Api.Configurations
             service.AddScoped<IPessoaFisicaRepository, PessoaFisicaRepository>();
             service.AddScoped<IPessoaJuridicaRepository, PessoaJuridicaRepository>();
             service.AddScoped<IPapelRepository, PapelRepository>();
+            service.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             // other...
             //service.AddScoped<ITransacaoRepository, TransacaoRepository>();
             //service.AddScoped<IDescontoRepository, DescontoRepository>();
@@ -54,7 +55,7 @@ namespace Projeto.Moope.Auth.Api.Configurations
 
         private static void RegisterServices(IServiceCollection service)
         {
-            service.AddScoped<Core.Interfaces.Services.IIdentityUserService, Infrastructure.Services.IdentityUserService>();
+            service.AddScoped<IIdentityUserService, IdentityUserService>();
         }
 
         private static void RegisterValidators(IServiceCollection service)

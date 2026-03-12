@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -7,10 +7,12 @@ using Projeto.Moope.Auth.Api.Utils;
 using Projeto.Moope.Auth.Core.DTOs.Login;
 using Projeto.Moope.Auth.Core.Interfaces.Repositories;
 using Projeto.Moope.Auth.Core.Interfaces.Services;
+using Projeto.Moope.Auth.Core.Models;
 using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Projeto.Moope.Auth.Api.Controllers
@@ -32,6 +34,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
         private readonly ILogger _logger;
         private readonly IGoogleRecaptchaService _recaptchaService;
         private readonly IPapelRepository _papelRepository;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
 
         private string[] ErrorPassowrd = { "PasswordTooShort", "PasswordRequiresNonAlphanumeric", "PasswordRequiresLower", "PasswordRequiresUpper", "PasswordRequiresDigit" };
         private string[] ErrorEmail = { "DuplicateUserName" };
@@ -43,7 +46,8 @@ namespace Projeto.Moope.Auth.Api.Controllers
             ILogger<AuthController> logger,
             IGoogleRecaptchaService recaptchaService,
             INotificador notificador,
-            IPapelRepository papelRepository) : base(notificador)
+            IPapelRepository papelRepository,
+            IRefreshTokenRepository refreshTokenRepository) : base(notificador)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -51,6 +55,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
             _logger = logger;
             _recaptchaService = recaptchaService;
             _papelRepository = papelRepository;
+            _refreshTokenRepository = refreshTokenRepository;
         }
 
         [HttpPost("login")]
@@ -172,10 +177,15 @@ namespace Projeto.Moope.Auth.Api.Controllers
             var securityToken = tokenHandler.CreateToken(token);
             var tokenString = tokenHandler.WriteToken(securityToken);
 
+            var refreshToken = await GerarRefreshTokenAsync(user.Id);
+            var refreshTokenExpiresIn = TimeSpan.FromDays(_jwtSettings.ExpiracaoRefreshTokenDias).TotalSeconds;
+
             var loginResponseDto = new LoginResponseDto
             {
                 AccessToken = tokenString,
                 ExpiresIn = TimeSpan.FromHours(_jwtSettings.ExpiracaoHoras).TotalSeconds,
+                RefreshToken = refreshToken.Token,
+                RefreshTokenExpiresIn = refreshTokenExpiresIn,
                 User = new LoginUsuarioDto
                 {
                     Id = user.Id.ToString(),
@@ -186,6 +196,74 @@ namespace Projeto.Moope.Auth.Api.Controllers
             };
 
             return loginResponseDto;
+        }
+
+        [HttpPost("refresh")]
+        [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.RefreshToken))
+            {
+                ModelState.AddModelError("RefreshToken", "O Refresh Token é obrigatório");
+                return CustomResponse(ModelState);
+            }
+
+            var storedToken = await _refreshTokenRepository.BuscarPorTokenAsync(dto.RefreshToken);
+            if (storedToken == null)
+            {
+                ModelState.AddModelError("RefreshToken", "Refresh Token inválido");
+                return CustomResponse(ModelState);
+            }
+
+            if (!storedToken.IsActive)
+            {
+                ModelState.AddModelError("RefreshToken", "Refresh Token expirado ou revogado");
+                return CustomResponse(ModelState);
+            }
+
+            var user = await _userManager.FindByIdAsync(storedToken.UsuarioId.ToString());
+            if (user == null)
+            {
+                ModelState.AddModelError("RefreshToken", "Usuário não encontrado");
+                return CustomResponse(ModelState);
+            }
+
+            storedToken.RevokedAt = DateTime.UtcNow;
+            storedToken.ReplacedByToken = null;
+            await _refreshTokenRepository.AtualizarAsync(storedToken);
+            await _refreshTokenRepository.UnitOfWork.Commit();
+
+            var tiposUsuario = await VerificarTiposUsuarioAsync(user.Id);
+            var tipoUsuario = tiposUsuario.FirstOrDefault();
+            var loginResponse = await GerarJwt(user.Email!, tipoUsuario);
+
+            return CustomResponse(new { data = loginResponse });
+        }
+
+        private async Task<RefreshToken> GerarRefreshTokenAsync(Guid usuarioId)
+        {
+            var refreshToken = new RefreshToken
+            {
+                UsuarioId = usuarioId,
+                Token = GerarTokenAleatorio(),
+                ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.ExpiracaoRefreshTokenDias),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _refreshTokenRepository.RevogarTokensPorUsuarioAsync(usuarioId);
+            await _refreshTokenRepository.SalvarAsync(refreshToken);
+            await _refreshTokenRepository.UnitOfWork.Commit();
+
+            return refreshToken;
+        }
+
+        private static string GerarTokenAleatorio()
+        {
+            var randomBytes = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+            return Convert.ToBase64String(randomBytes);
         }
 
         private static long ToUnixEpochDate(DateTime date)

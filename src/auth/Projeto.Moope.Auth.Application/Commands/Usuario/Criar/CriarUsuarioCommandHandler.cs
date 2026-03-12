@@ -4,8 +4,6 @@ using Projeto.Moope.Auth.Core.Interfaces.Repositories;
 using Projeto.Moope.Auth.Core.Interfaces.Services;
 using Projeto.Moope.Auth.Core.Models;
 using Projeto.Moope.Core.Enums;
-using Projeto.Moope.Core.Interfaces.Commands;
-using Projeto.Moope.Core.Interfaces.Data;
 using UsuarioModel = Projeto.Moope.Auth.Core.Models.Usuario;
 
 namespace Projeto.Moope.Auth.Application.Commands.Usuario.Criar

@@ -10,8 +10,7 @@ namespace Projeto.Moope.Auth.Application.Validators.Usuario.Criar
             RuleFor(c => c.Nome)
                 .NotEmpty()
                 .WithMessage("O ID do aluno é inválido.");
-                
-
+            
             RuleFor(c => c.Email)
                 .NotEmpty()
                 .WithMessage("O campo Email é obrigatório.")
@@ -27,6 +26,8 @@ namespace Projeto.Moope.Auth.Application.Validators.Usuario.Criar
                 .WithMessage("O campo Telefone é obrigatório.");
 
             RuleFor(c => c.TipoPessoa)
+                .IsInEnum()
+                .WithMessage("O tipo de usuário informado é inválido.")
                 .NotEmpty()
                 .WithMessage("O campo Telefone é obrigatório.");
 
@@ -36,7 +37,10 @@ namespace Projeto.Moope.Auth.Application.Validators.Usuario.Criar
 
             RuleFor(c => c.Confirmacao)
                 .NotEmpty()
-                .WithMessage("O campo Confirmacao é obrigatório.");
+                .WithMessage("O campo Confirmacao é obrigatório.")
+                .Equal(c => c.Senha)
+                .When(c => !string.IsNullOrEmpty(c.Senha))
+                .WithMessage("A confirmação de senha não confere."); ;
         }
     }
 }

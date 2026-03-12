@@ -1,4 +1,4 @@
-﻿using Projeto.Moope.Api.Attributes;
+using Projeto.Moope.Api.Attributes;
 using Projeto.Moope.Core.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -19,14 +19,12 @@ namespace Projeto.Moope.Auth.Core.DTOs.Usuario
         public string Telefone { get; set; }
         [Required(ErrorMessage = "O campo TipoPessoa é obrigatório")]
         public TipoPessoa TipoPessoa { get; set; }
-        [Required(ErrorMessage = "O campo Senha é obrigatório")]
         [MinLength(6, ErrorMessage = "A senha deve ter no mínimo 6 caracteres")]
-        public string Senha { get; set; }
-        [Required(ErrorMessage = "O campo Confirmação é obrigatório")]
+        public string? Senha { get; set; }
         [Compare("Senha", ErrorMessage = "A confirmação deve ser igual à senha")]
-        public string Confirmacao { get; set; }
-        public string NomeFantasia { get; set; }
-        public string InscricaoEstadual { get; set; }
+        public string? Confirmacao { get; set; }
+        public string? NomeFantasia { get; set; }
+        public string? InscricaoEstadual { get; set; }
         public Guid? VendedorId { get; set; }
     }
 }

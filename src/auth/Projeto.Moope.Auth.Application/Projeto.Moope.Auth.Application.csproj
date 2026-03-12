@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -6,16 +6,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Queries\**" />
-    <EmbeddedResource Remove="Queries\**" />
-    <None Remove="Queries\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Validators\Usuario\Alterar\" />
-    <Folder Include="Validators\Usuario\Deletar\" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.1.1" />

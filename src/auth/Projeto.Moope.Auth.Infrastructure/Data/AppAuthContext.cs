@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Projeto.Moope.Auth.Core.Models;
 using Projeto.Moope.Core.Interfaces.Data;
 
@@ -11,6 +11,7 @@ namespace Projeto.Moope.Auth.Infrastructure.Data
         public DbSet<PessoaFisica> PessoasFisicas { get; set; }
         public DbSet<PessoaJuridica> PessoasJuridicas { get; set; }
         public DbSet<Papel> Papeis { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

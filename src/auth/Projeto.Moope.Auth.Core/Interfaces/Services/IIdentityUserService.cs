@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Projeto.Moope.Auth.Core.DTOs;
 using Projeto.Moope.Core.Enums;
 
@@ -14,7 +14,10 @@ namespace Projeto.Moope.Auth.Core.Interfaces.Services
 
         Task RemoverAoFalharAsync(IdentityUser<Guid> usuario);
         Task<Result<IdentityUser<Guid>>> AlterarUsuarioAsync(Guid userId, string email, string telefone = null);
+        Task<Result> AlterarSenhaAsync(Guid userId, string senhaAtual, string novaSenha);
+        Task<Result> RemoverUsuarioAsync(Guid userId);
 
         Task<IdentityUser<Guid>> BuscarPorEmailAsync(string email);
+        Task<IdentityUser<Guid>?> BuscarPorIdAsync(Guid id);
     }
 }
