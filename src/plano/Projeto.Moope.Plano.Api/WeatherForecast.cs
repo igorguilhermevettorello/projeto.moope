@@ -1,4 +1,4 @@
-namespace Projeto.Moope.Pedido.Api
+namespace Projeto.Moope.Plano.Api
 {
     public class WeatherForecast
     {
