@@ -1,0 +1,6 @@
+@Projeto.Moope.Comodato.Api_HostAddress = http://localhost:5093
+
+GET {{Projeto.Moope.Comodato.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,42 @@
+@Projeto.Moope.Email.Api_HostAddress = http://localhost:5226
+
+### Buscar todos os emails
+GET {{Projeto.Moope.Email.Api_HostAddress}}/api/email
+Accept: application/json
+
+###
+
+### Buscar email por ID
+GET {{Projeto.Moope.Email.Api_HostAddress}}/api/email/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+###
+
+### Criar email
+POST {{Projeto.Moope.Email.Api_HostAddress}}/api/email
+Content-Type: application/json
+
+{
+  "remetente": "noreply@moope.com.br",
+  "nomeRemetente": "Moope",
+  "destinatario": "destino@example.com",
+  "assunto": "Assunto do email",
+  "corpo": "<p>Corpo do email em HTML</p>",
+  "ehHtml": true,
+  "prioridade": 2
+}
+
+###
+
+### Enviar email via HTTP (IEmailGateway)
+POST {{Projeto.Moope.Email.Api_HostAddress}}/api/email/enviar
+Content-Type: application/json
+
+{
+  "destinatario": "destino@example.com",
+  "assunto": "Teste de envio",
+  "corpo": "<p>Corpo do email</p>",
+  "ehHtml": true
+}
+
+###
