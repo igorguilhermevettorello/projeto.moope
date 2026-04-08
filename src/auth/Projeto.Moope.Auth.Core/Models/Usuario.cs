@@ -17,8 +17,8 @@ namespace Projeto.Moope.Auth.Core.Models
         //[StringLength(255)]
         //public string Email { get; set; }
         //[NotMapped]
-        //[Required]
-        //public TipoUsuario TipoUsuario { get; set; }
+        [Required]
+        public TipoUsuario TipoUsuario { get; set; }
         public Guid? EnderecoId { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }

@@ -4,7 +4,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddApiConfig();
+builder.Services.AddAuthConfig(builder.Configuration, builder.Environment);
 builder.Services.AddConectionConfig(builder.Configuration);
 DependencyInjectionConfig.RegisterServices(builder.Services, builder.Configuration);
 
@@ -19,6 +20,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("CorsPolicy");
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

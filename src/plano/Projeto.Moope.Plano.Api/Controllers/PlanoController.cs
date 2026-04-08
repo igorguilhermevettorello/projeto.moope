@@ -1,6 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
-using Projeto.Moope.Core.DTOs;
+using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Plano.Api.DTOs;
 using Projeto.Moope.Plano.Core.Interfaces.Services;
@@ -10,6 +11,7 @@ namespace Projeto.Moope.Plano.Api.Controllers
 {
     [ApiController]
     [Route("api/plano")]
+    [Authorize]
     public class PlanoController : MainController
     {
         private readonly IPlanoService _planoService;
@@ -20,8 +22,11 @@ namespace Projeto.Moope.Plano.Api.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(IEnumerable<PlanoResponseDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> BuscarTodos()
         {
             var planos = await _planoService.BuscarTodosAsync();
@@ -31,8 +36,9 @@ namespace Projeto.Moope.Plano.Api.Controllers
 
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(PlanoResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> BuscarPorId(Guid id)
         {
             var plano = await _planoService.BuscarPorIdAsNotrackingAsync(id);
@@ -56,8 +62,11 @@ namespace Projeto.Moope.Plano.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(typeof(PlanoResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Criar([FromBody] CriarPlanoDto dto)
         {
             if (!ModelState.IsValid)
@@ -81,9 +90,11 @@ namespace Projeto.Moope.Plano.Api.Controllers
         }
 
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(typeof(PlanoResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Atualizar(Guid id, [FromBody] AlterarPlanoDto dto)
         {
             if (!ModelState.IsValid)
@@ -111,8 +122,11 @@ namespace Projeto.Moope.Plano.Api.Controllers
         }
 
         [HttpPatch("{id:guid}/ativar-inativar")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(typeof(PlanoResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> AtivarInativar(Guid id, [FromQuery] bool status)
         {
             var existing = await _planoService.BuscarPorIdAsync(id);
@@ -127,8 +141,11 @@ namespace Projeto.Moope.Plano.Api.Controllers
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Remover(Guid id)
         {
             var existing = await _planoService.BuscarPorIdAsync(id);

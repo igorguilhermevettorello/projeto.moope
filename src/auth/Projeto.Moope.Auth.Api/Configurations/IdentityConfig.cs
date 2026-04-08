@@ -12,7 +12,8 @@ namespace Projeto.Moope.Auth.Api.Configurations
             services.AddDbContext<AppIdentityDbContext>(options =>
                 options.UseMySql(
                     configuration.GetConnectionString("DefaultConnection"),
-                    new MySqlServerVersion(new Version(8, 0, 0))
+                    new MySqlServerVersion(new Version(8, 0, 0)),
+                    mySql => mySql.MigrationsHistoryTable("__EFMigrationsHistory_Identity")
                 )
             );
 

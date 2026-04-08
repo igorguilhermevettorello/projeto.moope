@@ -16,4 +16,9 @@
     <ProjectReference Include="..\Projeto.Moope.Plano.Core\Projeto.Moope.Plano.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+    <Folder Include="Scripts\" />
+  </ItemGroup>
+
 </Project>

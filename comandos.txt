@@ -1,0 +1,9 @@
+auth
+dotnet ef migrations script --project src\auth\Projeto.Moope.Auth.Infrastructure\Projeto.Moope.Auth.Infrastructure.csproj --startup-project src\auth\Projeto.Moope.Auth.Api\Projeto.Moope.Auth.Api.csproj --context AppAuthContext --output src\auth\Projeto.Moope.Auth.Infrastructure\Scripts\AppAuthContext_migrations.sql
+dotnet ef migrations script --project src\auth\Projeto.Moope.Auth.Infrastructure\Projeto.Moope.Auth.Infrastructure.csproj --startup-project src\auth\Projeto.Moope.Auth.Api\Projeto.Moope.Auth.Api.csproj --context AppIdentityDbContext --output src\auth\Projeto.Moope.Auth.Infrastructure\Scripts\AppIdentityDbContext_migrations.sql
+
+plano
+cd src\plano\Projeto.Moope.Plano.Api
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.0
+dotnet ef migrations add Plano --project src\plano\Projeto.Moope.Plano.Infrastructure\Projeto.Moope.Plano.Infrastructure.csproj --startup-project src\plano\Projeto.Moope.Plano.Api\Projeto.Moope.Plano.Api.csproj --context AppPlanoContext
+dotnet ef migrations script --project src\plano\Projeto.Moope.Plano.Infrastructure\Projeto.Moope.Plano.Infrastructure.csproj --startup-project src\plano\Projeto.Moope.Plano.Api\Projeto.Moope.Plano.Api.csproj --context AppPlanoContext --output src\plano\Projeto.Moope.Plano.Infrastructure\Scripts\AppPlanoContext_migrations.sql

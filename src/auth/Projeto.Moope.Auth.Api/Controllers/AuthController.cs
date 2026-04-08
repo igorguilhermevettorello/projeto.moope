@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Projeto.Moope.Api.Controllers;
+using Projeto.Moope.Auth.Api.Services;
 using Projeto.Moope.Auth.Api.Utils;
 using Projeto.Moope.Auth.Core.DTOs.Login;
 using Projeto.Moope.Auth.Core.Interfaces.Repositories;
@@ -13,17 +14,9 @@ using Projeto.Moope.Core.Interfaces.Notificacao;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace Projeto.Moope.Auth.Api.Controllers
 {
-    //public class AuthController : Controller
-    //{
-    //    public IActionResult Index()
-    //    {
-    //        return View();
-    //    }
-    //}
     [ApiController]
     [Route("api/auth")]
     public class AuthController : MainController
@@ -31,6 +24,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
         private readonly SignInManager<IdentityUser<Guid>> _signInManager;
         private readonly UserManager<IdentityUser<Guid>> _userManager;
         private readonly JwtSettings _jwtSettings;
+        private readonly IJwtSigningKeyProvider _jwtSigningKeys;
         private readonly ILogger _logger;
         private readonly IGoogleRecaptchaService _recaptchaService;
         private readonly IPapelRepository _papelRepository;
@@ -43,6 +37,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
             SignInManager<IdentityUser<Guid>> signInManager,
             UserManager<IdentityUser<Guid>> userManager,
             IOptions<JwtSettings> config,
+            IJwtSigningKeyProvider jwtSigningKeys,
             ILogger<AuthController> logger,
             IGoogleRecaptchaService recaptchaService,
             INotificador notificador,
@@ -52,6 +47,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
             _signInManager = signInManager;
             _userManager = userManager;
             _jwtSettings = config.Value;
+            _jwtSigningKeys = jwtSigningKeys;
             _logger = logger;
             _recaptchaService = recaptchaService;
             _papelRepository = papelRepository;
@@ -65,12 +61,12 @@ namespace Projeto.Moope.Auth.Api.Controllers
         {
             if (!ModelState.IsValid) return CustomResponse(ModelState);
 
-            var isValid = await _recaptchaService.VerifyTokenAsync(loginDto.RecaptchaToken);
-            if (!isValid)
-            {
-                ModelState.AddModelError("Senha", "O captcha está inválido.");
-                return CustomResponse(ModelState);
-            }
+            //var isValid = await _recaptchaService.VerifyTokenAsync(loginDto.RecaptchaToken);
+            //if (!isValid)
+            //{
+            //    ModelState.AddModelError("Senha", "O captcha está inválido.");
+            //    return CustomResponse(ModelState);
+            //}
 
             var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Senha, false, true);
 
@@ -143,8 +139,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
                 }
             }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var creds = _jwtSigningKeys.GetSigningCredentials();
             var expires = DateTime.UtcNow.AddHours(_jwtSettings.ExpiracaoHoras);
 
             claims.Add(new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()));

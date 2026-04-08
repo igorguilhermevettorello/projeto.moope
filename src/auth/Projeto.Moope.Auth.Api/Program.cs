@@ -10,7 +10,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddApiConfig(builder.Configuration);
 builder.Services.AddConectionConfig(builder.Configuration);
 builder.Services.AddIdentityConfig(builder.Configuration);
-builder.Services.AddAuthConfig(builder.Configuration);
+builder.Services.AddAuthConfig(builder.Configuration, builder.Environment);
 builder.Services.AddDependencyInjectionConfig(builder.Configuration);
 builder.Services.AddSwaggerConfig();
 
@@ -22,6 +22,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerConfig();
 }
 
+await app.UseSeedDataAsync();
 app.UseCors("DevelopmentCorsPolicy");
 app.UseHttpsRedirection();
 
@@ -30,4 +31,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

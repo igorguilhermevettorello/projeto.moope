@@ -15,8 +15,6 @@ namespace Projeto.Moope.Auth.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            base.OnModelCreating(modelBuilder);
-
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 var properties = entityType.ClrType.GetProperties()
@@ -28,8 +26,6 @@ namespace Projeto.Moope.Auth.Infrastructure.Data
                         .HasColumnType("char(36)");
                 }
             }
-
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppIdentityDbContext).Assembly);
         }
     }
 }

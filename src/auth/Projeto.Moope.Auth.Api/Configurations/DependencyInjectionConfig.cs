@@ -1,4 +1,3 @@
-using Projeto.Moope.Auth.Api.Utils;
 using Projeto.Moope.Auth.Application.Commands.Usuario.Criar;
 using Projeto.Moope.Auth.Core.Interfaces.Repositories;
 using Projeto.Moope.Auth.Core.Interfaces.Services;
@@ -25,7 +24,6 @@ namespace Projeto.Moope.Auth.Api.Configurations
         {
             //service.AddScoped<AppDbContext>();
             service.AddScoped<INotificador, Notificador>();
-            service.Configure<JwtSettings>(configuration.GetSection("Jwt"));
             //service.Configure<EncryptionSettings>(configuration.GetSection(EncryptionSettings.SectionName));
             service.Configure<SwaggerAuthConfig>(configuration.GetSection("SwaggerAuth"));
             //service.Configure<EmailSettings>(configuration.GetSection("Email"));
@@ -55,6 +53,7 @@ namespace Projeto.Moope.Auth.Api.Configurations
 
         private static void RegisterServices(IServiceCollection service)
         {
+            service.AddHttpClient<IGoogleRecaptchaService, GoogleRecaptchaService>();
             service.AddScoped<IIdentityUserService, IdentityUserService>();
         }
 

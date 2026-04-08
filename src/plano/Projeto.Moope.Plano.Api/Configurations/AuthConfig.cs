@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using Projeto.Moope.Cliente.Api.Utils;
+using Projeto.Moope.Plano.Api.Utils;
+using Projeto.Moope.Plano.Api.Utils;
 using System.Net.Http;
 using System.Text;
 
-namespace Projeto.Moope.Cliente.Api.Configurations
+namespace Projeto.Moope.Plano.Api.Configurations
 {
     public static class AuthConfig
     {
@@ -43,7 +44,9 @@ namespace Projeto.Moope.Cliente.Api.Configurations
 
                     if (hostEnvironment.IsDevelopment())
                     {
-                        options.BackchannelHttpHandler = new HttpClientHandler
+                        // Authority e emissão do token continuam em HTTPS. O backchannel é só o HttpClient interno
+                        // que baixa /.well-known e JWKS; entre dois Kestrel em localhost o certificado de dev costuma falhar na validação TLS.
+                        options.BackchannelHttpHandler = new LoggingHandler
                         {
                             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                         };
@@ -77,6 +80,43 @@ namespace Projeto.Moope.Cliente.Api.Configurations
                         IssuerSigningKey = new SymmetricSecurityKey(key)
                     };
                 }
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        // Breakpoint aqui: token chegou? header Authorization está presente?
+                        var token = context.Token; // null se não veio no header
+                        var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                        if (authHeader != null && authHeader.StartsWith("Bearer "))
+                        {
+                            context.Token = authHeader.Substring("Bearer ".Length).Trim();
+                        }
+                        return Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        // Breakpoint aqui: autenticação falhou
+                        // context.Exception diz EXATAMENTE o que aconteceu
+                        var erro = context.Exception.Message;         // mensagem de erro
+                        var tipo = context.Exception.GetType().Name;  // tipo da exceção
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        // Breakpoint aqui: token foi validado com sucesso
+                        // Se chegar aqui, autenticação passou
+                        var user = context.Principal?.Identity?.Name;
+                        return Task.CompletedTask;
+                    },
+                    OnChallenge = context =>
+                    {
+                        // Breakpoint aqui: 401 está sendo enviado
+                        // context.AuthenticateFailure tem o motivo
+                        var motivo = context.AuthenticateFailure?.Message;
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
             return services;

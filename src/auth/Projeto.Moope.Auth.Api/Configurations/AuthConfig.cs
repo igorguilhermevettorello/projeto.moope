@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Projeto.Moope.Auth.Api.Services;
 using Projeto.Moope.Auth.Api.Utils;
 using System.Text;
 
@@ -7,14 +9,19 @@ namespace Projeto.Moope.Auth.Api.Configurations
 {
     public static class AuthConfig
     {
-        public static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddAuthConfig(
+            this IServiceCollection services,
+            IConfiguration configuration,
+            IHostEnvironment hostEnvironment)
         {
-            // JWT
             var jwtSettingsSection = configuration.GetSection("Jwt");
             services.Configure<JwtSettings>(jwtSettingsSection);
+            services.AddSingleton<IJwtSigningKeyProvider, JwtSigningKeyProvider>();
 
-            var jwtSettings = jwtSettingsSection.Get<JwtSettings>();
-            var key = Encoding.ASCII.GetBytes(jwtSettings.SecretKey);
+            var jwtSettings = jwtSettingsSection.Get<JwtSettings>()
+                ?? throw new InvalidOperationException("Seção de configuração 'Jwt' é obrigatória.");
+
+            var requireHttpsMetadata = !hostEnvironment.IsDevelopment();
 
             services.AddAuthentication(x =>
             {
@@ -22,8 +29,9 @@ namespace Projeto.Moope.Auth.Api.Configurations
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options =>
             {
-                options.RequireHttpsMetadata = true;
+                options.RequireHttpsMetadata = requireHttpsMetadata;
                 options.SaveToken = true;
+                options.MapInboundClaims = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -31,10 +39,15 @@ namespace Projeto.Moope.Auth.Api.Configurations
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = jwtSettings.Issuer,
-                    ValidAudience = jwtSettings.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                    ValidAudience = jwtSettings.Audience
                 };
             });
+
+            services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+                .Configure<IJwtSigningKeyProvider>((options, signingKeys) =>
+                {
+                    options.TokenValidationParameters.IssuerSigningKey = signingKeys.GetIssuerSigningKey();
+                });
 
             return services;
         }

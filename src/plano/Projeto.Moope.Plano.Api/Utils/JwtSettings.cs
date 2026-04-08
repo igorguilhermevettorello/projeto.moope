@@ -1,4 +1,4 @@
-﻿namespace Projeto.Moope.Endereco.Api.Utils
+namespace Projeto.Moope.Plano.Api.Utils
 {
     public class JwtSettings
     {
