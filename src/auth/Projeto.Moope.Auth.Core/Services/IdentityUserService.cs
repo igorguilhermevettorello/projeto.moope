@@ -32,7 +32,7 @@ namespace Projeto.Moope.Auth.Core.Services
             if (result.Succeeded)
             {
                 // Optionally add to role based on TipoUsuario
-                // await _userManager.AddToRoleAsync(identityUser, tipoUsuario.ToString());
+                await _userManager.AddToRoleAsync(identityUser, tipoUsuario.ToString());
 
                 return new ResultUser<IdentityUser<Guid>> { Status = true, Dados = identityUser };
             }

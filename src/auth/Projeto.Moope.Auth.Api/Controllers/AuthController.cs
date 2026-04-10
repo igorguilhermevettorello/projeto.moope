@@ -12,6 +12,7 @@ using Projeto.Moope.Auth.Core.Models;
 using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
@@ -119,8 +120,13 @@ namespace Projeto.Moope.Auth.Api.Controllers
 
         private async Task<IEnumerable<TipoUsuario>> VerificarTiposUsuarioAsync(Guid userId)
         {
+            var tipos = new List<TipoUsuario>();
             var papeis = await _papelRepository.BuscarPorUsuarioIdAsync(userId);
-            return papeis.Select(p => p.TipoUsuario).Distinct();
+
+            foreach (var p in papeis)
+                tipos.Add(p.TipoUsuario);
+
+            return tipos;
         }
 
         private async Task<LoginResponseDto> GerarJwt(string email, TipoUsuario? tipoUsuario = null)

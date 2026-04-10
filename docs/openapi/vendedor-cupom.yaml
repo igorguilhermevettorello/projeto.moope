@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Moope Vendedor.Api - cupom
+  version: 0.1.0
+paths:
+  /api/vendedor/cupom/{codigoCupom}:
+    get:
+      summary: Resolver vendedor por codigo de cupom
+      parameters:
+        - name: codigoCupom
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Vendedor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  codigoCupom: { type: string }
+        '404':
+          description: Cupom nao encontrado

@@ -15,12 +15,11 @@ namespace Projeto.Moope.Auth.Application.Commands.Usuario.Criar
         public string CpfCnpj { get; set; } = string.Empty;
         public string Telefone { get; set; } = string.Empty;
         public TipoPessoa TipoPessoa { get; set; }
+        public TipoUsuario TipoUsuario { get; set; }
         public string Senha { get; set; } = string.Empty;
         public string Confirmacao { get; set; } = string.Empty;
         public string NomeFantasia { get; set; } = string.Empty;
         public string InscricaoEstadual { get; set; } = string.Empty;
-        public Guid? VendedorId { get; set; }
-
         public override bool IsValid()
         {
             ValidationResult = new CriarUsuarioCommandValidator().Validate(this);

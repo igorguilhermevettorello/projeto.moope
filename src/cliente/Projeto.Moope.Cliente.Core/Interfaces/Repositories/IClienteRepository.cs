@@ -1,9 +1,10 @@
-using Projeto.Moope.Cliente.Core.Models;
-
+using ClienteModel = Projeto.Moope.Cliente.Core.Models.Cliente;
 namespace Projeto.Moope.Cliente.Core.Interfaces.Repositories
 {
-    public interface IClienteRepository
+    public interface IClienteRepository : IRepository<ClienteModel>
     {
-        //Task Add(Cliente cliente);
+        Task<ClienteModel?> BuscarPorIdAsNotrackingAsync(Guid id);
+        Task<IEnumerable<T>> BuscarClientesComDadosAsync<T>();
+        Task<T?> BuscarClientePorIdComDadosAsync<T>(Guid id);
     }
 }

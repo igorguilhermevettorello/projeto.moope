@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: Moope Venda.Api (a implementar)
+  version: 0.1.0
+paths:
+  /api/venda/processar:
+    post:
+      summary: Persistir pedido e transacoes apos pagamento
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessarVendaPersistenciaRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessarVendaResponse'
+components:
+  schemas:
+    ProcessarVendaPersistenciaRequest:
+      type: object
+      required:
+        - clienteId
+        - planoId
+        - quantidade
+        - resultadoPagamento
+      properties:
+        clienteId: { type: string, format: uuid }
+        vendedorId: { type: string, format: uuid, nullable: true }
+        planoId: { type: string, format: uuid }
+        quantidade: { type: integer }
+        descontos:
+          type: array
+          items: { type: string }
+        tipoPessoa: { type: integer }
+        estado: { type: string, nullable: true }
+        nomeCliente: { type: string }
+        email: { type: string }
+        documento: { type: string }
+        comodatoToken: { type: string, nullable: true }
+        resultadoPagamento:
+          type: object
+          additionalProperties: true
+    ProcessarVendaResponse:
+      type: object
+      properties:
+        planoId: { type: string, format: uuid }
+        quantidade: { type: integer }
+        valorTotal: { type: number }
+        vendaId: { type: string, format: uuid }
+        transacaoId: { type: string, format: uuid }

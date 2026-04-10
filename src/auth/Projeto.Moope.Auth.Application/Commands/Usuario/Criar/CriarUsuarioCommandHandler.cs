@@ -43,7 +43,7 @@ namespace Projeto.Moope.Auth.Application.Commands.Usuario.Criar
                 request.Email,
                 request.Senha,
                 request.Telefone,
-                TipoUsuario.Cliente); // Assuming default, can be from request if added
+                request.TipoUsuario);
 
             if (!identityResult.Status)
             {
@@ -78,7 +78,7 @@ namespace Projeto.Moope.Auth.Application.Commands.Usuario.Criar
             await _papelRepository.SalvarAsync(new Papel()
             {
                 UsuarioId = identityUser.Id,
-                TipoUsuario = TipoUsuario.Cliente,
+                TipoUsuario = request.TipoUsuario,
                 Created = DateTime.UtcNow
             });
 

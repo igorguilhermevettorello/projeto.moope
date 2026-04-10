@@ -1,17 +1,21 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
 using Projeto.Moope.Auth.Application.Commands.Usuario.Alterar;
+using Projeto.Moope.Auth.Application.Commands.Usuario.AtualizarEndereco;
 using Projeto.Moope.Auth.Application.Commands.Usuario.AlterarSenha;
 using Projeto.Moope.Auth.Application.Commands.Usuario.Criar;
 using Projeto.Moope.Auth.Application.Commands.Usuario.Deletar;
 using Projeto.Moope.Auth.Application.Queries.Usuario.Listar;
 using Projeto.Moope.Auth.Application.Queries.Usuario.ObterPorId;
 using Projeto.Moope.Auth.Core.DTOs.Usuario;
+using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 
 namespace Projeto.Moope.Auth.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/usuario")]
     public class UsuarioController : MainController
@@ -24,7 +28,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
         }
 
         [HttpGet]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(typeof(IEnumerable<ListarUsuarioDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -35,7 +39,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(typeof(UsuarioDetalheDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -59,7 +63,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -76,11 +80,11 @@ namespace Projeto.Moope.Auth.Api.Controllers
                 CpfCnpj = dto.CpfCnpj,
                 Telefone = dto.Telefone,
                 TipoPessoa = dto.TipoPessoa,
+                TipoUsuario = dto.TipoUsuario,
                 Senha = dto.Senha,
                 Confirmacao = dto.Confirmacao,
                 NomeFantasia = dto.NomeFantasia ?? string.Empty,
-                InscricaoEstadual = dto.InscricaoEstadual ?? string.Empty,
-                VendedorId = dto.VendedorId
+                InscricaoEstadual = dto.InscricaoEstadual ?? string.Empty
             };
 
             var result = await _mediator.Send(command);
@@ -95,7 +99,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -142,8 +146,44 @@ namespace Projeto.Moope.Auth.Api.Controllers
             return NoContent();
         }
 
+        [HttpPatch("{usuarioId}/endereco/{enderecoId}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> AtualizarEndereco(Guid usuarioId, Guid enderecoId)
+        {
+            if (usuarioId == Guid.Empty || enderecoId == Guid.Empty)
+            {
+                ModelState.AddModelError("Id", "UsuarioId e EnderecoId são obrigatórios.");
+                return CustomResponse(ModelState);
+            }
+
+            var command = new AtualizarEnderecoUsuarioCommand
+            {
+                UsuarioId = usuarioId,
+                EnderecoId = enderecoId
+            };
+
+            var result = await _mediator.Send(command);
+
+            if (!result.Status)
+            {
+                NotificarErro("Mensagem", result.Mensagem ?? "Erro ao atualizar endereço do usuário");
+
+                if (string.Equals(result.Mensagem, "Usuário não encontrado", StringComparison.OrdinalIgnoreCase))
+                    return NotFound(result.Mensagem);
+
+                return CustomResponse();
+            }
+
+            return NoContent();
+        }
+
         [HttpPost("alterar-senha")]
-        //[Authorize]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -173,7 +213,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

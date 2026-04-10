@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: Moope Pagamento.Api
+  version: 0.1.0
+paths:
+  /api/pagamento/venda/executar:
+    post:
+      summary: Executar fluxo de pagamento (CelPay) para uma venda
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecutarPagamentoVendaRequest'
+      responses:
+        '200':
+          description: Resultado para persistencia no servico Venda
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+components:
+  schemas:
+    ExecutarPagamentoVendaRequest:
+      type: object
+      required:
+        - clienteInternoId
+        - email
+        - nomeCliente
+        - documento
+        - planoId
+        - quantidade
+        - cartao
+      properties:
+        clienteInternoId: { type: string, format: uuid }
+        vendedorId: { type: string, format: uuid, nullable: true }
+        email: { type: string }
+        nomeCliente: { type: string }
+        documento: { type: string }
+        planoId: { type: string, format: uuid }
+        quantidade: { type: integer }
+        estado: { type: string, nullable: true }
+        descontos:
+          type: array
+          items: { type: string }
+        tipoPessoa: { type: integer }
+        comodatoToken: { type: string, nullable: true }
+        cartao:
+          type: object
+          required:
+            - nome
+            - numero
+            - cvv
+            - validadeMmYy
+          properties:
+            nome: { type: string }
+            numero: { type: string }
+            cvv: { type: string }
+            validadeMmYy: { type: string }

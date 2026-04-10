@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Moope BFF - Processar venda
+  version: 0.1.0
+paths:
+  /api/bff/venda/processar:
+    post:
+      summary: Orquestra cupom, cliente, pagamento e persistencia da venda
+      operationId: processarVendaBff
+      parameters:
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessarVendaRequest'
+      responses:
+        '200':
+          description: Venda processada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessarVendaResponse'
+        '400':
+          description: Validacao ou cupom invalido
+        '502':
+          description: Falha em servico downstream
+components:
+  schemas:
+    ProcessarVendaRequest:
+      type: object
+      required:
+        - nomeCliente
+        - email
+        - telefone
+        - tipoPessoa
+        - planoId
+        - quantidade
+        - nomeCartao
+        - numeroCartao
+        - cvv
+        - dataValidade
+      properties:
+        nomeCliente: { type: string }
+        email: { type: string, format: email }
+        telefone: { type: string }
+        tipoPessoa: { type: integer }
+        cpfCnpj: { type: string }
+        vendedorId: { type: string, format: uuid, nullable: true }
+        codigoCupom: { type: string, nullable: true }
+        planoId: { type: string, format: uuid }
+        quantidade: { type: integer, minimum: 1 }
+        nomeCartao: { type: string }
+        numeroCartao: { type: string }
+        cvv: { type: string }
+        dataValidade: { type: string }
+        estado: { type: string, nullable: true }
+        descontos:
+          type: array
+          items: { type: string }
+        comodatoToken: { type: string, nullable: true }
+    ProcessarVendaResponse:
+      type: object
+      properties:
+        planoId: { type: string, format: uuid }
+        quantidade: { type: integer }
+        valorTotal: { type: number }
+        vendaId: { type: string, format: uuid }
+        transacaoId: { type: string, format: uuid }

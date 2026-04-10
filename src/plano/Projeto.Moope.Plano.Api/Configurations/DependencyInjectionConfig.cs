@@ -1,5 +1,7 @@
+using AutoMapper;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Notifications;
+using Projeto.Moope.Plano.Api.Mappings;
 using Projeto.Moope.Plano.Core.Interfaces.Repositories;
 using Projeto.Moope.Plano.Core.Interfaces.Services;
 using Projeto.Moope.Plano.Core.Services;
@@ -11,6 +13,8 @@ namespace Projeto.Moope.Plano.Api.Configurations
     {
         public static void RegisterServices(IServiceCollection services, IConfiguration configuration)
         {
+            services.AddAutoMapper(typeof(PlanoMappingProfile).Assembly);
+
             services.AddScoped<INotificador, Notificador>();
             services.AddScoped<IPlanoRepository, PlanoRepository>();
             services.AddScoped<IPlanoService, PlanoService>();

@@ -27,9 +27,15 @@ namespace Projeto.Moope.Auth.Application.Validators.Usuario.Criar
 
             RuleFor(c => c.TipoPessoa)
                 .IsInEnum()
+                .WithMessage("O tipo de pessoa informado é inválido.")
+                .NotEmpty()
+                .WithMessage("O campo Tipo de Pessoa é obrigatório.");
+
+            RuleFor(c => c.TipoUsuario)
+                .IsInEnum()
                 .WithMessage("O tipo de usuário informado é inválido.")
                 .NotEmpty()
-                .WithMessage("O campo Telefone é obrigatório.");
+                .WithMessage("O campo Tipo de Usuário é obrigatório.");
 
             RuleFor(c => c.Senha)
                 .NotEmpty()

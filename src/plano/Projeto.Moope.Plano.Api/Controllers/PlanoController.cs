@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
@@ -15,10 +16,12 @@ namespace Projeto.Moope.Plano.Api.Controllers
     public class PlanoController : MainController
     {
         private readonly IPlanoService _planoService;
+        private readonly IMapper _mapper;
 
-        public PlanoController(IPlanoService planoService, INotificador notificador) : base(notificador)
+        public PlanoController(IPlanoService planoService, IMapper mapper, INotificador notificador) : base(notificador)
         {
             _planoService = planoService;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -156,6 +159,19 @@ namespace Projeto.Moope.Plano.Api.Controllers
             return NoContent();
         }
 
+        [HttpGet("selecionado/{codigo}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(DetailPlanoDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> BuscarPorPlanoSelecionadoAsync(string codigo)
+        {
+            var plano = await _planoService.BuscarPorPlanoSelecionadoAsync(codigo);
+            if (plano == null) return NotFound();
+            return Ok(_mapper.Map<DetailPlanoDto>(plano));
+        }
         private static PlanoResponseDto MapToResponseDto(PlanoModel plano)
         {
             return new PlanoResponseDto

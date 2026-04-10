@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: Moope Plano.Api
+  version: 0.1.0
+paths:
+  /api/plano/{id}:
+    get:
+      summary: Detalhe do plano
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Plano
+        '404':
+          description: Nao encontrado
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

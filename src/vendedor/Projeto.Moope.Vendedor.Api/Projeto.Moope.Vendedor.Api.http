@@ -1,6 +1,6 @@
 @Projeto.Moope.Vendedor.Api_HostAddress = http://localhost:5196
 
-GET {{Projeto.Moope.Vendedor.Api_HostAddress}}/weatherforecast/
+GET {{Projeto.Moope.Vendedor.Api_HostAddress}}/api/vendedor
 Accept: application/json
 
 ###

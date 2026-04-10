@@ -7,11 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\core\Projeto.Moope.Api\Projeto.Moope.Api.csproj" />
+    <ProjectReference Include="..\..\..\core\Projeto.Moope.Core\Projeto.Moope.Core.csproj" />
+    <ProjectReference Include="..\Projeto.Moope.Vendedor.Core\Projeto.Moope.Vendedor.Core.csproj" />
     <ProjectReference Include="..\Projeto.Moope.Vendedor.Infrastructure\Projeto.Moope.Vendedor.Infrastructure.csproj" />
   </ItemGroup>
 

@@ -1,0 +1,67 @@
+openapi: 3.0.3
+info:
+  title: Moope Cliente.Api - fluxo venda
+  version: 0.1.0
+paths:
+  /api/cliente/email/{email}:
+    get:
+      summary: Buscar cliente por email
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cliente encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '404':
+          description: Nao encontrado
+  /api/cliente:
+    post:
+      summary: Criar cliente (checkout — senha padrao pode ser definida no servico)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CriarClienteCheckout'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+components:
+  schemas:
+    CriarClienteCheckout:
+      type: object
+      required:
+        - nome
+        - email
+        - telefone
+        - tipoPessoa
+        - senha
+        - confirmacao
+      properties:
+        nome: { type: string }
+        email: { type: string }
+        cpfCnpj: { type: string }
+        telefone: { type: string }
+        tipoPessoa: { type: integer }
+        ativo: { type: boolean, default: true }
+        senha: { type: string }
+        confirmacao: { type: string }
+        vendedorId: { type: string, format: uuid, nullable: true }

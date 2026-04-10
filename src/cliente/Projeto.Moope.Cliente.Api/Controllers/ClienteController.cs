@@ -1,322 +1,321 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
+using Projeto.Moope.Cliente.Api.DTOs.Clientes;
+using Projeto.Moope.Cliente.Api.Utils;
+using Projeto.Moope.Cliente.Core.Commands.Clientes.Atualizar;
+using Projeto.Moope.Cliente.Core.Commands.Clientes.Criar;
+using Projeto.Moope.Cliente.Core.Interfaces.Services;
+using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Notificacao;
+using System.Security.Claims;
 
 namespace Projeto.Moope.Cliente.Api.Controllers
 {
     [ApiController]
     [Route("api/cliente")]
-    //[Authorize]
+    [Authorize]
     public class ClienteController : MainController
     {
-        //private readonly IClienteService _clienteService;
-        //private readonly IUsuarioService _usuarioService;
-        //private readonly IEnderecoService _enderecoService;
-        //private readonly IIdentityUserService _identityUserService;
-        //private readonly IPapelService _papelService;
-        //private readonly IMapper _mapper;
-        //private readonly IUnitOfWork _unitOfWork;
-        //private readonly IMediator _mediator;
+        private readonly IClienteService _clienteService;
+        private readonly IMapper _mapper;
+        private readonly IMediator _mediator;
 
         public ClienteController(
-            //IClienteService clienteService,
-            //IUsuarioService usuarioService,
-            //IEnderecoService enderecoService,
-            //IIdentityUserService identityUserService,
-            //IPapelService papelService,
-            //IMapper mapper,
-            //IUnitOfWork unitOfWork,
-            //IMediator mediator,
-            //IUser user,
-            INotificador notificador
-            ) : base(notificador)
+            IClienteService clienteService,
+            IMapper mapper,
+            IMediator mediator,
+            INotificador notificador) : base(notificador)
         {
-            //_clienteService = clienteService;
-            //_usuarioService = usuarioService;
-            //_enderecoService = enderecoService;
-            //_identityUserService = identityUserService;
-            //_papelService = papelService;
-            //_mapper = mapper;
-            //_unitOfWork = unitOfWork;
-            //_mediator = mediator;
+            _clienteService = clienteService;
+            _mapper = mapper;
+            _mediator = mediator;
         }
 
-        //[HttpGet]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
-        //[ProducesResponseType(typeof(IEnumerable<ClienteQueryDto>), StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //public async Task<IActionResult> BuscarTodosAsync()
-        //{
-        //    var clientes = await _clienteService.BuscarClientesComDadosAsync<ClienteQueryDto>();
-        //    return Ok(clientes);
-        //}
+        private Guid UsuarioId =>
+            Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : Guid.Empty;
 
-        //[HttpGet("{id}")]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
-        //[ProducesResponseType(typeof(ClienteDetalheDto), StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //public async Task<IActionResult> BuscarPorIdAsync(Guid id)
-        //{
-        //    if (id == Guid.Empty)
-        //    {
-        //        ModelState.AddModelError("Id", "ID do cliente é obrigatório");
-        //        return CustomResponse(ModelState);
-        //    }
+        private Task<bool> IsAdminAsync() =>
+            Task.FromResult(User.IsInRole(nameof(TipoUsuario.Administrador)));
 
-        //    var cliente = await _clienteService.BuscarClientePorIdComDadosAsync<ClienteDetalheDto>(id);
+        [HttpGet]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(typeof(IEnumerable<ClienteQueryDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> BuscarTodosAsync()
+        {
+            var clientes = await _clienteService.BuscarClientesComDadosAsync<ClienteQueryDto>();
+            return Ok(clientes);
+        }
 
-        //    if (cliente == null)
-        //    {
-        //        return NotFound("Cliente não encontrado");
-        //    }
+        [HttpGet("{id:guid}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(typeof(ClienteDetalheDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> BuscarPorIdAsync(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                ModelState.AddModelError("Id", "ID do cliente é obrigatório");
+                return CustomResponse(ModelState);
+            }
 
-        //    return Ok(cliente);
-        //}
+            var cliente = await _clienteService.BuscarClientePorIdComDadosAsync<ClienteDetalheDto>(id);
 
-        //[HttpGet("email/{email}")]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
-        //[ProducesResponseType(typeof(ListClienteDto), StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //public async Task<IActionResult> BuscarPorEmailAsync(string email)
-        //{
-        //    if (string.IsNullOrWhiteSpace(email))
-        //    {
-        //        ModelState.AddModelError("Email", "Email é obrigatório");
-        //        return CustomResponse(ModelState);
-        //    }
+            if (cliente == null)
+                return NotFound("Cliente não encontrado");
 
-        //    var cliente = await _clienteService.BuscarPorEmailAsync(email);
-        //    if (cliente == null)
-        //        return NotFound("Cliente não encontrado");
+            return Ok(cliente);
+        }
 
-        //    return Ok(_mapper.Map<ListClienteDto>(cliente));
-        //}
+        [HttpGet("email/{email}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(typeof(ListClienteDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> BuscarPorEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ModelState.AddModelError("Email", "Email é obrigatório");
+                return CustomResponse(ModelState);
+            }
 
-        //[HttpPost]
-        //[Authorize(Roles = $"{nameof(TipoUsuario.Vendedor)},{nameof(TipoUsuario.Administrador)}")]
-        //[ProducesResponseType(typeof(CreateClienteDto), StatusCodes.Status201Created)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //public async Task<IActionResult> CriarAsync([FromBody] CreateClienteDto createClienteDto)
-        //{
-        //    if (createClienteDto == null)
-        //    {
-        //        NotificarErro("Mensagem", "As informações do cliente não foram carregadas. Tente novamente.");
-        //        return CustomResponse();
-        //    }
+            var cliente = await _clienteService.BuscarPorEmailAsync(email);
+            if (cliente == null)
+                return NotFound("Cliente não encontrado");
 
-        //    if (!ModelState.IsValid)
-        //        return CustomResponse(ModelState);
+            var detalhe = await _clienteService.BuscarClientePorIdComDadosAsync<ClienteDetalheDto>(cliente.Id);
+            if (detalhe == null)
+                return NotFound("Cliente não encontrado");
 
-        //    try
-        //    {
-        //        var command = _mapper.Map<CriarClienteCommand>(createClienteDto);
+            var lista = new ListClienteDto
+            {
+                Nome = detalhe.Nome,
+                Email = detalhe.Email,
+                CpfCnpj = detalhe.CpfCnpj ?? string.Empty,
+                Telefone = detalhe.Telefone ?? string.Empty
+            };
 
-        //        // Se não for admin, definir vendedor como o usuário logado
-        //        if (!await IsAdmin())
-        //        {
-        //            command.VendedorId = (UsuarioId == Guid.Empty) ? null : UsuarioId;
-        //        }
+            return Ok(lista);
+        }
 
-        //        var resultado = await _mediator.Send(command);
+        [HttpPost]
+        [Authorize(Roles = $"{nameof(TipoUsuario.Vendedor)},{nameof(TipoUsuario.Administrador)}")]
+        [ProducesResponseType(typeof(CreateClienteDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> CriarAsync([FromBody] CreateClienteDto createClienteDto)
+        {
+            if (createClienteDto == null)
+            {
+                NotificarErro("Mensagem", "As informações do cliente não foram carregadas. Tente novamente.");
+                return CustomResponse();
+            }
 
-        //        if (!resultado.Status)
-        //            return CustomResponse();
+            if (!ModelState.IsValid)
+                return CustomResponse(ModelState);
 
-        //        return Created(string.Empty, new { id = resultado.Dados });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        NotificarErro("Mensagem", ex.Message);
-        //        return CustomResponse();
-        //    }
-        //}
+            try
+            {
+                var command = _mapper.Map<CriarClienteCommand>(createClienteDto);
 
-        //[HttpPut("{id}")]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
-        //[ProducesResponseType(typeof(UpdateClienteDto), StatusCodes.Status204NoContent)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //public async Task<IActionResult> AtualizarAsync(Guid id, [FromBody] UpdateClienteDto updateClienteDto)
-        //{
-        //    if (id == Guid.Empty || updateClienteDto.Id == Guid.Empty)
-        //    {
-        //        ModelState.AddModelError("Id", "Campo Id está inválido.");
-        //        return CustomResponse(ModelState);
-        //    }
+                if (!await IsAdminAsync())
+                    command.VendedorId = UsuarioId == Guid.Empty ? null : UsuarioId;
 
-        //    if (id != updateClienteDto.Id)
-        //    {
-        //        ModelState.AddModelError("Id", "Campo Id do parâmetro não confere com o Id solicitado.");
-        //        return CustomResponse(ModelState);
-        //    }
+                var resultado = await _mediator.Send(command);
 
-        //    if (!ModelState.IsValid)
-        //        return CustomResponse(ModelState);
+                if (!resultado.Status)
+                    return CustomResponse();
 
-        //    try
-        //    {
-        //        var command = _mapper.Map<AtualizarClienteCommand>(updateClienteDto);
-        //        var resultado = await _mediator.Send(command);
+                return Created(string.Empty, new { id = resultado.Dados });
+            }
+            catch (Exception ex)
+            {
+                NotificarErro("Mensagem", ex.Message);
+                return CustomResponse();
+            }
+        }
 
-        //        if (!resultado.Status)
-        //            return CustomResponse();
+        [HttpPut("{id:guid}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(typeof(UpdateClienteDto), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> AtualizarAsync(Guid id, [FromBody] UpdateClienteDto updateClienteDto)
+        {
+            if (id == Guid.Empty || updateClienteDto.Id == Guid.Empty)
+            {
+                ModelState.AddModelError("Id", "Campo Id está inválido.");
+                return CustomResponse(ModelState);
+            }
 
-        //        return NoContent();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        NotificarErro("Mensagem", ex.Message);
-        //        return CustomResponse();
-        //    }
-        //}
+            if (id != updateClienteDto.Id)
+            {
+                ModelState.AddModelError("Id", "Campo Id do parâmetro não confere com o Id solicitado.");
+                return CustomResponse(ModelState);
+            }
 
+            if (!ModelState.IsValid)
+                return CustomResponse(ModelState);
 
-        //[HttpPut("ativar/{id}")]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
-        //[ProducesResponseType(typeof(UpdateClienteDto), StatusCodes.Status204NoContent)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //public async Task<IActionResult> AtivarAsync(Guid id)
-        //{
-        //    var cliente = await _clienteService.BuscarPorIdAsync(id);
-        //    if (cliente == null)
-        //        return NotFound("Cliente não encontrado");
+            try
+            {
+                var command = _mapper.Map<AtualizarClienteCommand>(updateClienteDto);
+                var resultado = await _mediator.Send(command);
 
-        //    // cliente.Ativo = true;
-        //    cliente.Updated = DateTime.UtcNow;
+                if (!resultado.Status)
+                    return CustomResponse();
 
-        //    var result = await _clienteService.AtualizarAsync(cliente);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                NotificarErro("Mensagem", ex.Message);
+                return CustomResponse();
+            }
+        }
 
-        //    if (!result.Status)
-        //        return CustomResponse();
+        [HttpPut("ativar/{id:guid}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> AtivarAsync(Guid id)
+        {
+            var cliente = await _clienteService.BuscarPorIdAsync(id);
+            if (cliente == null)
+                return NotFound("Cliente não encontrado");
 
-        //    return NoContent();
-        //}
+            cliente.Updated = DateTime.UtcNow;
 
-        //[HttpPut("inativar/{id}")]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
-        //[ProducesResponseType(typeof(UpdateClienteDto), StatusCodes.Status204NoContent)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //public async Task<IActionResult> InativarAsync(Guid id)
-        //{
-        //    var cliente = await _clienteService.BuscarPorIdAsync(id);
-        //    if (cliente == null)
-        //        return NotFound("Cliente não encontrado");
+            var result = await _clienteService.AtualizarAsync(cliente);
 
-        //    // cliente.Ativo = false;
-        //    cliente.Updated = DateTime.UtcNow;
+            if (!result.Status)
+                return CustomResponse();
 
-        //    var result = await _clienteService.AtualizarAsync(cliente);
+            return NoContent();
+        }
 
-        //    if (!result.Status)
-        //        return CustomResponse();
+        [HttpPut("inativar/{id:guid}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> InativarAsync(Guid id)
+        {
+            var cliente = await _clienteService.BuscarPorIdAsync(id);
+            if (cliente == null)
+                return NotFound("Cliente não encontrado");
 
-        //    return NoContent();
-        //}
+            cliente.Updated = DateTime.UtcNow;
 
-        //[HttpGet("tipo-pessoa")]
-        //[ProducesResponseType(typeof(UpdateClienteDto), StatusCodes.Status204NoContent)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //public async Task<IActionResult> BuscarTipoPessoasAsync()
-        //{
-        //    var lista = EnumHelper.GetEnumAsList<TipoPessoa>();
-        //    return Ok(lista);
-        //}
+            var result = await _clienteService.AtualizarAsync(cliente);
 
-        //[HttpPost("alterar-senha")]
-        //[Authorize(Roles = nameof(TipoUsuario.Cliente))]
-        //[ProducesResponseType(StatusCodes.Status204NoContent)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //public async Task<IActionResult> AlterarSenhaAsync([FromBody] AlterarSenhaClienteDto alterarSenhaDto)
-        //{
-        //    if (alterarSenhaDto == null)
-        //    {
-        //        NotificarErro("Mensagem", "As informações da alteração de senha não foram carregadas. Tente novamente.");
-        //        return CustomResponse();
-        //    }
+            if (!result.Status)
+                return CustomResponse();
 
-        //    if (!ModelState.IsValid)
-        //        return CustomResponse(ModelState);
+            return NoContent();
+        }
 
-        //    try
-        //    {
-        //        // O cliente só pode alterar sua própria senha
-        //        var clienteId = UsuarioId;
+        [HttpGet("tipo-pessoa")]
+        [ProducesResponseType(typeof(List<object>), StatusCodes.Status200OK)]
+        public IActionResult BuscarTipoPessoasAsync()
+        {
+            var lista = EnumHelper.GetEnumAsList<TipoPessoa>();
+            return Ok(lista);
+        }
 
-        //        if (clienteId == Guid.Empty)
-        //        {
-        //            NotificarErro("Usuário", "Usuário não identificado");
-        //            return CustomResponse();
-        //        }
+        [HttpPost("alterar-senha")]
+        [Authorize(Roles = nameof(TipoUsuario.Cliente))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> AlterarSenhaAsync([FromBody] AlterarSenhaClienteDto alterarSenhaDto)
+        {
+            if (alterarSenhaDto == null)
+            {
+                NotificarErro("Mensagem", "As informações da alteração de senha não foram carregadas. Tente novamente.");
+                return CustomResponse();
+            }
 
-        //        var resultado = await _clienteService.AlterarSenhaClienteAsync(
-        //            clienteId,
-        //            alterarSenhaDto.SenhaAtual,
-        //            alterarSenhaDto.NovaSenha);
+            if (!ModelState.IsValid)
+                return CustomResponse(ModelState);
 
-        //        if (!resultado.Status)
-        //            return CustomResponse();
+            try
+            {
+                var clienteId = UsuarioId;
 
-        //        return NoContent();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        NotificarErro("Mensagem", ex.Message);
-        //        return CustomResponse();
-        //    }
-        //}
+                if (clienteId == Guid.Empty)
+                {
+                    NotificarErro("Usuário", "Usuário não identificado");
+                    return CustomResponse();
+                }
 
-        //[HttpPost("alterar-senha-admin")]
-        //[Authorize(Roles = $"{nameof(TipoUsuario.Administrador)},{nameof(TipoUsuario.Vendedor)}")]
-        //[ProducesResponseType(StatusCodes.Status204NoContent)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //public async Task<IActionResult> AlterarSenhaAdminAsync([FromBody] AlterarSenhaAdminDto alterarSenhaDto)
-        //{
-        //    if (alterarSenhaDto == null)
-        //    {
-        //        NotificarErro("Mensagem", "As informações da alteração de senha não foram carregadas. Tente novamente.");
-        //        return CustomResponse();
-        //    }
+                var resultado = await _clienteService.AlterarSenhaClienteAsync(
+                    clienteId,
+                    alterarSenhaDto.SenhaAtual,
+                    alterarSenhaDto.NovaSenha);
 
-        //    if (!ModelState.IsValid)
-        //        return CustomResponse(ModelState);
+                if (!resultado.Status)
+                    return CustomResponse();
 
-        //    try
-        //    {
-        //        var resultado = await _clienteService.AlterarSenhaAdminAsync(
-        //            alterarSenhaDto.ClienteId,
-        //            alterarSenhaDto.NovaSenha);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                NotificarErro("Mensagem", ex.Message);
+                return CustomResponse();
+            }
+        }
 
-        //        if (!resultado.Status)
-        //            return CustomResponse();
+        [HttpPost("alterar-senha-admin")]
+        [Authorize(Roles = $"{nameof(TipoUsuario.Administrador)},{nameof(TipoUsuario.Vendedor)}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> AlterarSenhaAdminAsync([FromBody] AlterarSenhaAdminDto alterarSenhaDto)
+        {
+            if (alterarSenhaDto == null)
+            {
+                NotificarErro("Mensagem", "As informações da alteração de senha não foram carregadas. Tente novamente.");
+                return CustomResponse();
+            }
 
-        //        return NoContent();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        NotificarErro("Mensagem", ex.Message);
-        //        return CustomResponse();
-        //    }
-        //}
+            if (!ModelState.IsValid)
+                return CustomResponse(ModelState);
+
+            try
+            {
+                var resultado = await _clienteService.AlterarSenhaAdminAsync(
+                    alterarSenhaDto.ClienteId,
+                    alterarSenhaDto.NovaSenha);
+
+                if (!resultado.Status)
+                    return CustomResponse();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                NotificarErro("Mensagem", ex.Message);
+                return CustomResponse();
+            }
+        }
     }
 }

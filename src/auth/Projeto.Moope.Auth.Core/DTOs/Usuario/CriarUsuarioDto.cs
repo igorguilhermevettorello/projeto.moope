@@ -17,6 +17,8 @@ namespace Projeto.Moope.Auth.Core.DTOs.Usuario
         public string Telefone { get; set; }
         [Required(ErrorMessage = "O campo TipoPessoa é obrigatório")]
         public TipoPessoa TipoPessoa { get; set; }
+        [Required(ErrorMessage = "O campo TipoPessoa é obrigatório")]
+        public TipoUsuario TipoUsuario { get; set; }
         [Required(ErrorMessage = "O campo Senha é obrigatório")]
         [MinLength(6, ErrorMessage = "A senha deve ter no mínimo 6 caracteres")]
         public string Senha { get; set; }
@@ -25,6 +27,5 @@ namespace Projeto.Moope.Auth.Core.DTOs.Usuario
         public string Confirmacao { get; set; }
         public string NomeFantasia { get; set; }
         public string InscricaoEstadual { get; set; }
-        public Guid? VendedorId { get; set; }
     }
 }

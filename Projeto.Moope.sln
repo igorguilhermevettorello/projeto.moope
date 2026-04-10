@@ -23,8 +23,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Cliente.Core"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Cliente.Infrastructure", "src\cliente\Projeto.Moope.Cliente.Infrastructure\Projeto.Moope.Cliente.Infrastructure.csproj", "{C6F70FD7-B629-4471-9C7E-C9F8D73B7130}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "script", "script", "{616EA3F4-0C05-48E1-AE62-AABDA9490847}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Auth.Core", "src\auth\Projeto.Moope.Auth.Core\Projeto.Moope.Auth.Core.csproj", "{B15827E0-8796-4A75-9E10-85C45F4C7FBC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Auth.Infrastructure", "src\auth\Projeto.Moope.Auth.Infrastructure\Projeto.Moope.Auth.Infrastructure.csproj", "{F476C488-E7CD-4328-AE1C-2E7EC125F8F1}"
@@ -94,6 +92,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bff", "bff", "{0462FF97-1D31-41FB-A7EE-A8145B64B60A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Gateways.Api", "bff\Projeto.Moope.Gateways.Api\Projeto.Moope.Gateways.Api.csproj", "{5CFFBB0A-0917-4749-B2B2-ABE921EF2686}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projeto.Moope.Gateways.Core", "bff\Projeto.Moope.Gateways.Core\Projeto.Moope.Gateways.Core.csproj", "{53BEAC8E-0616-4C1A-976A-C7F1C9CE0E4A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -229,6 +229,10 @@ Global
 		{5CFFBB0A-0917-4749-B2B2-ABE921EF2686}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CFFBB0A-0917-4749-B2B2-ABE921EF2686}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CFFBB0A-0917-4749-B2B2-ABE921EF2686}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53BEAC8E-0616-4C1A-976A-C7F1C9CE0E4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53BEAC8E-0616-4C1A-976A-C7F1C9CE0E4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53BEAC8E-0616-4C1A-976A-C7F1C9CE0E4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53BEAC8E-0616-4C1A-976A-C7F1C9CE0E4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -276,6 +280,7 @@ Global
 		{75A90E1F-8FB1-449F-93AA-623BB405F6AC} = {62DE46AA-A523-4A14-B1D9-3DB6DA103E03}
 		{2DDDAEFA-5B77-4299-992E-C4CAFAE14B51} = {62DE46AA-A523-4A14-B1D9-3DB6DA103E03}
 		{5CFFBB0A-0917-4749-B2B2-ABE921EF2686} = {0462FF97-1D31-41FB-A7EE-A8145B64B60A}
+		{53BEAC8E-0616-4C1A-976A-C7F1C9CE0E4A} = {0462FF97-1D31-41FB-A7EE-A8145B64B60A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6555006-1889-4CB7-9F89-217CC2EAA389}

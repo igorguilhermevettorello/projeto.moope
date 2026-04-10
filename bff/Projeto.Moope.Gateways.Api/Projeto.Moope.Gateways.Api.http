@@ -1,6 +1,62 @@
-@Projeto.Moope.Gateways.Api_HostAddress = http://localhost:5015
+@Projeto.Moope.Gateways.Api_HostAddress = https://localhost:7072
 
-GET {{Projeto.Moope.Gateways.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Cadastro composto representante (JWT Administrador)
+POST {{Projeto.Moope.Gateways.Api_HostAddress}}/api/bff/representante/cadastro
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nome": "Representante Teste",
+  "email": "rep@teste.local",
+  "tipoPessoa": 2,
+  "cpfCnpj": "12345678000199",
+  "telefone": "11999999999",
+  "ativo": true,
+  "endereco": {
+    "cep": "01310100",
+    "logradouro": "Av Paulista",
+    "numero": "1000",
+    "bairro": "Bela Vista",
+    "cidade": "São Paulo",
+    "estado": "SP"
+  },
+  "nomeFantasia": "Rep Fantasia",
+  "inscricaoEstadual": "",
+  "percentualComissao": 10,
+  "chavePix": "rep@teste.local",
+  "status": true,
+  "senha": "Senha@123",
+  "confirmacao": "Senha@123",
+  "codigoCupom": "CUPOM001"
+}
+
+###
+
+### Cadastro de cliente (JWT Vendedor/Administrador)
+POST {{Projeto.Moope.Gateways.Api_HostAddress}}/api/bff/cliente/cadastro
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nome": "Cliente Teste",
+  "email": "cliente@teste.local",
+  "tipoPessoa": 1,
+  "cpfCnpj": "12345678901",
+  "telefone": "11999999999",
+  "ativo": true,
+  "endereco": {
+    "cep": "01310100",
+    "logradouro": "Av Paulista",
+    "numero": "1000",
+    "bairro": "Bela Vista",
+    "cidade": "São Paulo",
+    "estado": "SP"
+  },
+  "senha": "Senha@123",
+  "confirmacao": "Senha@123",
+  "nomeFantasia": "",
+  "inscricaoEstadual": "",
+  "vendedorId": null
+}
 
 ###

@@ -18,6 +18,8 @@
 
   <ItemGroup>
     <Folder Include="Mapping\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="Scripts\" />
     <Folder Include="Repositories\" />
   </ItemGroup>
 

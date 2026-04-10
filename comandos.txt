@@ -7,3 +7,22 @@ cd src\plano\Projeto.Moope.Plano.Api
 dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.0
 dotnet ef migrations add Plano --project src\plano\Projeto.Moope.Plano.Infrastructure\Projeto.Moope.Plano.Infrastructure.csproj --startup-project src\plano\Projeto.Moope.Plano.Api\Projeto.Moope.Plano.Api.csproj --context AppPlanoContext
 dotnet ef migrations script --project src\plano\Projeto.Moope.Plano.Infrastructure\Projeto.Moope.Plano.Infrastructure.csproj --startup-project src\plano\Projeto.Moope.Plano.Api\Projeto.Moope.Plano.Api.csproj --context AppPlanoContext --output src\plano\Projeto.Moope.Plano.Infrastructure\Scripts\AppPlanoContext_migrations.sql
+
+
+dotnet tool install --global dotnet-ef
+dotnet ef migrations add InitialVendedor --project src/vendedor/Projeto.Moope.Vendedor.Infrastructure/Projeto.Moope.Vendedor.Infrastructure.csproj --startup-project src/vendedor/Projeto.Moope.Vendedor.Api/Projeto.Moope.Vendedor.Api.csproj --context AppVendedorContext --output-dir Migrations
+## dotnet ef database update --project src/vendedor/Projeto.Moope.Vendedor.Infrastructure/Projeto.Moope.Vendedor.Infrastructure.csproj --startup-project src/vendedor/Projeto.Moope.Vendedor.Api/Projeto.Moope.Vendedor.Api.csproj --context AppVendedorContext
+dotnet ef migrations script --project src/vendedor/Projeto.Moope.Vendedor.Infrastructure/Projeto.Moope.Vendedor.Infrastructure.csproj --startup-project src/vendedor/Projeto.Moope.Vendedor.Api/Projeto.Moope.Vendedor.Api.csproj --context AppVendedorContext --output src/vendedor/Projeto.Moope.Vendedor.Infrastructure/Scripts/AppVendedorDbContext_migrations.sql
+
+# endereco
+cd src\endereco\Projeto.Moope.Endereco.Api
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.0
+dotnet ef migrations add InitialEndereco --project src/endereco/Projeto.Moope.Endereco.Infrastructure/Projeto.Moope.Endereco.Infrastructure.csproj --startup-project src/endereco/Projeto.Moope.Endereco.Api/Projeto.Moope.Endereco.Api.csproj --context AppEnderecoContext --output-dir Migrations
+dotnet ef migrations script --project src/endereco/Projeto.Moope.Endereco.Infrastructure/Projeto.Moope.Endereco.Infrastructure.csproj --startup-project src/endereco/Projeto.Moope.Endereco.Api/Projeto.Moope.Endereco.Api.csproj --context AppEnderecoContext --output src/endereco/Projeto.Moope.Endereco.Infrastructure/Scripts/AppEnderecoDbContext_migrations.sql
+
+
+# cliente
+cd src\cliente\Projeto.Moope.Cliente.Api
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.0
+dotnet ef migrations add InitialCliente --project src/cliente/Projeto.Moope.Cliente.Infrastructure/Projeto.Moope.Cliente.Infrastructure.csproj --startup-project src/cliente/Projeto.Moope.Cliente.Api/Projeto.Moope.Cliente.Api.csproj --context AppClienteContext --output-dir Migrations
+dotnet ef migrations script --project src/cliente/Projeto.Moope.Cliente.Infrastructure/Projeto.Moope.Cliente.Infrastructure.csproj --startup-project src/cliente/Projeto.Moope.Cliente.Api/Projeto.Moope.Cliente.Api.csproj --context AppClienteContext --output src/cliente/Projeto.Moope.Cliente.Infrastructure/Scripts/AppClienteDbContext_migrations.sql
