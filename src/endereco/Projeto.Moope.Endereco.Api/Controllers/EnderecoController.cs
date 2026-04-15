@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
+using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Endereco.Api.DTOs;
 using Projeto.Moope.Endereco.Core.Interfaces.Services;
@@ -14,7 +15,7 @@ namespace Projeto.Moope.Endereco.Api.Controllers
         private readonly IEnderecoService _enderecoService;
 
 
-        public EnderecoController(IEnderecoService enderecoService, INotificador notificador) : base(notificador)
+        public EnderecoController(IEnderecoService enderecoService, INotificador notificador, IUser appUser) : base(notificador, appUser)
         {
             _enderecoService = enderecoService;
         }

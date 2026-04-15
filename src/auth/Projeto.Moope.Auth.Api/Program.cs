@@ -11,8 +11,9 @@ builder.Services.AddApiConfig(builder.Configuration);
 builder.Services.AddConectionConfig(builder.Configuration);
 builder.Services.AddIdentityConfig(builder.Configuration);
 builder.Services.AddAuthConfig(builder.Configuration, builder.Environment);
-builder.Services.AddDependencyInjectionConfig(builder.Configuration);
 builder.Services.AddSwaggerConfig();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddDependencyInjectionConfig(builder.Configuration);
 
 var app = builder.Build();
 

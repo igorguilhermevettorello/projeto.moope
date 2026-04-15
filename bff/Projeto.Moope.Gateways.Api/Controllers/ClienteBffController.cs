@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
 using Projeto.Moope.Core.Enums;
+using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Gateways.Api.DTOs;
 using Projeto.Moope.Gateways.Core.Models;
@@ -18,20 +19,21 @@ namespace Projeto.Moope.Gateways.Api.Controllers
 
         public ClienteBffController(
             ICadastroClienteOrchestrator orchestrator,
-            INotificador notificador)
-            : base(notificador)
+            INotificador notificador,
+            IUser appUser)
+            : base(notificador, appUser)
         {
             _orchestrator = orchestrator;
         }
 
         [HttpPost("cadastro")]
-        [Authorize(Roles = $"{nameof(TipoUsuario.Vendedor)},{nameof(TipoUsuario.Administrador)}")]
-        [ProducesResponseType(typeof(CadastrarClienteResponse), StatusCodes.Status201Created)]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(typeof(CadastroClienteCompostoResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status502BadGateway)]
-        public async Task<IActionResult> Cadastrar(
+        public async Task<IActionResult> CadastrarComposto(
             [FromBody] CadastrarClienteRequest request,
             CancellationToken cancellationToken)
         {
@@ -50,9 +52,11 @@ namespace Projeto.Moope.Gateways.Api.Controllers
             if (resultado.Dados == null)
                 return StatusCode(StatusCodes.Status502BadGateway, new { mensagem = "Resposta invalida da orquestracao." });
 
-            return StatusCode(StatusCodes.Status201Created, new CadastrarClienteResponse
+            return StatusCode(StatusCodes.Status201Created, new CadastroClienteCompostoResponse
             {
-                ClienteId = resultado.Dados.ClienteId
+                ClienteId = resultado.Dados.ClienteId,
+                UsuarioId = resultado.Dados.UsuarioId,
+                EnderecoId = resultado.Dados.EnderecoId
             });
         }
 

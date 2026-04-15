@@ -82,25 +82,25 @@ namespace Projeto.Moope.Vendedor.Infrastructure.Repositories
         {
             var query = @"
                 SELECT v.Id as Id,
-                       u.Nome as Nome, 
-                       au.Email as Email, 
-                       pf.Cpf, 
+                       u.Nome as Nome,
+                       au.Email as Email,
+                       pf.Cpf,
                        pj.Cnpj,
-                       CASE 
+                       CASE
                            WHEN pf.Cpf IS NOT NULL THEN '1'
                            WHEN pj.Cnpj IS NOT NULL THEN '2'
                            ELSE NULL
                        END as TipoPessoa,
                        COALESCE(pf.Cpf, pj.Cnpj) as CpfCnpj,
-                       au.PhoneNumber as Telefone, 
-                       e.Cidade as Cidade, 
-                       e.Estado as Estado, 
+                       au.PhoneNumber as Telefone,
+                       e.Cidade as Cidade,
+                       e.Estado as Estado,
                        au.LockoutEnabled as Ativo,
                        v.CodigoCupom as CodigoCupom
                 FROM Vendedor v
                 LEFT JOIN AspNetUsers au ON au.Id = v.Id
-                LEFT JOIN Usuario u ON u.Id = v.Id 
-                LEFT JOIN Endereco e ON e.Id = u.EnderecoId 
+                LEFT JOIN Usuario u ON u.Id = v.Id
+                LEFT JOIN Endereco e ON e.Id = v.EnderecoId
                 LEFT JOIN PessoaFisica pf ON pf.Id = v.Id
                 LEFT JOIN PessoaJuridica pj ON pj.Id = v.Id";
 
@@ -110,18 +110,18 @@ namespace Projeto.Moope.Vendedor.Infrastructure.Repositories
         public async Task<T?> BuscarVendedorPorIdComDadosAsync<T>(Guid id)
         {
             var query = @"
-                SELECT v.Id as Id, 
-                       u.Nome as Nome, 
-                       au.Email as Email, 
-                       CASE 
+                SELECT v.Id as Id,
+                       u.Nome as Nome,
+                       au.Email as Email,
+                       CASE
                          WHEN pf.Cpf IS NOT NULL THEN '1'
                          WHEN pj.Cnpj IS NOT NULL THEN '2'
                          ELSE NULL
                        END as TipoPessoa,
                        COALESCE(pf.Cpf, pj.Cnpj) as CpfCnpj,
-                       au.PhoneNumber as Telefone, 
+                       au.PhoneNumber as Telefone,
                        au.LockoutEnabled as Ativo,
-                       e.Cep as Cep, 
+                       e.Cep as Cep,
                        e.Logradouro as Logradouro,
                        e.Numero as Numero,
                        e.Complemento as Complemento,
@@ -136,7 +136,7 @@ namespace Projeto.Moope.Vendedor.Infrastructure.Repositories
                 FROM Vendedor v
                 LEFT JOIN AspNetUsers au ON au.Id = v.Id
                 LEFT JOIN Usuario u ON u.Id = v.Id
-                LEFT JOIN Endereco e ON e.Id = u.EnderecoId
+                LEFT JOIN Endereco e ON e.Id = v.EnderecoId
                 LEFT JOIN PessoaFisica pf ON pf.Id = v.Id
                 LEFT JOIN PessoaJuridica pj ON pj.Id = v.Id
                 WHERE v.Id = {0}";

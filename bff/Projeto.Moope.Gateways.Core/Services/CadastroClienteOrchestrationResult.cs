@@ -6,7 +6,7 @@ namespace Projeto.Moope.Gateways.Core.Services
     {
         public bool Sucesso { get; init; }
 
-        public CadastrarClienteOutput? Dados { get; init; }
+        public CadastroClienteCompostoOutput? Dados { get; init; }
 
         public int StatusCode { get; init; }
 

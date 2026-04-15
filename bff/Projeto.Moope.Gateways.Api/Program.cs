@@ -1,3 +1,5 @@
+using Projeto.Moope.Api.Utils;
+using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Notifications;
 using Projeto.Moope.Gateways.Api.Configurations;
@@ -21,10 +23,12 @@ builder.Services.Configure<DownstreamApisOptions>(
     builder.Configuration.GetSection(DownstreamApisOptions.SectionName));
 
 builder.Services.AddHttpClient();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<INotificador, Notificador>();
 builder.Services.AddScoped<ICadastroRepresentanteOrchestrator, CadastroRepresentanteOrchestrator>();
 builder.Services.AddScoped<ICadastroClienteOrchestrator, CadastroClienteOrchestrator>();
 builder.Services.AddScoped<IProcessarVendaOrchestrator, ProcessarVendaOrchestrator>();
+builder.Services.AddScoped<IUser, AspNetUser>();
 
 var app = builder.Build();
 

@@ -2,6 +2,13 @@ auth
 dotnet ef migrations script --project src\auth\Projeto.Moope.Auth.Infrastructure\Projeto.Moope.Auth.Infrastructure.csproj --startup-project src\auth\Projeto.Moope.Auth.Api\Projeto.Moope.Auth.Api.csproj --context AppAuthContext --output src\auth\Projeto.Moope.Auth.Infrastructure\Scripts\AppAuthContext_migrations.sql
 dotnet ef migrations script --project src\auth\Projeto.Moope.Auth.Infrastructure\Projeto.Moope.Auth.Infrastructure.csproj --startup-project src\auth\Projeto.Moope.Auth.Api\Projeto.Moope.Auth.Api.csproj --context AppIdentityDbContext --output src\auth\Projeto.Moope.Auth.Infrastructure\Scripts\AppIdentityDbContext_migrations.sql
 
+dotnet ef migrations add deletePapel --project src\auth\Projeto.Moope.Auth.Infrastructure\Projeto.Moope.Auth.Infrastructure.csproj --startup-project src\auth\Projeto.Moope.Auth.Api\Projeto.Moope.Auth.Api.csproj --context AppAuthContext
+dotnet ef migrations script --project src\auth\Projeto.Moope.Auth.Infrastructure\Projeto.Moope.Auth.Infrastructure.csproj --startup-project src\auth\Projeto.Moope.Auth.Api\Projeto.Moope.Auth.Api.csproj --context AppAuthContext --output src\auth\Projeto.Moope.Auth.Infrastructure\Scripts\AppIdentityDbContext_deletePapel.sql
+
+dotnet ef migrations add AjusteColunas --project src\auth\Projeto.Moope.Auth.Infrastructure\Projeto.Moope.Auth.Infrastructure.csproj --startup-project src\auth\Projeto.Moope.Auth.Api\Projeto.Moope.Auth.Api.csproj --context AppAuthContext
+dotnet ef migrations script --project src\auth\Projeto.Moope.Auth.Infrastructure\Projeto.Moope.Auth.Infrastructure.csproj --startup-project src\auth\Projeto.Moope.Auth.Api\Projeto.Moope.Auth.Api.csproj --context AppAuthContext --output src\auth\Projeto.Moope.Auth.Infrastructure\Scripts\AppIdentityDbContext_AjusteColunas.sql
+
+
 plano
 cd src\plano\Projeto.Moope.Plano.Api
 dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.0
@@ -26,3 +33,17 @@ cd src\cliente\Projeto.Moope.Cliente.Api
 dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.0
 dotnet ef migrations add InitialCliente --project src/cliente/Projeto.Moope.Cliente.Infrastructure/Projeto.Moope.Cliente.Infrastructure.csproj --startup-project src/cliente/Projeto.Moope.Cliente.Api/Projeto.Moope.Cliente.Api.csproj --context AppClienteContext --output-dir Migrations
 dotnet ef migrations script --project src/cliente/Projeto.Moope.Cliente.Infrastructure/Projeto.Moope.Cliente.Infrastructure.csproj --startup-project src/cliente/Projeto.Moope.Cliente.Api/Projeto.Moope.Cliente.Api.csproj --context AppClienteContext --output src/cliente/Projeto.Moope.Cliente.Infrastructure/Scripts/AppClienteDbContext_migrations.sql
+
+dotnet ef migrations add AjusteColunas --project src/cliente/Projeto.Moope.Cliente.Infrastructure/Projeto.Moope.Cliente.Infrastructure.csproj --startup-project src/cliente/Projeto.Moope.Cliente.Api/Projeto.Moope.Cliente.Api.csproj --context AppClienteContext --output-dir Migrations
+dotnet ef migrations script --project src/cliente/Projeto.Moope.Cliente.Infrastructure/Projeto.Moope.Cliente.Infrastructure.csproj --startup-project src/cliente/Projeto.Moope.Cliente.Api/Projeto.Moope.Cliente.Api.csproj --context AppClienteContext --output src/cliente/Projeto.Moope.Cliente.Infrastructure/Scripts/AppClienteDbContext_AjusteColunas_migrations.sql
+
+
+# vendedor
+cd src\vendedor\Projeto.Moope.Vendedor.Api
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.0
+dotnet ef migrations add InitialVendedor --project src/vendedor/Projeto.Moope.Vendedor.Infrastructure/Projeto.Moope.Vendedor.Infrastructure.csproj --startup-project src/vendedor/Projeto.Moope.Vendedor.Api/Projeto.Moope.Vendedor.Api.csproj --context AppVendedorContext --output-dir Migrations
+dotnet ef migrations script --project src/vendedor/Projeto.Moope.Vendedor.Infrastructure/Projeto.Moope.Vendedor.Infrastructure.csproj --startup-project src/vendedor/Projeto.Moope.Vendedor.Api/Projeto.Moope.Vendedor.Api.csproj --context AppVendedorContext --output src/vendedor/Projeto.Moope.Vendedor.Infrastructure/Scripts/AppVendedorDbContext_migrations.sql
+
+
+dotnet ef migrations add AjusteColunas --project src/vendedor/Projeto.Moope.Vendedor.Infrastructure/Projeto.Moope.Vendedor.Infrastructure.csproj --startup-project src/vendedor/Projeto.Moope.Vendedor.Api/Projeto.Moope.Vendedor.Api.csproj --context AppVendedorContext --output-dir Migrations
+dotnet ef migrations script --project src/vendedor/Projeto.Moope.Vendedor.Infrastructure/Projeto.Moope.Vendedor.Infrastructure.csproj --startup-project src/vendedor/Projeto.Moope.Vendedor.Api/Projeto.Moope.Vendedor.Api.csproj --context AppVendedorContext --output src/vendedor/Projeto.Moope.Vendedor.Infrastructure/Scripts/AppVendedorDbContext_AjusteColunas_migrations.sql

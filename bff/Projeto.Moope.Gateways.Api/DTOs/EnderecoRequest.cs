@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Projeto.Moope.Gateways.Api.DTOs
 {
-    public class RepresentanteEnderecoRequest
+    public class EnderecoRequest
     {
         [Required(ErrorMessage = "O campo CEP é obrigatório")]
         public string Cep { get; set; } = string.Empty;

@@ -12,14 +12,14 @@ CREATE TABLE `Cliente` (
     `Id` char(36) COLLATE ascii_general_ci NOT NULL,
     `Created` datetime(6) NOT NULL,
     `Updated` datetime(6) NOT NULL,
-    `Telefone` longtext CHARACTER SET utf8mb4 NULL,
-    `TelefoneEmergencia` longtext CHARACTER SET utf8mb4 NULL,
-    `VendedorId` char(36) COLLATE ascii_general_ci NULL,
+    `Telefone` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `TelefoneEmergencia` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `VendedorId` char(36) COLLATE ascii_general_ci NOT NULL,
     CONSTRAINT `PK_Cliente` PRIMARY KEY (`Id`)
 ) CHARACTER SET=utf8mb4;
 
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
-VALUES ('20260410131646_InitialCliente', '8.0.0');
+VALUES ('20260413211607_InitialCliente', '8.0.0');
 
 COMMIT;
 

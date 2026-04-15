@@ -9,7 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddConectionConfig(builder.Configuration);
-
+builder.Services.AddHttpContextAccessor();
 DependencyInjectionConfig.RegisterServices(builder.Services, builder.Configuration);
 
 var app = builder.Build();

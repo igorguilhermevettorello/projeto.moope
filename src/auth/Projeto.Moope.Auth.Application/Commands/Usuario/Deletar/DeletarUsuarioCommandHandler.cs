@@ -9,20 +9,17 @@ namespace Projeto.Moope.Auth.Application.Commands.Usuario.Deletar
     {
         private readonly IIdentityUserService _identityUserService;
         private readonly IUsuarioRepository _usuarioRepository;
-        private readonly IPapelRepository _papelRepository;
         private readonly IPessoaFisicaRepository _pessoaFisicaRepository;
         private readonly IPessoaJuridicaRepository _pessoaJuridicaRepository;
 
         public DeletarUsuarioCommandHandler(
             IIdentityUserService identityUserService,
             IUsuarioRepository usuarioRepository,
-            IPapelRepository papelRepository,
             IPessoaFisicaRepository pessoaFisicaRepository,
             IPessoaJuridicaRepository pessoaJuridicaRepository)
         {
             _identityUserService = identityUserService;
             _usuarioRepository = usuarioRepository;
-            _papelRepository = papelRepository;
             _pessoaFisicaRepository = pessoaFisicaRepository;
             _pessoaJuridicaRepository = pessoaJuridicaRepository;
         }
@@ -38,12 +35,6 @@ namespace Projeto.Moope.Auth.Application.Commands.Usuario.Deletar
             if (usuario == null || usuario.Id == Guid.Empty)
             {
                 return new Result { Status = false, Mensagem = "Usuário não encontrado" };
-            }
-
-            var papeis = await _papelRepository.BuscarPorUsuarioIdAsync(request.Id);
-            foreach (var papel in papeis)
-            {
-                await _papelRepository.RemoverAsync(papel.Id);
             }
 
             var pessoaFisica = await _pessoaFisicaRepository.BuscarPorIdAsync(request.Id);

@@ -27,7 +27,7 @@ namespace Projeto.Moope.Gateways.Api.DTOs
         public bool Ativo { get; set; }
 
         [Required(ErrorMessage = "O endereço é obrigatório")]
-        public RepresentanteEnderecoRequest Endereco { get; set; } = null!;
+        public EnderecoRequest Endereco { get; set; } = null!;
 
         public string? NomeFantasia { get; set; }
 

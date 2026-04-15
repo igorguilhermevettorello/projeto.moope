@@ -10,9 +10,9 @@ using Projeto.Moope.Auth.Core.Interfaces.Repositories;
 using Projeto.Moope.Auth.Core.Interfaces.Services;
 using Projeto.Moope.Auth.Core.Models;
 using Projeto.Moope.Core.Enums;
+using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using System.IdentityModel.Tokens.Jwt;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
@@ -28,7 +28,6 @@ namespace Projeto.Moope.Auth.Api.Controllers
         private readonly IJwtSigningKeyProvider _jwtSigningKeys;
         private readonly ILogger _logger;
         private readonly IGoogleRecaptchaService _recaptchaService;
-        private readonly IPapelRepository _papelRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
 
         private string[] ErrorPassowrd = { "PasswordTooShort", "PasswordRequiresNonAlphanumeric", "PasswordRequiresLower", "PasswordRequiresUpper", "PasswordRequiresDigit" };
@@ -42,8 +41,8 @@ namespace Projeto.Moope.Auth.Api.Controllers
             ILogger<AuthController> logger,
             IGoogleRecaptchaService recaptchaService,
             INotificador notificador,
-            IPapelRepository papelRepository,
-            IRefreshTokenRepository refreshTokenRepository) : base(notificador)
+            IUser appUser,
+            IRefreshTokenRepository refreshTokenRepository) : base(notificador, appUser)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -51,7 +50,6 @@ namespace Projeto.Moope.Auth.Api.Controllers
             _jwtSigningKeys = jwtSigningKeys;
             _logger = logger;
             _recaptchaService = recaptchaService;
-            _papelRepository = papelRepository;
             _refreshTokenRepository = refreshTokenRepository;
         }
 
@@ -74,7 +72,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByEmailAsync(loginDto.Email);
-                var tiposUsuario = await VerificarTiposUsuarioAsync(user.Id);
+                var tiposUsuario = await VerificarTiposUsuarioAsync(user);
                 if (tiposUsuario.Count() > 1)
                 {
                     if (loginDto.TipoUsuario == null)
@@ -118,13 +116,17 @@ namespace Projeto.Moope.Auth.Api.Controllers
             }
         }
 
-        private async Task<IEnumerable<TipoUsuario>> VerificarTiposUsuarioAsync(Guid userId)
+        private async Task<IEnumerable<TipoUsuario>> VerificarTiposUsuarioAsync(IdentityUser<Guid>? user)
         {
-            var tipos = new List<TipoUsuario>();
-            var papeis = await _papelRepository.BuscarPorUsuarioIdAsync(userId);
+            if (user == null) return Enumerable.Empty<TipoUsuario>();
 
+            var papeis = await _userManager.GetRolesAsync(user);
+            var tipos = new List<TipoUsuario>();
             foreach (var p in papeis)
-                tipos.Add(p.TipoUsuario);
+            {
+                if (Enum.TryParse<TipoUsuario>(p, out var tipo))
+                    tipos.Add(tipo);
+            }
 
             return tipos;
         }
@@ -235,7 +237,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
             await _refreshTokenRepository.AtualizarAsync(storedToken);
             await _refreshTokenRepository.UnitOfWork.Commit();
 
-            var tiposUsuario = await VerificarTiposUsuarioAsync(user.Id);
+            var tiposUsuario = await VerificarTiposUsuarioAsync(user);
             var tipoUsuario = tiposUsuario.FirstOrDefault();
             var loginResponse = await GerarJwt(user.Email!, tipoUsuario);
 

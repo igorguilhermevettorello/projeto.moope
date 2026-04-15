@@ -28,11 +28,16 @@ namespace Projeto.Moope.Cliente.Infrastructure.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<Guid?>("EnderecoId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("Telefone")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("TelefoneEmergencia")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<DateTime>("Updated")
                         .HasColumnType("datetime(6)");
@@ -42,7 +47,7 @@ namespace Projeto.Moope.Cliente.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cliente");
+                    b.ToTable("Cliente", (string)null);
                 });
 #pragma warning restore 612, 618
         }

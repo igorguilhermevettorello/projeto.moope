@@ -38,6 +38,9 @@ namespace Projeto.Moope.Vendedor.Infrastructure.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<Guid?>("EnderecoId")
+                        .HasColumnType("char(36)");
+
                     b.Property<decimal>("PercentualComissao")
                         .HasColumnType("decimal(7,4)");
 

@@ -1,11 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Projeto.Moope.Vendedor.Api.Utils;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
 
 namespace Projeto.Moope.Vendedor.Api.Configurations
 {

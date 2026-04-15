@@ -14,16 +14,11 @@ namespace Projeto.Moope.Auth.Infrastructure.Mapping
                 .IsRequired()
                 .HasMaxLength(255);
 
-            builder.Property(u => u.EnderecoId)
-                .IsRequired(false);
-
             builder.Property(u => u.Created)
                 .IsRequired();
 
             builder.Property(u => u.Updated)
                 .IsRequired();
-
-            // Relationships are handled via foreign keys, navigations are not mapped
 
             builder.ToTable("Usuario");
         }

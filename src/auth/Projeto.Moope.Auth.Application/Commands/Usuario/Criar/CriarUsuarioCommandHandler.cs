@@ -12,20 +12,17 @@ namespace Projeto.Moope.Auth.Application.Commands.Usuario.Criar
     {
         private readonly IIdentityUserService _identityUserService;
         private readonly IUsuarioRepository _usuarioRepository;
-        private readonly IPapelRepository _papelRepository;
         private readonly IPessoaFisicaRepository _pessoaFisicaRepository;
         private readonly IPessoaJuridicaRepository _pessoaJuridicaRepository;
         
         public CriarUsuarioCommandHandler(
             IIdentityUserService identityUserService,
-            IPapelRepository papelRepository,
             IUsuarioRepository usuarioRepository,
             IPessoaFisicaRepository pessoaFisicaRepository,
             IPessoaJuridicaRepository pessoaJuridicaRepository)
         {
             _identityUserService = identityUserService;
             _usuarioRepository = usuarioRepository;
-            _papelRepository = papelRepository;
             _pessoaFisicaRepository = pessoaFisicaRepository;
             _pessoaJuridicaRepository = pessoaJuridicaRepository;
         }
@@ -64,26 +61,17 @@ namespace Projeto.Moope.Auth.Application.Commands.Usuario.Criar
             {
                 var pessoaFisica = CriarPessoaFisica(request, identityUser.Id);
                 await _pessoaFisicaRepository.SalvarAsync(pessoaFisica);
-                //usuario.PessoaFisicaId = pessoaFisica.Id;
-                //usuario.PessoaFisica = pessoaFisica;
             }
             else if (request.TipoPessoa == TipoPessoa.JURIDICA)
             {
                 var pessoaJuridica = CriarPessoaJuridica(request, identityUser.Id);
                 await _pessoaJuridicaRepository.SalvarAsync(pessoaJuridica);
-                //usuario.PessoaJuridicaId = pessoaJuridica.Id;
-                //usuario.PessoaJuridica = pessoaJuridica;
             }
 
-            await _papelRepository.SalvarAsync(new Papel()
-            {
-                UsuarioId = identityUser.Id,
-                TipoUsuario = request.TipoUsuario,
-                Created = DateTime.UtcNow
-            });
-
-            // Save Usuario
-            await _usuarioRepository.SalvarAsync(usuario);
+            if (identityResult.UsuarioExiste)
+                await _usuarioRepository.AtualizarAsync(usuario);
+            else
+                await _usuarioRepository.SalvarAsync(usuario);
 
             var sucesso = await _usuarioRepository.UnitOfWork.Commit();
 

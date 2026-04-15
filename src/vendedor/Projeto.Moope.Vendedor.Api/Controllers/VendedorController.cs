@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
 using Projeto.Moope.Core.Enums;
+using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Vendedor.Api.DTOs;
 using Projeto.Moope.Vendedor.Core.Interfaces.Services;
@@ -16,7 +17,7 @@ namespace Projeto.Moope.Vendedor.Api.Controllers
     {
         private readonly IVendedorService _vendedorService;
 
-        public VendedorController(IVendedorService vendedorService, INotificador notificador) : base(notificador)
+        public VendedorController(IVendedorService vendedorService, INotificador notificador, IUser appUser) : base(notificador, appUser)
         {
             _vendedorService = vendedorService;
         }

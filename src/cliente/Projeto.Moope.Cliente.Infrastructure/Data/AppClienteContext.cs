@@ -1,18 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using Projeto.Moope.Cliente.Core.Interfaces;
-using Projeto.Moope.Cliente.Core.Models;
+using Projeto.Moope.Core.Interfaces.Data;
 using ClienteModel = Projeto.Moope.Cliente.Core.Models.Cliente;
 
 namespace Projeto.Moope.Cliente.Infrastructure.Data
 {
-    public class AppClienteContext : DbContext, IClienteUnitOfWork
+    public class AppClienteContext : DbContext, IUnitOfWork
     {
-        private IDbContextTransaction? _transaction;
-
         public AppClienteContext(DbContextOptions<AppClienteContext> options) : base(options) { }
 
-        public DbSet<ClienteModel> Clientes { get; set; } = null!;
+        public DbSet<ClienteModel> Clientes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -29,32 +25,13 @@ namespace Projeto.Moope.Cliente.Infrastructure.Data
                         .HasColumnType("char(36)");
                 }
             }
+
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppClienteContext).Assembly);
         }
 
-        public async Task BeginTransactionAsync()
+        public async Task<bool> Commit()
         {
-            _transaction = await Database.BeginTransactionAsync();
-        }
-
-        public async Task CommitAsync()
-        {
-            await SaveChangesAsync();
-            if (_transaction != null)
-            {
-                await _transaction.CommitAsync();
-                await _transaction.DisposeAsync();
-                _transaction = null;
-            }
-        }
-
-        public async Task RollbackAsync()
-        {
-            if (_transaction != null)
-            {
-                await _transaction.RollbackAsync();
-                await _transaction.DisposeAsync();
-                _transaction = null;
-            }
+            return await SaveChangesAsync() > 0;
         }
     }
 }

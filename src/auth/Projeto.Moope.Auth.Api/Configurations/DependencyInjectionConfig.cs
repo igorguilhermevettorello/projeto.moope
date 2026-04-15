@@ -1,8 +1,10 @@
+using Projeto.Moope.Api.Utils;
 using Projeto.Moope.Auth.Application.Commands.Usuario.Criar;
 using Projeto.Moope.Auth.Core.Interfaces.Repositories;
 using Projeto.Moope.Auth.Core.Interfaces.Services;
 using Projeto.Moope.Auth.Core.Services;
 using Projeto.Moope.Auth.Infrastructure.Repositories;
+using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Notifications;
 
@@ -32,7 +34,7 @@ namespace Projeto.Moope.Auth.Api.Configurations
             //service.AddSingleton<ITokenHasher, TokenHasher>();
             //service.AddSingleton<IEncryption, Encryption>();
             //service.AddScoped<IComodatoTokenValidationService, ComodatoTokenValidationService>();
-            //service.AddScoped<IUser, AspNetUser>();
+            service.AddScoped<IUser, AspNetUser>();
             //service.AddScoped<IPasswordGenerator, PasswordGenerator>();
         }
 
@@ -41,7 +43,6 @@ namespace Projeto.Moope.Auth.Api.Configurations
             service.AddScoped<IUsuarioRepository, UsuarioRepository>();
             service.AddScoped<IPessoaFisicaRepository, PessoaFisicaRepository>();
             service.AddScoped<IPessoaJuridicaRepository, PessoaJuridicaRepository>();
-            service.AddScoped<IPapelRepository, PapelRepository>();
             service.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             // other...
             //service.AddScoped<ITransacaoRepository, TransacaoRepository>();

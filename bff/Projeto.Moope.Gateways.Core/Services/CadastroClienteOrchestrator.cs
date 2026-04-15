@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Gateways.Core.Models;
 using Projeto.Moope.Gateways.Core.Options;
 
@@ -31,43 +32,68 @@ namespace Projeto.Moope.Gateways.Core.Services
             string? authorizationHeader,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(_apis.Cliente))
+            if (string.IsNullOrWhiteSpace(_apis.Cliente)
+                || string.IsNullOrWhiteSpace(_apis.Auth)
+                || string.IsNullOrWhiteSpace(_apis.Endereco))
             {
                 return new CadastroClienteOrchestrationResult
                 {
                     Sucesso = false,
                     StatusCode = StatusCodes.Status500InternalServerError,
-                    CorpoErro = new { mensagem = "DownstreamApis.Cliente nao configurado." }
+                    CorpoErro = new { mensagem = "DownstreamApis (Cliente, Auth, Endereco) nao configurados." }
                 };
             }
 
-            var clienteUrl = Combine(_apis.Cliente, "/api/cliente");
-            var clienteBody = new
+            var httpClient = _httpClientFactory.CreateClient();
+
+            // 1. Criar usuário no serviço Auth
+            var authUrl = Combine(_apis.Auth, "/api/usuario");
+            var usuarioBody = new
             {
                 request.Nome,
                 request.Email,
-                request.TipoPessoa,
                 request.CpfCnpj,
                 request.Telefone,
-                request.Ativo,
-                Endereco = new
-                {
-                    request.Endereco.Cep,
-                    request.Endereco.Logradouro,
-                    Numero = request.Endereco.Numero ?? string.Empty,
-                    Complemento = request.Endereco.Complemento ?? string.Empty,
-                    request.Endereco.Bairro,
-                    request.Endereco.Cidade,
-                    request.Endereco.Estado
-                },
+                request.TipoPessoa,
+                TipoUsuario = TipoUsuario.Cliente,
                 request.Senha,
                 request.Confirmacao,
-                request.NomeFantasia,
-                request.InscricaoEstadual,
-                request.VendedorId
+                NomeFantasia = request.NomeFantasia ?? string.Empty,
+                InscricaoEstadual = request.InscricaoEstadual ?? string.Empty
             };
 
-            var httpClient = _httpClientFactory.CreateClient();
+            using var usuarioRequest = new HttpRequestMessage(HttpMethod.Post, authUrl);
+            AplicarAutorizacao(usuarioRequest, authorizationHeader);
+            usuarioRequest.Content = JsonContent.Create(usuarioBody, options: JsonOptions);
+
+            using var usuarioResponse = await httpClient.SendAsync(usuarioRequest, cancellationToken);
+            if (!usuarioResponse.IsSuccessStatusCode)
+                return await FalhaDownstreamAsync(usuarioResponse, cancellationToken);
+
+            var usuarioId = await LerGuidRespostaAsync(usuarioResponse, cancellationToken);
+            if (usuarioId == null)
+            {
+                return new CadastroClienteOrchestrationResult
+                {
+                    Sucesso = false,
+                    StatusCode = StatusCodes.Status502BadGateway,
+                    CorpoErro = new { mensagem = "Resposta invalida do servico Auth (Id ausente)." }
+                };
+            }
+
+            // 2. Criar cliente no serviço Cliente
+            var clienteUrl = Combine(_apis.Cliente, "/api/cliente");
+            var clienteBody = new
+            {
+                request.TipoPessoa,
+                request.CpfCnpj,
+                request.PercentualComissao,
+                request.ChavePix,
+                request.CodigoCupom,
+                request.VendedorId,
+                UsuarioId = (Guid)usuarioId
+            };
+
             using var clienteRequest = new HttpRequestMessage(HttpMethod.Post, clienteUrl);
             AplicarAutorizacao(clienteRequest, authorizationHeader);
             clienteRequest.Content = JsonContent.Create(clienteBody, options: JsonOptions);
@@ -87,13 +113,56 @@ namespace Projeto.Moope.Gateways.Core.Services
                 };
             }
 
+            // 3. Criar endereço no serviço Endereco
+            var enderecoUrl = Combine(_apis.Endereco, "/api/endereco");
+            var enderecoBody = new
+            {
+                request.Endereco.Cep,
+                request.Endereco.Logradouro,
+                Numero = request.Endereco.Numero ?? string.Empty,
+                Complemento = request.Endereco.Complemento ?? string.Empty,
+                request.Endereco.Bairro,
+                request.Endereco.Cidade,
+                request.Endereco.Estado
+            };
+
+            using var enderecoRequest = new HttpRequestMessage(HttpMethod.Post, enderecoUrl);
+            AplicarAutorizacao(enderecoRequest, authorizationHeader);
+            enderecoRequest.Content = JsonContent.Create(enderecoBody, options: JsonOptions);
+
+            using var enderecoResponse = await httpClient.SendAsync(enderecoRequest, cancellationToken);
+            if (!enderecoResponse.IsSuccessStatusCode)
+                return await FalhaDownstreamAsync(enderecoResponse, cancellationToken);
+
+            var enderecoId = await LerGuidRespostaAsync(enderecoResponse, cancellationToken);
+            if (enderecoId == null)
+            {
+                return new CadastroClienteOrchestrationResult
+                {
+                    Sucesso = false,
+                    StatusCode = StatusCodes.Status502BadGateway,
+                    CorpoErro = new { mensagem = "Resposta invalida do servico Endereco (Id ausente)." }
+                };
+            }
+
+            // 4. Associar endereço ao usuário
+            var atualizarEnderecoUrl = Combine(_apis.Auth, $"/api/usuario/{usuarioId}/endereco/{enderecoId}");
+            using var atualizarEnderecoRequest = new HttpRequestMessage(HttpMethod.Patch, atualizarEnderecoUrl);
+            AplicarAutorizacao(atualizarEnderecoRequest, authorizationHeader);
+
+            using var atualizarEnderecoResponse = await httpClient.SendAsync(atualizarEnderecoRequest, cancellationToken);
+            if (!atualizarEnderecoResponse.IsSuccessStatusCode)
+                return await FalhaDownstreamAsync(atualizarEnderecoResponse, cancellationToken);
+
             return new CadastroClienteOrchestrationResult
             {
                 Sucesso = true,
                 StatusCode = StatusCodes.Status201Created,
-                Dados = new CadastrarClienteOutput
+                Dados = new CadastroClienteCompostoOutput
                 {
-                    ClienteId = clienteId.Value
+                    ClienteId = clienteId.Value,
+                    UsuarioId = usuarioId.Value,
+                    EnderecoId = enderecoId.Value
                 }
             };
         }

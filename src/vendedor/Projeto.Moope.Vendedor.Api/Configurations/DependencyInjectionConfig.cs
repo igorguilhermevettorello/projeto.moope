@@ -1,3 +1,5 @@
+using Projeto.Moope.Api.Utils;
+using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Notifications;
 using Projeto.Moope.Vendedor.Core.Interfaces.Repositories;
@@ -14,6 +16,7 @@ namespace Projeto.Moope.Vendedor.Api.Configurations
             services.AddScoped<INotificador, Notificador>();
             services.AddScoped<IVendedorRepository, VendedorRepository>();
             services.AddScoped<IVendedorService, VendedorService>();
+            services.AddScoped<IUser, AspNetUser>();
         }
     }
 }

@@ -1,7 +1,7 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Projeto.Moope.Cliente.Core.Interfaces.Repositories;
-using Projeto.Moope.Cliente.Core.Models;
 using Projeto.Moope.Cliente.Infrastructure.Data;
+using Projeto.Moope.Core.Interfaces.Data;
 using ClienteModel = Projeto.Moope.Cliente.Core.Models.Cliente;
 
 namespace Projeto.Moope.Cliente.Infrastructure.Repositories
@@ -15,14 +15,23 @@ namespace Projeto.Moope.Cliente.Infrastructure.Repositories
             _context = context;
         }
 
+        public IUnitOfWork UnitOfWork => (IUnitOfWork)_context;
+
+        public async Task<ClienteModel?> BuscarPorIdAsync(Guid id)
+        {
+            return await _context.Clientes.FindAsync(id);
+        }
+
         public async Task<ClienteModel?> BuscarPorIdAsNotrackingAsync(Guid id)
         {
             return await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        public async Task<ClienteModel?> BuscarPorIdAsync(Guid id)
+        public async Task<ClienteModel?> BuscarPorCodigoCupomAsync(string codigoCupom)
         {
-            return await _context.Clientes.FindAsync(id);
+            return await _context.Clientes.FindAsync(codigoCupom);
+            //return await _context.Clientes.AsNoTracking()
+            //    .FirstOrDefaultAsync(c => c.CodigoCupom == codigoCupom);
         }
 
         public async Task<IEnumerable<ClienteModel>> BuscarTodosAsync()
@@ -38,7 +47,7 @@ namespace Projeto.Moope.Cliente.Infrastructure.Repositories
         }
 
         public async Task<ClienteModel> AtualizarAsync(ClienteModel entity)
-        { 
+        {
             _context.Clientes.Update(entity);
             await _context.SaveChangesAsync();
             return entity;
@@ -59,24 +68,24 @@ namespace Projeto.Moope.Cliente.Infrastructure.Repositories
         {
             var query = @"
                 SELECT c.Id as Id,
-                       u.Nome as Nome, 
-                       au.Email as Email, 
-                       pf.Cpf, 
+                       u.Nome as Nome,
+                       au.Email as Email,
+                       pf.Cpf,
                        pj.Cnpj,
-                       CASE 
+                       CASE
                            WHEN pf.Cpf IS NOT NULL THEN '1'
                            WHEN pj.Cnpj IS NOT NULL THEN '2'
                            ELSE NULL
                        END as TipoPessoa,
                        COALESCE(pf.Cpf, pj.Cnpj) as CpfCnpj,
-                       au.PhoneNumber as Telefone, 
-                       e.Cidade as Cidade, 
-                       e.Estado as Estado, 
+                       au.PhoneNumber as Telefone,
+                       e.Cidade as Cidade,
+                       e.Estado as Estado,
                        au.LockoutEnabled as Ativo
                 FROM Cliente c
                 LEFT JOIN AspNetUsers au ON au.Id = c.Id
-                LEFT JOIN Usuario u ON u.Id = c.Id 
-                LEFT JOIN Endereco e ON e.Id = u.EnderecoId 
+                LEFT JOIN Usuario u ON u.Id = c.Id
+                LEFT JOIN Endereco e ON e.Id = c.EnderecoId
                 LEFT JOIN PessoaFisica pf ON pf.Id = c.Id
                 LEFT JOIN PessoaJuridica pj ON pj.Id = c.Id";
 
@@ -86,33 +95,43 @@ namespace Projeto.Moope.Cliente.Infrastructure.Repositories
         public async Task<T?> BuscarClientePorIdComDadosAsync<T>(Guid id)
         {
             var query = @"
-                SELECT c.Id as Id, 
-                       u.Nome as Nome, 
-                       au.Email as Email, 
-                       CASE 
+                SELECT c.Id as Id,
+                       u.Nome as Nome,
+                       au.Email as Email,
+                       CASE
                          WHEN pf.Cpf IS NOT NULL THEN '1'
                          WHEN pj.Cnpj IS NOT NULL THEN '2'
                          ELSE NULL
                        END as TipoPessoa,
                        COALESCE(pf.Cpf, pj.Cnpj) as CpfCnpj,
-                       au.PhoneNumber as Telefone, 
+                       au.PhoneNumber as Telefone,
                        au.LockoutEnabled as Ativo,
-                       e.Cep as Cep, 
+                       e.Cep as Cep,
                        e.Logradouro as Logradouro,
                        e.Numero as Numero,
                        e.Complemento as Complemento,
                        e.Bairro as Bairro,
                        e.Cidade as Cidade,
-                       e.Estado as Estado
+                       e.Estado as Estado,
+                       c.ChavePix as ChavePix,
+                       c.PercentualComissao as PercentualComissao,
+                       c.CodigoCupom as CodigoCupom,
+                       pj.NomeFantasia as NomeFantasia,
+                       pj.InscricaoEstadual as InscricaoEstadual
                 FROM Cliente c
                 LEFT JOIN AspNetUsers au ON au.Id = c.Id
                 LEFT JOIN Usuario u ON u.Id = c.Id
-                LEFT JOIN Endereco e ON e.Id = u.EnderecoId
+                LEFT JOIN Endereco e ON e.Id = c.EnderecoId
                 LEFT JOIN PessoaFisica pf ON pf.Id = c.Id
                 LEFT JOIN PessoaJuridica pj ON pj.Id = c.Id
                 WHERE c.Id = {0}";
 
             return await _context.Database.SqlQueryRaw<T>(query, id).FirstOrDefaultAsync();
+        }
+
+        public void Dispose()
+        {
+            _context.Dispose();
         }
     }
 }

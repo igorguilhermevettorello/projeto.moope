@@ -26,7 +26,6 @@ namespace Projeto.Moope.Auth.Application.Commands.Usuario.AtualizarEndereco
                 return new Result { Status = false, Mensagem = "Usuário não encontrado" };
             }
 
-            usuario.EnderecoId = request.EnderecoId;
             usuario.Updated = DateTime.UtcNow;
 
             await _usuarioRepository.AtualizarAsync(usuario);

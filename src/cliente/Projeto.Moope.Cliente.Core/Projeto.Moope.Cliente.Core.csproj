@@ -7,13 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="12.1.1" />
-    <PackageReference Include="MediatR" Version="14.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\..\core\Projeto.Moope.Core\Projeto.Moope.Core.csproj" />
+    <ProjectReference Include="..\..\auth\Projeto.Moope.Auth.Core\Projeto.Moope.Auth.Core.csproj" />
   </ItemGroup>
 
 </Project>

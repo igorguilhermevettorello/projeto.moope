@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Projeto.Moope.Core.Enums;
+using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Notifications;
+using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace Projeto.Moope.Api.Controllers
 {
@@ -9,10 +13,20 @@ namespace Projeto.Moope.Api.Controllers
     public class MainController : ControllerBase
     {
         private readonly INotificador _notificador;
-        
-        protected MainController(INotificador notificador)
+        public readonly IUser AppUser;
+        protected Guid UsuarioId { get; set; }
+        protected bool UsuarioAutenticado { get; set; }
+
+        protected MainController(INotificador notificador, IUser appUser)
         {
             _notificador = notificador;
+            AppUser = appUser;
+
+            if (appUser.IsAuthenticated())
+            {
+                UsuarioId = appUser.GetUserId();
+                UsuarioAutenticado = true;
+            }
         }
 
         protected bool OperacaoValida()
@@ -61,6 +75,11 @@ namespace Projeto.Moope.Api.Controllers
                 Campo = campo,
                 Mensagem = mensagem
             });
+        }
+
+        protected async Task<bool> IsAdmin()
+        {
+            return User.FindFirst(ClaimTypes.Role)?.Value == TipoUsuario.Administrador.ToString();
         }
     }
 }

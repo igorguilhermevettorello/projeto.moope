@@ -19,31 +19,6 @@ namespace Projeto.Moope.Auth.Infrastructure.Migrations.Business
                 .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("Projeto.Moope.Auth.Core.Models.Papel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("TipoUsuario")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Updated")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<Guid?>("UsuarioId")
-                        .HasColumnType("char(36)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UsuarioId");
-
-                    b.ToTable("Papel", (string)null);
-                });
-
             modelBuilder.Entity("Projeto.Moope.Auth.Core.Models.PessoaFisica", b =>
                 {
                     b.Property<Guid>("Id")
@@ -153,16 +128,10 @@ namespace Projeto.Moope.Auth.Infrastructure.Migrations.Business
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid?>("EnderecoId")
-                        .HasColumnType("char(36)");
-
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
-
-                    b.Property<int>("TipoUsuario")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("Updated")
                         .HasColumnType("datetime(6)");
@@ -170,16 +139,6 @@ namespace Projeto.Moope.Auth.Infrastructure.Migrations.Business
                     b.HasKey("Id");
 
                     b.ToTable("Usuario", (string)null);
-                });
-
-            modelBuilder.Entity("Projeto.Moope.Auth.Core.Models.Papel", b =>
-                {
-                    b.HasOne("Projeto.Moope.Auth.Core.Models.Usuario", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Usuario");
                 });
 #pragma warning restore 612, 618
         }

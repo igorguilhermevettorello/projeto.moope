@@ -10,7 +10,6 @@ namespace Projeto.Moope.Auth.Infrastructure.Data
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<PessoaFisica> PessoasFisicas { get; set; }
         public DbSet<PessoaJuridica> PessoasJuridicas { get; set; }
-        public DbSet<Papel> Papeis { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

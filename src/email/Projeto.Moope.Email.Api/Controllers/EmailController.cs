@@ -5,6 +5,7 @@ using Projeto.Moope.Email.Api.DTOs;
 using Projeto.Moope.Email.Core.Interfaces.Services;
 using Projeto.Moope.Email.Core.Enums;
 using EmailModel = Projeto.Moope.Email.Core.Models.Email;
+using Projeto.Moope.Core.Interfaces.Identity;
 
 namespace Projeto.Moope.Email.Api.Controllers
 {
@@ -18,7 +19,8 @@ namespace Projeto.Moope.Email.Api.Controllers
         public EmailController(
             IEmailService emailService,
             IEmailGateway emailGateway,
-            INotificador notificador) : base(notificador)
+            INotificador notificador,
+            IUser appUser) : base(notificador, appUser)
         {
             _emailService = emailService;
             _emailGateway = emailGateway;

@@ -2,16 +2,19 @@ using Microsoft.AspNetCore.Identity;
 using Projeto.Moope.Auth.Core.DTOs;
 using Projeto.Moope.Auth.Core.Interfaces.Services;
 using Projeto.Moope.Core.Enums;
+using Projeto.Moope.Core.Interfaces.Notificacao;
 
 namespace Projeto.Moope.Auth.Core.Services
 {
     public class IdentityUserService : IIdentityUserService
     {
         private readonly UserManager<IdentityUser<Guid>> _userManager;
-        
-        public IdentityUserService(UserManager<IdentityUser<Guid>> userManager)
+        private readonly INotificador _notificador;
+
+        public IdentityUserService(UserManager<IdentityUser<Guid>> userManager, INotificador notificador)
         {
             _userManager = userManager;
+            _notificador = notificador;
         }
 
         public async Task<ResultUser<IdentityUser<Guid>>> CriarUsuarioAsync(
@@ -20,28 +23,133 @@ namespace Projeto.Moope.Auth.Core.Services
             string telefone = null,
             TipoUsuario tipoUsuario = TipoUsuario.Cliente)
         {
-            var identityUser = new IdentityUser<Guid>
+            //var identityUser = new IdentityUser<Guid>
+            //{
+            //    UserName = email,
+            //    Email = email,
+            //    PhoneNumber = telefone
+            //};
+
+            //var result = await _userManager.CreateAsync(identityUser, senha);
+
+            //if (result.Succeeded)
+            //{
+            //    // Optionally add to role based on TipoUsuario
+            //    await _userManager.AddToRoleAsync(identityUser, tipoUsuario.ToString());
+
+            //    return new ResultUser<IdentityUser<Guid>> { Status = true, Dados = identityUser };
+            //}
+            //else
+            //{
+            //    return new ResultUser<IdentityUser<Guid>>
+            //    {
+            //        Status = false,
+            //        Mensagem = string.Join("; ", result.Errors.Select(e => e.Description))
+            //    };
+            //}
+            try
             {
-                UserName = email,
-                Email = email,
-                PhoneNumber = telefone
-            };
+                var usuario = new IdentityUser<Guid>
+                {
+                    UserName = email,
+                    Email = email,
+                    PhoneNumber = telefone,
+                    EmailConfirmed = false,
+                    PhoneNumberConfirmed = false,
+                    TwoFactorEnabled = false,
+                    LockoutEnabled = true,
+                    AccessFailedCount = 0
+                };
 
-            var result = await _userManager.CreateAsync(identityUser, senha);
+                var usuarioExiste = await _userManager.FindByEmailAsync(email);
+                if (usuarioExiste != null)
+                {
+                    //var clienteExistente = await _clienteRepository.BuscarPorIdAsync(usuarioExiste.Id);
+                    //var vendedorExistente = await _vendedorRepository.BuscarPorIdAsync(usuarioExiste.Id);
+                    var rs = await _userManager.GetRolesAsync(usuarioExiste);
 
-            if (result.Succeeded)
-            {
-                // Optionally add to role based on TipoUsuario
-                await _userManager.AddToRoleAsync(identityUser, tipoUsuario.ToString());
+                    if (tipoUsuario == TipoUsuario.Vendedor && rs.Contains(TipoUsuario.Vendedor.ToString()))
+                    {                        
+                        return new ResultUser<IdentityUser<Guid>>()
+                        {
+                            Status = false,
+                            Mensagem = $"O usuário '{email}' já está em uso."
+                        };
+                    }
 
-                return new ResultUser<IdentityUser<Guid>> { Status = true, Dados = identityUser };
+                    if (tipoUsuario == TipoUsuario.Cliente && rs.Contains(TipoUsuario.Cliente.ToString()))
+                    {
+                        return new ResultUser<IdentityUser<Guid>>()
+                        {
+                            Status = false,
+                            Mensagem = $"O usuário '{email}' já está em uso."
+                        };
+                    }
+
+                    return new ResultUser<IdentityUser<Guid>>()
+                    {
+                        Status = true,
+                        Dados = usuarioExiste,
+                        UsuarioExiste = true
+                    };
+                }
+
+                var resultado = await _userManager.CreateAsync(usuario, senha);
+
+                if (resultado.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(usuario, tipoUsuario.ToString());
+                }
+                else
+                {
+                    string mensagemErro = string.Join("; ", resultado.Errors.Select(e => e.Description));
+                    //foreach (var error in resultado.Errors)
+                    //{
+                    //    if (error.Code.Equals("PasswordRequiresUpper"))
+                    //    {
+                    //        Notificar("Senha", error.Description);
+                    //    }
+                    //    else if (error.Code.Equals("PasswordRequiresLower"))
+                    //    {
+                    //        Notificar("Senha", error.Description);
+                    //    }
+                    //    else if (error.Code.Equals("PasswordRequiresDigit"))
+                    //    {
+                    //        Notificar("Senha", error.Description);
+                    //    }
+                    //    else if (error.Code.Equals("PasswordRequiresNonAlphanumeric"))
+                    //    {
+                    //        Notificar("Senha", error.Description);
+                    //    }
+                    //    else if (error.Code.Equals("DuplicateUserName"))
+                    //    {
+                    //        Notificar("Email", error.Description);
+                    //    }
+                    //    else
+                    //    {
+                    //        Notificar("Senha", error.Description);
+                    //    }
+                    //}
+
+                    return new ResultUser<IdentityUser<Guid>>()
+                    {
+                        Status = false,
+                        Mensagem = mensagemErro
+                    };
+                }
+
+                return new ResultUser<IdentityUser<Guid>>()
+                {
+                    Status = true,
+                    Dados = usuario
+                };
             }
-            else
+            catch (Exception ex)
             {
-                return new ResultUser<IdentityUser<Guid>>
+                return new ResultUser<IdentityUser<Guid>>()
                 {
                     Status = false,
-                    Mensagem = string.Join("; ", result.Errors.Select(e => e.Description))
+                    Mensagem = $"Falha ao criar usuário: {ex.Message}"
                 };
             }
         }

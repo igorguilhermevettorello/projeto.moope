@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
 using Projeto.Moope.Core.Enums;
+using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Plano.Api.DTOs;
 using Projeto.Moope.Plano.Core.Interfaces.Services;
@@ -18,7 +19,7 @@ namespace Projeto.Moope.Plano.Api.Controllers
         private readonly IPlanoService _planoService;
         private readonly IMapper _mapper;
 
-        public PlanoController(IPlanoService planoService, IMapper mapper, INotificador notificador) : base(notificador)
+        public PlanoController(IPlanoService planoService, IMapper mapper, INotificador notificador, IUser appUser) : base(notificador, appUser)
         {
             _planoService = planoService;
             _mapper = mapper;

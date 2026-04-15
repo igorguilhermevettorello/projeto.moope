@@ -33,6 +33,9 @@ namespace Projeto.Moope.Vendedor.Infrastructure.Mapping
                 .HasForeignKey(v => v.VendedorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Property(u => u.EnderecoId)
+                .IsRequired(false);
+
             builder.ToTable("Vendedor");
         }
     }

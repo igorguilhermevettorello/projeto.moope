@@ -12,6 +12,7 @@ using Projeto.Moope.Auth.Application.Queries.Usuario.ObterPorId;
 using Projeto.Moope.Auth.Core.DTOs.Usuario;
 using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Notificacao;
+using Projeto.Moope.Core.Interfaces.Identity;
 
 namespace Projeto.Moope.Auth.Api.Controllers
 {
@@ -22,7 +23,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
     {
         private readonly IMediator _mediator;
 
-        public UsuarioController(INotificador notificador, IMediator mediator) : base(notificador)
+        public UsuarioController(INotificador notificador, IMediator mediator, IUser appUser) : base(notificador, appUser)
         {
             _mediator = mediator;
         }

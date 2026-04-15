@@ -3,10 +3,10 @@ using Projeto.Moope.Cliente.Api.Configurations;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddApiConfig(builder.Configuration);
+builder.Services.AddApiConfig();
 builder.Services.AddAuthConfig(builder.Configuration, builder.Environment);
 builder.Services.AddConectionConfig(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
 DependencyInjectionConfig.RegisterServices(builder.Services, builder.Configuration);
 
 var app = builder.Build();

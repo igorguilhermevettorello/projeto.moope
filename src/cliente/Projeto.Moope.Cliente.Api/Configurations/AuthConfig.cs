@@ -1,11 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Projeto.Moope.Cliente.Api.Utils;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
 
 namespace Projeto.Moope.Cliente.Api.Configurations
 {
@@ -20,7 +17,7 @@ namespace Projeto.Moope.Cliente.Api.Configurations
             services.Configure<JwtSettings>(jwtSettingsSection);
 
             var jwtSettings = jwtSettingsSection.Get<JwtSettings>()
-                ?? throw new InvalidOperationException("Seção de configuração 'Jwt' é obrigatória.");
+                ?? throw new InvalidOperationException("Seção Jwt é obrigatória.");
 
             var requireHttpsMetadata = !hostEnvironment.IsDevelopment();
 
@@ -76,6 +73,17 @@ namespace Projeto.Moope.Cliente.Api.Configurations
                                 });
 
                         var jwksUrl = $"{authority}/.well-known/jwks.json";
+
+                        HttpMessageHandler handler = hostEnvironment.IsDevelopment()
+                            ? new LoggingHandler
+                            {
+                                ServerCertificateCustomValidationCallback =
+                                    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                            }
+                            : new LoggingHandler();
+
+                        options.BackchannelHttpHandler = handler;
+
                         options.ConfigurationManager = configurationManager;
 
                         options.TokenValidationParameters = new TokenValidationParameters
@@ -90,10 +98,12 @@ namespace Projeto.Moope.Cliente.Api.Configurations
                                 authority,
                                 jwtSettings.Issuer?.TrimEnd('/') ?? authority
                             },
+
                             IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
                             {
-                                using var http = new HttpClient(backchannelHandler, disposeHandler: false);
+                                using var http = new HttpClient(handler, disposeHandler: false);
                                 var jwksJson = http.GetStringAsync(jwksUrl).GetAwaiter().GetResult();
+
                                 var jwks = new JsonWebKeySet(jwksJson);
                                 var keys = jwks.GetSigningKeys();
 

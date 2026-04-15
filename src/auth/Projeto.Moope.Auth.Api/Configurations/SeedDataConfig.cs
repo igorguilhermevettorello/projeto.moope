@@ -67,7 +67,6 @@ namespace Projeto.Moope.Auth.Api.Configurations
             var novoUsuario = new Usuario
             {
                 Nome = "Administrador do Sistema",
-                TipoUsuario = TipoUsuario.Administrador,
                 Id = user.Id,
                 Created = DateTime.UtcNow,
                 Updated = DateTime.UtcNow

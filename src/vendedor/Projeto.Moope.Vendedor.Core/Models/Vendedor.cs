@@ -24,6 +24,8 @@ namespace Projeto.Moope.Vendedor.Core.Models
 
         public DateTime Updated { get; set; }
 
+        public Guid? EnderecoId { get; set; }
+
         public Guid? VendedorId { get; set; }
 
         public Vendedor? VendedorPai { get; set; }

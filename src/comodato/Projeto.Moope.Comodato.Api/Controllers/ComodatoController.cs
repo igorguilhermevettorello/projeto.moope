@@ -5,6 +5,7 @@ using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Comodato.Api.DTOs;
 using Projeto.Moope.Comodato.Core.Interfaces.Services;
 using ComodatoModel = Projeto.Moope.Comodato.Core.Models.Comodato;
+using Projeto.Moope.Core.Interfaces.Identity;
 
 namespace Projeto.Moope.Comodato.Api.Controllers
 {
@@ -14,7 +15,7 @@ namespace Projeto.Moope.Comodato.Api.Controllers
     {
         private readonly IComodatoService _comodatoService;
 
-        public ComodatoController(IComodatoService comodatoService, INotificador notificador) : base(notificador)
+        public ComodatoController(IComodatoService comodatoService, INotificador notificador, IUser appUser) : base(notificador, appUser)
         {
             _comodatoService = comodatoService;
         }

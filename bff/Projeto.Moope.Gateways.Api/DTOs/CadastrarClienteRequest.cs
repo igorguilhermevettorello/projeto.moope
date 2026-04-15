@@ -25,7 +25,7 @@ namespace Projeto.Moope.Gateways.Api.DTOs
         public bool Ativo { get; set; } = true;
 
         [Required(ErrorMessage = "O endereço é obrigatório")]
-        public RepresentanteEnderecoRequest Endereco { get; set; } = null!;
+        public EnderecoRequest Endereco { get; set; } = null!;
 
         [Required(ErrorMessage = "O campo Senha é obrigatório")]
         [MinLength(6, ErrorMessage = "A senha deve ter no mínimo 6 caracteres")]

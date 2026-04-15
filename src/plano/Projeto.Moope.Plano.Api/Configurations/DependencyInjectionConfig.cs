@@ -1,4 +1,6 @@
 using AutoMapper;
+using Projeto.Moope.Api.Utils;
+using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Notifications;
 using Projeto.Moope.Plano.Api.Mappings;
@@ -18,6 +20,7 @@ namespace Projeto.Moope.Plano.Api.Configurations
             services.AddScoped<INotificador, Notificador>();
             services.AddScoped<IPlanoRepository, PlanoRepository>();
             services.AddScoped<IPlanoService, PlanoService>();
+            services.AddScoped<IUser, AspNetUser>();
         }
     }
 }
