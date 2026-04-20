@@ -1,9 +1,12 @@
 using Projeto.Moope.Core.Enums;
+using Projeto.Moope.Gateways.Core.DTOs.Endereco;
 
-namespace Projeto.Moope.Gateways.Core.Models
+namespace Projeto.Moope.Gateways.Core.DTOs.Vendedor
 {
-    public sealed class CadastrarRepresentanteInput
+    public sealed class VendedorUpdateDto
     {
+        public Guid Id { get; set; }
+
         public string Nome { get; set; } = string.Empty;
 
         public string Email { get; set; } = string.Empty;
@@ -14,20 +17,18 @@ namespace Projeto.Moope.Gateways.Core.Models
 
         public string Telefone { get; set; } = string.Empty;
 
-        public RepresentanteEnderecoInput Endereco { get; set; } = null!;
-
         public string? NomeFantasia { get; set; }
 
         public string? InscricaoEstadual { get; set; }
+
+        public Guid? VendedorId { get; set; }
 
         public decimal PercentualComissao { get; set; }
 
         public string ChavePix { get; set; } = string.Empty;
 
-        public string Senha { get; set; } = string.Empty;
-
-        public string Confirmacao { get; set; } = string.Empty;
-
         public string CodigoCupom { get; set; } = string.Empty;
+
+        public EnderecoUpdateDto? Endereco { get; set; }
     }
 }

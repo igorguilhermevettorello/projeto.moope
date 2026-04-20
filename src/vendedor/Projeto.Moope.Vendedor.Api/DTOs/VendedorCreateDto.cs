@@ -3,7 +3,7 @@ using Projeto.Moope.Core.Enums;
 
 namespace Projeto.Moope.Vendedor.Api.DTOs
 {
-    public class CriarVendedorDto
+    public class VendedorCreateDto
     {
         [Required(ErrorMessage = "O campo usuário é obrigatório")]
         public Guid? UsuarioId { get; set; }

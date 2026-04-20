@@ -50,7 +50,7 @@ namespace Projeto.Moope.Vendedor.Api.Controllers
                 return CustomResponse(ModelState);
             }
 
-            var vendedor = await _vendedorService.BuscarVendedorPorIdComDadosAsync<VendedorDetalheDto>(id);
+            var vendedor = await _vendedorService.BuscarVendedorPorIdComDadosAsync<VendedorDetailDto>(id);
 
             if (vendedor == null)
             {
@@ -58,12 +58,6 @@ namespace Projeto.Moope.Vendedor.Api.Controllers
             }
 
             return Ok(vendedor);
-
-            //var vendedor = await _vendedorService.BuscarPorIdAsNotrackingAsync(id);
-            //if (vendedor == null)
-            //    return NotFound();
-
-            //return Ok(MapToResponseDto(vendedor));
         }
 
         [HttpGet("cupom/{codigoCupom}")]
@@ -86,7 +80,7 @@ namespace Projeto.Moope.Vendedor.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Criar([FromBody] CriarVendedorDto dto)
+        public async Task<IActionResult> Criar([FromBody] VendedorCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
@@ -117,7 +111,7 @@ namespace Projeto.Moope.Vendedor.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Atualizar(Guid id, [FromBody] AlterarVendedorDto dto)
+        public async Task<IActionResult> Atualizar(Guid id, [FromBody] VendedorUpdateDto dto)
         {
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
@@ -156,6 +150,36 @@ namespace Projeto.Moope.Vendedor.Api.Controllers
                 return NotFound();
 
             await _vendedorService.RemoverAsync(id);
+            return NoContent();
+        }
+
+        [HttpPatch("{vendedorId}/endereco/{enderecoId}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> AtualizarEndereco(Guid vendedorId, Guid enderecoId)
+        {
+            if (vendedorId == Guid.Empty || enderecoId == Guid.Empty)
+            {
+                ModelState.AddModelError("Id", "Usuário e o Endereço são obrigatórios.");
+                return CustomResponse(ModelState);
+            }
+
+            var result = await _vendedorService.AtualizarEndereco(vendedorId, enderecoId);
+
+            if (!result.Status)
+            {
+                NotificarErro("Mensagem", result.Mensagem ?? "Erro ao atualizar endereço do usuário");
+
+                if (string.Equals(result.Mensagem, "Usuário não encontrado", StringComparison.OrdinalIgnoreCase))
+                    return NotFound(result.Mensagem);
+
+                return CustomResponse();
+            }
+
             return NoContent();
         }
 

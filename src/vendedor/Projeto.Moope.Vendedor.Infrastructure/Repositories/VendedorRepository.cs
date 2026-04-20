@@ -131,6 +131,7 @@ namespace Projeto.Moope.Vendedor.Infrastructure.Repositories
                        v.ChavePix as ChavePix,
                        v.PercentualComissao as PercentualComissao,
                        v.CodigoCupom as CodigoCupom,
+                       v.EnderecoId as EnderecoId,
                        pj.NomeFantasia as NomeFantasia,
                        pj.InscricaoEstadual as InscricaoEstadual
                 FROM Vendedor v

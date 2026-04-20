@@ -1,3 +1,4 @@
+using Microsoft.IdentityModel.Tokens;
 using Projeto.Moope.Core.DTOs;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Services;
@@ -78,6 +79,37 @@ namespace Projeto.Moope.Vendedor.Core.Services
         {
             await _vendedorRepository.RemoverAsync(id);
             return true;
+        }
+
+        public async Task<Result> AtualizarEndereco(Guid vendedorId, Guid enderecoId)
+        {
+            try
+            {
+                if (vendedorId == Guid.Empty || enderecoId == Guid.Empty)
+                {
+                    return new Result { Status = false, Mensagem = "Cliente ou endereço inválidos" };
+                }
+
+                var vendedor = await _vendedorRepository.BuscarPorIdAsync(vendedorId);
+                if (vendedor == null || vendedor.Id == Guid.Empty)
+                {
+                    return new Result { Status = false, Mensagem = "Usuário não encontrado" };
+                }
+
+                vendedor.Updated = DateTime.UtcNow;
+                vendedor.EnderecoId = enderecoId;
+
+                await _vendedorRepository.AtualizarAsync(vendedor);
+
+                _ = await _vendedorRepository.UnitOfWork.Commit();
+
+                return new Result { Status = true };
+            }
+
+            catch (Exception)
+            {
+                return new Result { Status = false, Mensagem = "Erro ao atualizar endereço do usuário" };
+            } 
         }
     }
 }

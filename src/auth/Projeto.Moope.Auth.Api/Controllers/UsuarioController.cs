@@ -147,41 +147,41 @@ namespace Projeto.Moope.Auth.Api.Controllers
             return NoContent();
         }
 
-        [HttpPatch("{usuarioId}/endereco/{enderecoId}")]
-        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> AtualizarEndereco(Guid usuarioId, Guid enderecoId)
-        {
-            if (usuarioId == Guid.Empty || enderecoId == Guid.Empty)
-            {
-                ModelState.AddModelError("Id", "UsuarioId e EnderecoId são obrigatórios.");
-                return CustomResponse(ModelState);
-            }
+        //[HttpPatch("{usuarioId}/endereco/{enderecoId}")]
+        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        //[ProducesResponseType(StatusCodes.Status204NoContent)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //[ProducesResponseType(StatusCodes.Status404NotFound)]
+        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
+        //public async Task<IActionResult> AtualizarEndereco(Guid usuarioId, Guid enderecoId)
+        //{
+        //    if (usuarioId == Guid.Empty || enderecoId == Guid.Empty)
+        //    {
+        //        ModelState.AddModelError("Id", "UsuarioId e EnderecoId são obrigatórios.");
+        //        return CustomResponse(ModelState);
+        //    }
 
-            var command = new AtualizarEnderecoUsuarioCommand
-            {
-                UsuarioId = usuarioId,
-                EnderecoId = enderecoId
-            };
+        //    var command = new AtualizarEnderecoUsuarioCommand
+        //    {
+        //        UsuarioId = usuarioId,
+        //        EnderecoId = enderecoId
+        //    };
 
-            var result = await _mediator.Send(command);
+        //    var result = await _mediator.Send(command);
 
-            if (!result.Status)
-            {
-                NotificarErro("Mensagem", result.Mensagem ?? "Erro ao atualizar endereço do usuário");
+        //    if (!result.Status)
+        //    {
+        //        NotificarErro("Mensagem", result.Mensagem ?? "Erro ao atualizar endereço do usuário");
 
-                if (string.Equals(result.Mensagem, "Usuário não encontrado", StringComparison.OrdinalIgnoreCase))
-                    return NotFound(result.Mensagem);
+        //        if (string.Equals(result.Mensagem, "Usuário não encontrado", StringComparison.OrdinalIgnoreCase))
+        //            return NotFound(result.Mensagem);
 
-                return CustomResponse();
-            }
+        //        return CustomResponse();
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         [HttpPost("alterar-senha")]
         [Authorize]

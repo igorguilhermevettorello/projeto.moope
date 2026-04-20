@@ -1,8 +1,9 @@
-using Projeto.Moope.Core.Enums;
+﻿using Projeto.Moope.Core.Enums;
+using Projeto.Moope.Gateways.Core.DTOs.Endereco;
 
-namespace Projeto.Moope.Gateways.Core.Models
+namespace Projeto.Moope.Gateways.Core.DTOs.Cliente
 {
-    public sealed class CadastrarClienteInput
+    public class ClienteCreateDto
     {
         public string Nome { get; set; } = string.Empty;
 
@@ -16,7 +17,7 @@ namespace Projeto.Moope.Gateways.Core.Models
 
         public bool Ativo { get; set; } = true;
 
-        public RepresentanteEnderecoInput Endereco { get; set; } = null!;
+        public EnderecoCreateDto Endereco { get; set; } = null!;
 
         public string Senha { get; set; } = string.Empty;
 

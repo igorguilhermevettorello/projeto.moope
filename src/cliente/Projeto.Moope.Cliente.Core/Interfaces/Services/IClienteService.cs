@@ -20,5 +20,7 @@ namespace Projeto.Moope.Cliente.Core.Interfaces.Services
         Task<IEnumerable<T>> BuscarClientesComDadosAsync<T>();
         Task<T?> BuscarClientePorIdComDadosAsync<T>(Guid id);
         Task<bool> RemoverAsync(Guid id);
+
+        Task<Result> AtualizarEndereco(Guid clienteId, Guid enderecoId);
     }
 }

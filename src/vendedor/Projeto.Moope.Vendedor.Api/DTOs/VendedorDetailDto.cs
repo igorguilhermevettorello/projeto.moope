@@ -1,6 +1,6 @@
 ﻿namespace Projeto.Moope.Vendedor.Api.DTOs
 {
-    public class VendedorDetalheDto
+    public class VendedorDetailDto
     {
         public Guid Id { get; set; }
         public required string Nome { get; set; }
@@ -14,6 +14,9 @@
         public string? NomeFantasia { get; set; }
         public string? InscricaoEstadual { get; set; }
         public string? CodigoCupom { get; set; }
+
+        public Guid? EnderecoId { get; set; }
+
         // public EnderecoDetalheDto? Endereco { get; set; }
         public string Cep { get; set; }
         public string Logradouro { get; set; }

@@ -1,10 +1,11 @@
-using Projeto.Moope.Api.Attributes;
+﻿using Projeto.Moope.Api.Attributes;
 using Projeto.Moope.Core.Enums;
+using Projeto.Moope.Gateways.Core.DTOs.Endereco;
 using System.ComponentModel.DataAnnotations;
 
-namespace Projeto.Moope.Gateways.Api.DTOs
+namespace Projeto.Moope.Gateways.Api.DTOs.Cliente
 {
-    public class CadastrarClienteRequest
+    public class ClienteCreateRequestDto
     {
         [Required(ErrorMessage = "O campo Nome é obrigatório")]
         public string Nome { get; set; } = string.Empty;
@@ -25,7 +26,7 @@ namespace Projeto.Moope.Gateways.Api.DTOs
         public bool Ativo { get; set; } = true;
 
         [Required(ErrorMessage = "O endereço é obrigatório")]
-        public EnderecoRequest Endereco { get; set; } = null!;
+        public EnderecoCreateDto Endereco { get; set; } = null!;
 
         [Required(ErrorMessage = "O campo Senha é obrigatório")]
         [MinLength(6, ErrorMessage = "A senha deve ter no mínimo 6 caracteres")]

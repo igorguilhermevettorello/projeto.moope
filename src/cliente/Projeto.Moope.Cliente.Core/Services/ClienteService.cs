@@ -1,4 +1,5 @@
-﻿using Projeto.Moope.Cliente.Core.Interfaces.Repositories;
+﻿using MediatR;
+using Projeto.Moope.Cliente.Core.Interfaces.Repositories;
 using Projeto.Moope.Cliente.Core.Interfaces.Services;
 using Projeto.Moope.Core.DTOs;
 using Projeto.Moope.Core.Interfaces.Notificacao;
@@ -78,6 +79,33 @@ namespace Projeto.Moope.Cliente.Core.Services
         {
             await _clienteRepository.RemoverAsync(id);
             return true;
+        }
+
+        public async Task<Result> AtualizarEndereco(Guid clienteId, Guid enderecoId)
+        {
+            if (clienteId == Guid.Empty || enderecoId == Guid.Empty)
+            {
+                return new Result { Status = false, Mensagem = "Cliente ou endereço inválidos" };
+            }
+
+            var cliente = await _clienteRepository.BuscarPorIdAsync(clienteId);
+            if (cliente == null || cliente.Id == Guid.Empty)
+            {
+                return new Result { Status = false, Mensagem = "Usuário não encontrado" };
+            }
+
+            cliente.Updated = DateTime.UtcNow;
+            cliente.EnderecoId = enderecoId;
+
+            await _clienteRepository.AtualizarAsync(cliente);
+
+            var commitSucesso = await _clienteRepository.UnitOfWork.Commit();
+            if (!commitSucesso)
+            {
+                return new Result { Status = false, Mensagem = "Erro ao atualizar endereço do usuário" };
+            }
+
+            return new Result { Status = true };
         }
     }
 }

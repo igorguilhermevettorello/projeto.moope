@@ -23,30 +23,6 @@ namespace Projeto.Moope.Auth.Core.Services
             string telefone = null,
             TipoUsuario tipoUsuario = TipoUsuario.Cliente)
         {
-            //var identityUser = new IdentityUser<Guid>
-            //{
-            //    UserName = email,
-            //    Email = email,
-            //    PhoneNumber = telefone
-            //};
-
-            //var result = await _userManager.CreateAsync(identityUser, senha);
-
-            //if (result.Succeeded)
-            //{
-            //    // Optionally add to role based on TipoUsuario
-            //    await _userManager.AddToRoleAsync(identityUser, tipoUsuario.ToString());
-
-            //    return new ResultUser<IdentityUser<Guid>> { Status = true, Dados = identityUser };
-            //}
-            //else
-            //{
-            //    return new ResultUser<IdentityUser<Guid>>
-            //    {
-            //        Status = false,
-            //        Mensagem = string.Join("; ", result.Errors.Select(e => e.Description))
-            //    };
-            //}
             try
             {
                 var usuario = new IdentityUser<Guid>
@@ -64,10 +40,7 @@ namespace Projeto.Moope.Auth.Core.Services
                 var usuarioExiste = await _userManager.FindByEmailAsync(email);
                 if (usuarioExiste != null)
                 {
-                    //var clienteExistente = await _clienteRepository.BuscarPorIdAsync(usuarioExiste.Id);
-                    //var vendedorExistente = await _vendedorRepository.BuscarPorIdAsync(usuarioExiste.Id);
                     var rs = await _userManager.GetRolesAsync(usuarioExiste);
-
                     if (tipoUsuario == TipoUsuario.Vendedor && rs.Contains(TipoUsuario.Vendedor.ToString()))
                     {                        
                         return new ResultUser<IdentityUser<Guid>>()

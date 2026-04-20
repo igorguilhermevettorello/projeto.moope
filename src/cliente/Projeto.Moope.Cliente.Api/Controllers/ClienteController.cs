@@ -57,19 +57,19 @@ namespace Projeto.Moope.Cliente.Api.Controllers
             return Ok(cliente);
         }
 
-        [HttpGet("cupom/{codigoCupom}")]
-        [AllowAnonymous]
-        [ProducesResponseType(typeof(ClienteResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> BuscarPorCodigoCupom(string codigoCupom)
-        {
-            var cliente = await _clienteService.BuscarPorCodigoCupomAsync(codigoCupom);
-            if (cliente == null)
-                return NotFound();
+        //[HttpGet("cupom/{codigoCupom}")]
+        //[AllowAnonymous]
+        //[ProducesResponseType(typeof(ClienteResponseDto), StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status404NotFound)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult> BuscarPorCodigoCupom(string codigoCupom)
+        //{
+        //    var cliente = await _clienteService.BuscarPorCodigoCupomAsync(codigoCupom);
+        //    if (cliente == null)
+        //        return NotFound();
 
-            return Ok(MapToResponseDto(cliente));
-        }
+        //    return Ok(MapToResponseDto(cliente));
+        //}
 
         [HttpPost]
         [Authorize(Roles = nameof(TipoUsuario.Administrador))]
@@ -141,6 +141,36 @@ namespace Projeto.Moope.Cliente.Api.Controllers
                 return NotFound();
 
             await _clienteService.RemoverAsync(id);
+            return NoContent();
+        }
+
+        [HttpPatch("{clienteId}/endereco/{enderecoId}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> AtualizarEndereco(Guid clienteId, Guid enderecoId)
+        {
+            if (clienteId == Guid.Empty || enderecoId == Guid.Empty)
+            {
+                ModelState.AddModelError("Id", "Usuário e o Endereço são obrigatórios.");
+                return CustomResponse(ModelState);
+            }
+
+            var result = await _clienteService.AtualizarEndereco(clienteId, enderecoId);
+
+            if (!result.Status)
+            {
+                NotificarErro("Mensagem", result.Mensagem ?? "Erro ao atualizar endereço do usuário");
+
+                if (string.Equals(result.Mensagem, "Usuário não encontrado", StringComparison.OrdinalIgnoreCase))
+                    return NotFound(result.Mensagem);
+
+                return CustomResponse();
+            }
+
             return NoContent();
         }
 

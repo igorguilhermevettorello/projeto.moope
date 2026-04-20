@@ -1,7 +1,8 @@
-namespace Projeto.Moope.Gateways.Core.Models
+﻿namespace Projeto.Moope.Gateways.Core.DTOs.Endereco
 {
-    public sealed class RepresentanteEnderecoInput
+    public class EnderecoUpdateDto
     {
+        public Guid Id { get; set; }
         public string Cep { get; set; } = string.Empty;
 
         public string Logradouro { get; set; } = string.Empty;

@@ -1,9 +1,12 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Projeto.Moope.Gateways.Api.DTOs
+namespace Projeto.Moope.Gateways.Api.DTOs.Endereco
 {
-    public class EnderecoRequest
+    public class EnderecoUpdateRequestDto
     {
+        [Required(ErrorMessage = "O campo Id é obrigatório")]
+        public Guid Id { get; set; }
+
         [Required(ErrorMessage = "O campo CEP é obrigatório")]
         public string Cep { get; set; } = string.Empty;
 

@@ -4,9 +4,10 @@ using Projeto.Moope.Api.Controllers;
 using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
-using Projeto.Moope.Gateways.Api.DTOs;
-using Projeto.Moope.Gateways.Core.Models;
-using Projeto.Moope.Gateways.Core.Services;
+using Projeto.Moope.Gateways.Api.DTOs.Cliente;
+using Projeto.Moope.Gateways.Core.DTOs.Cliente;
+using Projeto.Moope.Gateways.Core.DTOs.Endereco;
+using Projeto.Moope.Gateways.Core.Interfaces.Services;
 
 namespace Projeto.Moope.Gateways.Api.Controllers
 {
@@ -15,54 +16,51 @@ namespace Projeto.Moope.Gateways.Api.Controllers
     [Authorize]
     public class ClienteBffController : MainController
     {
-        private readonly ICadastroClienteOrchestrator _orchestrator;
+        private readonly IClienteCreateService _clienteCreateService;
 
         public ClienteBffController(
-            ICadastroClienteOrchestrator orchestrator,
+            IClienteCreateService clienteCreateService,
             INotificador notificador,
             IUser appUser)
             : base(notificador, appUser)
         {
-            _orchestrator = orchestrator;
+            _clienteCreateService = clienteCreateService;
         }
 
         [HttpPost("cadastro")]
         [Authorize(Roles = nameof(TipoUsuario.Administrador))]
-        [ProducesResponseType(typeof(CadastroClienteCompostoResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ClienteCreateResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status502BadGateway)]
-        public async Task<IActionResult> CadastrarComposto(
-            [FromBody] CadastrarClienteRequest request,
-            CancellationToken cancellationToken)
+        public async Task<IActionResult> CadastrarComposto([FromBody] ClienteCreateRequestDto request, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
 
             var authorizationHeader = Request.Headers.Authorization.ToString();
-            var resultado = await _orchestrator.ExecutarAsync(
+            var resultado = await _clienteCreateService.ExecutarAsync(
                 MapearParaInput(request),
                 authorizationHeader,
                 cancellationToken);
 
-            if (!resultado.Sucesso)
-                return StatusCode(resultado.StatusCode, resultado.CorpoErro);
+            if (!resultado.Status)
+                return StatusCode(resultado.StatusCode, resultado.Mensagem);
 
             if (resultado.Dados == null)
                 return StatusCode(StatusCodes.Status502BadGateway, new { mensagem = "Resposta invalida da orquestracao." });
 
-            return StatusCode(StatusCodes.Status201Created, new CadastroClienteCompostoResponse
+            return StatusCode(StatusCodes.Status201Created, new ClienteCreateResponseDto
             {
                 ClienteId = resultado.Dados.ClienteId,
-                UsuarioId = resultado.Dados.UsuarioId,
                 EnderecoId = resultado.Dados.EnderecoId
             });
         }
 
-        private static CadastrarClienteInput MapearParaInput(CadastrarClienteRequest request)
+        private static ClienteCreateDto MapearParaInput(ClienteCreateRequestDto request)
         {
-            return new CadastrarClienteInput
+            return new ClienteCreateDto
             {
                 Nome = request.Nome,
                 Email = request.Email,
@@ -70,7 +68,7 @@ namespace Projeto.Moope.Gateways.Api.Controllers
                 CpfCnpj = request.CpfCnpj,
                 Telefone = request.Telefone,
                 Ativo = request.Ativo,
-                Endereco = new RepresentanteEnderecoInput
+                Endereco = new EnderecoCreateDto
                 {
                     Cep = request.Endereco.Cep,
                     Logradouro = request.Endereco.Logradouro,
