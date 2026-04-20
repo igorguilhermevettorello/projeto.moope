@@ -47,3 +47,8 @@ dotnet ef migrations script --project src/vendedor/Projeto.Moope.Vendedor.Infras
 
 dotnet ef migrations add AjusteColunas --project src/vendedor/Projeto.Moope.Vendedor.Infrastructure/Projeto.Moope.Vendedor.Infrastructure.csproj --startup-project src/vendedor/Projeto.Moope.Vendedor.Api/Projeto.Moope.Vendedor.Api.csproj --context AppVendedorContext --output-dir Migrations
 dotnet ef migrations script --project src/vendedor/Projeto.Moope.Vendedor.Infrastructure/Projeto.Moope.Vendedor.Infrastructure.csproj --startup-project src/vendedor/Projeto.Moope.Vendedor.Api/Projeto.Moope.Vendedor.Api.csproj --context AppVendedorContext --output src/vendedor/Projeto.Moope.Vendedor.Infrastructure/Scripts/AppVendedorDbContext_AjusteColunas_migrations.sql
+
+
+# Pedido
+dotnet ef migrations add <NomeMigration> --project "src/pedido/Projeto.Moope.Pedido.Infrastructure/Projeto.Moope.Pedido.Infrastructure.csproj" --startup-project "src/pedido/Projeto.Moope.Pedido.Api/Projeto.Moope.Pedido.Api.csproj" --context "Projeto.Moope.Pedido.Infrastructure.Data.AppPedidoContext" --output-dir "Migrations"
+dotnet ef migrations script --project "src/pedido/Projeto.Moope.Pedido.Infrastructure/Projeto.Moope.Pedido.Infrastructure.csproj" --startup-project "src/pedido/Projeto.Moope.Pedido.Api/Projeto.Moope.Pedido.Api.csproj" --context "Projeto.Moope.Pedido.Infrastructure.Data.AppPedidoContext" --output "src/pedido/Projeto.Moope.Pedido.Infrastructure/Scripts/AppPedidoDbContext_migrations.sql"

@@ -18,6 +18,6 @@ namespace Projeto.Moope.Pedido.Core.Models
         public string MetodoPagamento { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
-        public Pedido Pedido { get; set; }
+        public Pedido Pedido { get; set; } = null!;
     }
 }

@@ -1,27 +1,17 @@
-﻿using Projeto.Moope.Core.Models;
-using Projeto.Moope.Core.Interfaces.Data;
 using Projeto.Moope.Pedido.Core.Enums;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Projeto.Moope.Pedido.Core.Models
+namespace Projeto.Moope.Pedido.Api.DTOs
 {
-    [Table("Pedido")]
-    public class Pedido : Entity, IAggregateRoot
+    public class PedidoResponseDto
     {
+        public Guid Id { get; set; }
         public Guid ClienteId { get; set; }
         public Guid? VendedorId { get; set; }
         public Guid PlanoId { get; set; }
         public int Quantidade { get; set; }
-
-        // Snapshot do plano no momento da venda
         public decimal PlanoValor { get; set; }
-        public string PlanoDescricao { get; set; }
-        public string PlanoCodigo { get; set; }
+        public string PlanoDescricao { get; set; } = string.Empty;
+        public string PlanoCodigo { get; set; } = string.Empty;
         public decimal PlanoTaxaAdesao { get; set; }
         public decimal PlanoPercentualDesconto { get; set; }
         public decimal PlanoValorComDesconto { get; set; }
@@ -33,7 +23,8 @@ namespace Projeto.Moope.Pedido.Core.Models
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
 
-        public ICollection<Transacao> Transacoes { get; set; } = new List<Transacao>();
-        public Desconto? Desconto { get; set; }
+        public DescontoDto? Desconto { get; set; }
+        public List<TransacaoDto>? Transacoes { get; set; }
     }
 }
+
