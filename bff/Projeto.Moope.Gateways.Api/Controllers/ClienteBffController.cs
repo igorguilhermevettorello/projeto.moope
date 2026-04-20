@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
@@ -6,7 +7,6 @@ using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Gateways.Api.DTOs.Cliente;
 using Projeto.Moope.Gateways.Core.DTOs.Cliente;
-using Projeto.Moope.Gateways.Core.DTOs.Endereco;
 using Projeto.Moope.Gateways.Core.Interfaces.Services;
 
 namespace Projeto.Moope.Gateways.Api.Controllers
@@ -16,32 +16,44 @@ namespace Projeto.Moope.Gateways.Api.Controllers
     [Authorize]
     public class ClienteBffController : MainController
     {
+        private readonly IMapper _mapper;
         private readonly IClienteCreateService _clienteCreateService;
+        private readonly IClienteGetByIdService _clienteGetByIdService;
+        private readonly IClienteUpdateService _clienteUpdateService;
+        private readonly IClienteDeleteService _clienteDeleteService;
 
         public ClienteBffController(
+            IMapper mapper,
             IClienteCreateService clienteCreateService,
+            IClienteGetByIdService clienteGetByIdService,
+            IClienteUpdateService clienteUpdateService,
+            IClienteDeleteService clienteDeleteService,
             INotificador notificador,
             IUser appUser)
             : base(notificador, appUser)
         {
+            _mapper = mapper;
             _clienteCreateService = clienteCreateService;
+            _clienteGetByIdService = clienteGetByIdService;
+            _clienteUpdateService = clienteUpdateService;
+            _clienteDeleteService = clienteDeleteService;
         }
 
-        [HttpPost("cadastro")]
+        [HttpPost]
         [Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(typeof(ClienteCreateResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status502BadGateway)]
-        public async Task<IActionResult> CadastrarComposto([FromBody] ClienteCreateRequestDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Cadastrar([FromBody] ClienteCreateRequestDto request, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
 
             var authorizationHeader = Request.Headers.Authorization.ToString();
             var resultado = await _clienteCreateService.ExecutarAsync(
-                MapearParaInput(request),
+                _mapper.Map<ClienteCreateDto>(request),
                 authorizationHeader,
                 cancellationToken);
 
@@ -58,32 +70,76 @@ namespace Projeto.Moope.Gateways.Api.Controllers
             });
         }
 
-        private static ClienteCreateDto MapearParaInput(ClienteCreateRequestDto request)
+        [HttpGet("{id:guid}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(typeof(ClienteDetailDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status502BadGateway)]
+        public async Task<IActionResult> ObterPorId(Guid id, CancellationToken cancellationToken)
         {
-            return new ClienteCreateDto
-            {
-                Nome = request.Nome,
-                Email = request.Email,
-                TipoPessoa = request.TipoPessoa,
-                CpfCnpj = request.CpfCnpj,
-                Telefone = request.Telefone,
-                Ativo = request.Ativo,
-                Endereco = new EnderecoCreateDto
-                {
-                    Cep = request.Endereco.Cep,
-                    Logradouro = request.Endereco.Logradouro,
-                    Numero = request.Endereco.Numero,
-                    Complemento = request.Endereco.Complemento,
-                    Bairro = request.Endereco.Bairro,
-                    Cidade = request.Endereco.Cidade,
-                    Estado = request.Endereco.Estado
-                },
-                Senha = request.Senha,
-                Confirmacao = request.Confirmacao,
-                NomeFantasia = request.NomeFantasia,
-                InscricaoEstadual = request.InscricaoEstadual,
-                VendedorId = request.VendedorId
-            };
+            var authorizationHeader = Request.Headers.Authorization.ToString();
+            var resultado = await _clienteGetByIdService.ExecutarAsync(id, authorizationHeader, cancellationToken);
+
+            if (!resultado.Status)
+                return StatusCode(resultado.StatusCode, resultado.Mensagem);
+
+            if (resultado.Dados == null)
+                return StatusCode(StatusCodes.Status502BadGateway, new { mensagem = "Resposta invalida da orquestracao." });
+
+            return Ok(resultado.Dados);
+        }
+
+        [HttpPut("{id:guid}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(typeof(ClienteDetailDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status502BadGateway)]
+        public async Task<IActionResult> Atualizar(Guid id, [FromBody] ClienteUpdateRequestDto request, CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
+                return CustomResponse(ModelState);
+
+            if (id != request.Id)
+                return BadRequest("O Id da URL deve corresponder ao Id do corpo.");
+
+            var authorizationHeader = Request.Headers.Authorization.ToString();
+            var resultado = await _clienteUpdateService.ExecutarAsync(
+                _mapper.Map<ClienteUpdateDto>(request),
+                authorizationHeader,
+                cancellationToken);
+
+            if (!resultado.Status)
+                return StatusCode(resultado.StatusCode, resultado.Mensagem);
+
+            if (resultado.Dados == null)
+                return StatusCode(StatusCodes.Status502BadGateway, new { mensagem = "Resposta invalida da orquestracao." });
+
+            return Ok(resultado.Dados);
+        }
+
+        [HttpDelete("{id:guid}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status502BadGateway)]
+        public async Task<IActionResult> Remover(Guid id, CancellationToken cancellationToken)
+        {
+            var authorizationHeader = Request.Headers.Authorization.ToString();
+            var resultado = await _clienteDeleteService.ExecutarAsync(id, authorizationHeader, cancellationToken);
+
+            if (!resultado.Status)
+                return StatusCode(resultado.StatusCode, resultado.Mensagem);
+
+            return NoContent();
         }
     }
 }

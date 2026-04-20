@@ -21,7 +21,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddApiConfig();
 builder.Services.AddAuthConfig(builder.Configuration, builder.Environment);
 
-builder.Services.AddAutoMapper(cfg => cfg.AddProfile<VendedorMappingProfile>());
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<VendedorMappingProfile>();
+    cfg.AddProfile<ClienteMappingProfile>();
+});
 
 builder.Services.Configure<DownstreamApisOptions>(
     builder.Configuration.GetSection(DownstreamApisOptions.SectionName));
@@ -30,6 +34,9 @@ builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<INotificador, Notificador>();
 builder.Services.AddScoped<IClienteCreateService, ClienteCreateService>();
+builder.Services.AddScoped<IClienteGetByIdService, ClienteGetByIdService>();
+builder.Services.AddScoped<IClienteUpdateService, ClienteUpdateService>();
+builder.Services.AddScoped<IClienteDeleteService, ClienteDeleteService>();
 builder.Services.AddScoped<IVendedorCreateService, VendedorCreateService>();
 builder.Services.AddScoped<IVendedorGetByIdService, VendedorGetByIdService>();
 builder.Services.AddScoped<IVendedorUpdateService, VendedorUpdateService>();

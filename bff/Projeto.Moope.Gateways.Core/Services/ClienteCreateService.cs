@@ -48,7 +48,6 @@ namespace Projeto.Moope.Gateways.Core.Services
 
             var httpClient = _httpClientFactory.CreateClient();
 
-            // 1. Criar usuário no serviço Auth
             var authUrl = Utils.Combine(_apis.Auth, "/api/usuario");
             var usuarioBody = new
             {
@@ -77,7 +76,7 @@ namespace Projeto.Moope.Gateways.Core.Services
                     Status = false,
                     StatusCode = rs.StatusCode,
                     Dados = null,
-                    Mensagem = $"Falha ao criar usuario no servico Auth: {rs.Mensagem}"
+                    Mensagem = rs.Mensagem ?? "Erro desconhecido ao criar usuario."
                 };
             }
                 
@@ -94,7 +93,6 @@ namespace Projeto.Moope.Gateways.Core.Services
                 };
             }
 
-            // 2. Criar cliente no serviço Cliente
             var clienteUrl = Utils.Combine(_apis.Cliente, "/api/cliente");
             var clienteBody = new
             {
@@ -120,7 +118,7 @@ namespace Projeto.Moope.Gateways.Core.Services
                     Status = false,
                     StatusCode = rs.StatusCode,
                     Dados = null,
-                    Mensagem = $"Falha ao criar cliente no servico Cliente: {rs.Mensagem}"
+                    Mensagem = rs.Mensagem ?? "Erro desconhecido ao criar cliente."
                 };  
             }
             
@@ -137,7 +135,6 @@ namespace Projeto.Moope.Gateways.Core.Services
                 };
             }
 
-            // 3. Criar endereço no serviço Endereco
             var enderecoUrl = Utils.Combine(_apis.Endereco, "/api/endereco");
             var enderecoBody = new
             {
@@ -163,7 +160,7 @@ namespace Projeto.Moope.Gateways.Core.Services
                     Status = false,
                     StatusCode = rs.StatusCode,
                     Dados = null,
-                    Mensagem = $"Falha ao criar endereco no servico Endereco: {rs.Mensagem}"
+                    Mensagem = rs.Mensagem ?? "Erro desconhecido ao criar endereco."
                 };
             }
             
@@ -180,8 +177,7 @@ namespace Projeto.Moope.Gateways.Core.Services
                 };
             }
 
-            // 4. Associar endereço ao usuário
-            var atualizarEnderecoUrl = Utils.Combine(_apis.Auth, $"/api/usuario/{usuarioId}/endereco/{enderecoId}");
+            var atualizarEnderecoUrl = Utils.Combine(_apis.Cliente, $"/api/cliente/{clienteId}/endereco/{enderecoId}");
             using var atualizarEnderecoRequest = new HttpRequestMessage(HttpMethod.Patch, atualizarEnderecoUrl);
             Utils.AplicarAutorizacao(atualizarEnderecoRequest, authorizationHeader);
 
@@ -194,7 +190,7 @@ namespace Projeto.Moope.Gateways.Core.Services
                     Status = false,
                     StatusCode = rs.StatusCode,
                     Dados = null,
-                    Mensagem = $"Falha ao associar endereco ao usuario no servico Auth: {rs.Mensagem}"
+                    Mensagem = rs.Mensagem ?? "Erro desconhecido ao atualizar endereco."
                 };  
             }
             

@@ -1,12 +1,15 @@
-﻿using Projeto.Moope.Api.Attributes;
+using Projeto.Moope.Api.Attributes;
 using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Gateways.Api.DTOs.Endereco;
 using System.ComponentModel.DataAnnotations;
 
 namespace Projeto.Moope.Gateways.Api.DTOs.Cliente
 {
-    public class ClienteCreateRequestDto
+    public sealed class ClienteUpdateRequestDto
     {
+        [Required(ErrorMessage = "O campo Id é obrigatório")]
+        public Guid Id { get; set; }
+
         [Required(ErrorMessage = "O campo Nome é obrigatório")]
         public string Nome { get; set; } = string.Empty;
 
@@ -23,22 +26,11 @@ namespace Projeto.Moope.Gateways.Api.DTOs.Cliente
         [Required(ErrorMessage = "O campo Telefone é obrigatório")]
         public string Telefone { get; set; } = string.Empty;
 
-        public bool Ativo { get; set; } = true;
+        public string? NomeFantasia { get; set; }
 
-        [Required(ErrorMessage = "O endereço é obrigatório")]
-        public EnderecoCreateRequestDto Endereco { get; set; } = null!;
+        public string? InscricaoEstadual { get; set; }
 
-        [Required(ErrorMessage = "O campo Senha é obrigatório")]
-        [MinLength(6, ErrorMessage = "A senha deve ter no mínimo 6 caracteres")]
-        public string Senha { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "O campo Confirmação é obrigatório")]
-        [Compare("Senha", ErrorMessage = "A confirmação deve ser igual à senha")]
-        public string Confirmacao { get; set; } = string.Empty;
-
-        public string NomeFantasia { get; set; } = string.Empty;
-
-        public string InscricaoEstadual { get; set; } = string.Empty;
+        public Guid? VendedorId { get; set; }
 
         [Required(ErrorMessage = "O percentual de comissão é obrigatório")]
         [Range(0, 100, ErrorMessage = "O percentual deve estar entre 0 e 100")]
@@ -52,6 +44,7 @@ namespace Projeto.Moope.Gateways.Api.DTOs.Cliente
         [MaxLength(100)]
         public string CodigoCupom { get; set; } = string.Empty;
 
-        public Guid? VendedorId { get; set; }
+        public EnderecoUpdateRequestDto? Endereco { get; set; }
     }
 }
+
