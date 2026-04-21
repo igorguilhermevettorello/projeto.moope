@@ -36,9 +36,7 @@ namespace Projeto.Moope.Gateways.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status502BadGateway)]
-        public async Task<IActionResult> Processar(
-            [FromBody] VendaRequestDto request,
-            CancellationToken cancellationToken)
+        public async Task<IActionResult> Processar([FromBody] VendaRequestDto request, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);

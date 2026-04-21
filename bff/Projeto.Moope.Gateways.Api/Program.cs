@@ -43,7 +43,7 @@ builder.Services.AddScoped<IVendedorGetByIdService, VendedorGetByIdService>();
 builder.Services.AddScoped<IVendedorUpdateService, VendedorUpdateService>();
 builder.Services.AddScoped<IProcessarVendaService, ProcessarVendaService>();
 builder.Services.AddScoped<IPlanoGetById, PlanoGetById>();
-
+builder.Services.AddScoped<IAuthClientLoginService, AuthClientLoginService>();
 
 builder.Services.AddScoped<IUser, AspNetUser>();
 

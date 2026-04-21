@@ -59,6 +59,12 @@ namespace Projeto.Moope.Pedido.Infrastructure.Mapping
             builder.Property(p => p.Updated)
                 .IsRequired();
 
+            builder.Property(p => p.TipoPessoa)
+                .IsRequired();
+
+            builder.Property(p => p.Estado)
+                .HasMaxLength(50);
+
             builder.HasMany(p => p.Transacoes)
                 .WithOne(t => t.Pedido)
                 .HasForeignKey(t => t.PedidoId)

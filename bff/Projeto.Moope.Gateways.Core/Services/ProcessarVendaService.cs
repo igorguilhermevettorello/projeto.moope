@@ -3,12 +3,11 @@ using Microsoft.Extensions.Options;
 using Projeto.Moope.Core.DTOs;
 using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Gateways.Core.DTOs.Cliente;
-using Projeto.Moope.Gateways.Core.DTOs.Endereco;
 using Projeto.Moope.Gateways.Core.DTOs.Venda;
 using Projeto.Moope.Gateways.Core.Helpers;
 using Projeto.Moope.Gateways.Core.Interfaces.Services;
-using Projeto.Moope.Gateways.Core.Models;
 using Projeto.Moope.Gateways.Core.Options;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -17,7 +16,6 @@ namespace Projeto.Moope.Gateways.Core.Services
 {
     public class ProcessarVendaService : IProcessarVendaService
     {
-        /// <summary>Alinhado ao AutoMapper do monolito (CriarVendaDto -> CriarClienteCommand).</summary>
         private const string SenhaTemporariaClienteVenda = "ClienteVenda123!";
 
         private static readonly JsonSerializerOptions JsonOptions = new()
@@ -117,7 +115,7 @@ namespace Projeto.Moope.Gateways.Core.Services
                 if (!cupomResponse.IsSuccessStatusCode) 
                 {
                     var rs =  await Utils.FalhaDownstreamAsync(cupomResponse, cancellationToken);
-                    return new Result<VendaProcessingDto>
+                    return new ResultDto<VendaProcessingDto>
                     {
                         Status = false,
                         Mensagem = rs.Mensagem,
@@ -152,7 +150,7 @@ namespace Projeto.Moope.Gateways.Core.Services
 
             if (clienteId is null)
             {
-                return new Result<VendaProcessingDto>
+                return new ResultDto<VendaProcessingDto>
                 {
                     Status = false,
                     StatusCode = StatusCodes.Status502BadGateway,
@@ -162,7 +160,7 @@ namespace Projeto.Moope.Gateways.Core.Services
             }
             
             // Verificacao de plano:
-            var planoResult = await _planoGetById.ExecutarAsync(request.PlanoId, authorizationHeader, cancellationToken);
+            var planoResult = await _planoGetById.ExecutarAsync(request.PlanoId, authBearerHeader, cancellationToken);
             if (!planoResult.Status)
             { 
                 return new ResultDto<VendaProcessingDto>
@@ -191,66 +189,35 @@ namespace Projeto.Moope.Gateways.Core.Services
                 : Regex.Replace(request.CpfCnpj, @"\D", "");
 
             // Pedido (Venda.Api) orquestra pagamento internamente; o BFF apenas envia o payload completo.
-            var vendaUrl = Utils.Combine(_apis.Pedido, "/api/pedido");
-            var vendaBody = new
+            var pedidoUrl = Utils.Combine(_apis.Pedido, "/api/pedido");
+            var pedidoBody = new
             {
-                clienteId = clienteId.Value,
-                vendedorId = vendedorIdEfetivoPedido == Guid.Empty ? (Guid?)null : vendedorIdEfetivoPedido,
-                request.Email,
-                request.NomeCliente,
-                documento,
-                planoId = request.PlanoId,
+                ClienteId = clienteId.Value,
+                VendedorId = vendedorIdEfetivoPedido == Guid.Empty ? (Guid?)null : vendedorIdEfetivoPedido,
+                request.PlanoId,
                 request.Quantidade,
-                request.Estado,
-                descontos = request.Descontos ?? Array.Empty<string>(),
-                tipoPessoa = (int)request.TipoPessoa,
-                comodatoToken = request.ComodatoToken,
-                cartao = new
-                {
-                    nome = request.NomeCartao,
-                    numero = request.NumeroCartao,
-                    cvv = request.Cvv,
-                    validadeMmYy = request.DataValidade
-                }
+                request.TipoPessoa,
+                request.Estado
             };
 
-            //using var vendaRequest = new HttpRequestMessage(HttpMethod.Post, vendaUrl);
-            //AplicarAutorizacao(vendaRequest, authorizationHeader);
-            //if (!string.IsNullOrWhiteSpace(idempotencyKey))
-            //    vendaRequest.Headers.TryAddWithoutValidation("Idempotency-Key", idempotencyKey);
-            //vendaRequest.Content = JsonContent.Create(vendaBody, options: JsonOptions);
+            using var pedidoRequest = new HttpRequestMessage(HttpMethod.Post, pedidoUrl);
+            Utils.AplicarAutorizacao(pedidoRequest, authBearerHeader);
+            pedidoRequest.Content = JsonContent.Create(pedidoBody, options: JsonOptions);
 
-            //using var vendaResponse = await httpClient.SendAsync(vendaRequest, cancellationToken);
-            //if (!vendaResponse.IsSuccessStatusCode)
-            //    return await FalhaDownstreamAsync(vendaResponse, cancellationToken);
+            using var pedidoResponse = await httpClient.SendAsync(pedidoRequest, cancellationToken);
+            if (!pedidoResponse.IsSuccessStatusCode)
+            {
+                var rs = await Utils.FalhaDownstreamAsync(pedidoResponse, cancellationToken);
+                return new ResultDto<VendaProcessingDto>    
+                {
+                    Status = false,
+                    StatusCode = rs.StatusCode,
+                    Dados = null,
+                    Mensagem = rs.Mensagem ?? "Erro desconhecido ao criar venda."
+                };
+            }
 
-            //await using var vendaStream = await vendaResponse.Content.ReadAsStreamAsync(cancellationToken);
-            //var saida = await JsonSerializer.DeserializeAsync<ProcessarVendaOutputDto>(vendaStream, JsonOptions, cancellationToken);
-            //if (saida == null)
-            //{
-            //    return new ProcessarVendaOrchestrationResult
-            //    {
-            //        Sucesso = false,
-            //        StatusCode = StatusCodes.Status502BadGateway,
-            //        CorpoErro = new { mensagem = "Resposta invalida do servico Venda." }
-            //    };
-            //}
 
-            //// TODO: Salvar email de confirmacao + publicar filas emails / wpp_vendas (monolitico VendaController).
-
-            //return new ProcessarVendaOrchestrationResult
-            //{
-            //    Sucesso = true,
-            //    StatusCode = StatusCodes.Status200OK,
-            //    Dados = new ProcessarVendaOutput
-            //    {
-            //        PlanoId = saida.PlanoId,
-            //        Quantidade = saida.Quantidade,
-            //        ValorTotal = saida.ValorTotal,
-            //        VendaId = saida.VendaId,
-            //        TransacaoId = saida.TransacaoId
-            //    }
-            //};
 
             return new ResultDto<VendaProcessingDto>
             {
@@ -322,129 +289,5 @@ namespace Projeto.Moope.Gateways.Core.Services
 
             return rs.Dados?.ClienteId;
         }
-
-        //private static void AplicarAutorizacao(HttpRequestMessage request, string? authorizationHeader)
-        //{
-        //    if (!string.IsNullOrWhiteSpace(authorizationHeader))
-        //        request.Headers.TryAddWithoutValidation("Authorization", authorizationHeader);
-        //}
-
-        //private static async Task<Guid?> LerGuidDoCorpoJsonAsync(
-        //    HttpResponseMessage response,
-        //    CancellationToken cancellationToken)
-        //{
-        //    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-        //    using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
-        //    var root = doc.RootElement;
-
-        //    if (root.ValueKind == JsonValueKind.String
-        //        && Guid.TryParse(root.GetString(), out var guidFromString))
-        //        return guidFromString;
-
-        //    foreach (var name in new[] { "id", "Id" })
-        //    {
-        //        if (root.TryGetProperty(name, out var idProp))
-        //        {
-        //            if (idProp.ValueKind == JsonValueKind.String && Guid.TryParse(idProp.GetString(), out var g))
-        //                return g;
-        //            if (idProp.ValueKind == JsonValueKind.Object
-        //                && idProp.TryGetProperty("id", out var nested)
-        //                && nested.ValueKind == JsonValueKind.String
-        //                && Guid.TryParse(nested.GetString(), out var nestedGuid))
-        //                return nestedGuid;
-        //        }
-        //    }
-
-        //    return null;
-        //}
-
-        //private static async Task<ProcessarVendaOrchestrationResult> FalhaDownstreamAsync(
-        //    HttpResponseMessage response,
-        //    CancellationToken cancellationToken)
-        //{
-        //    var status = (int)response.StatusCode;
-        //    var texto = await response.Content.ReadAsStringAsync(cancellationToken);
-
-        //    object corpo;
-        //    if (string.IsNullOrWhiteSpace(texto))
-        //        corpo = new { mensagem = response.ReasonPhrase };
-        //    else
-        //    {
-        //        try
-        //        {
-        //            corpo = JsonSerializer.Deserialize<JsonElement>(texto, JsonOptions);
-        //        }
-        //        catch (JsonException)
-        //        {
-        //            corpo = texto;
-        //        }
-        //    }
-
-        //    var statusNormalizado = status is >= 400 and <= 599
-        //        ? status
-        //        : StatusCodes.Status502BadGateway;
-
-        //    return new ProcessarVendaOrchestrationResult
-        //    {
-        //        Sucesso = false,
-        //        StatusCode = statusNormalizado,
-        //        CorpoErro = corpo
-        //    };
-        //}
-
-        
-
-        //private sealed class ProcessarVendaOutputDto
-        //{
-        //    public Guid PlanoId { get; set; }
-
-        //    public int Quantidade { get; set; }
-
-        //    public decimal ValorTotal { get; set; }
-
-        //    public Guid VendaId { get; set; }
-
-        //    public Guid TransacaoId { get; set; }
-        //}
-
-        
-
-        //private readonly record struct PlanoLookupResult(
-        //    bool Sucesso,
-        //    PlanoResponseDto? Plano,
-        //    ProcessarVendaOrchestrationResult? Falha);
-
-        //private async Task<string?> ObterBearerAuthAsync(HttpClient httpClient, CancellationToken cancellationToken)
-        //{
-        //    var url = Combine(_apis.Auth, "/api/auth/client/login");
-
-        //    var raw = $"{_apis.AuthClientId}:{_apis.AuthClientSecret}";
-        //    var basic = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(raw));
-
-        //    using var request = new HttpRequestMessage(HttpMethod.Post, url);
-        //    request.Headers.TryAddWithoutValidation("Authorization", $"Basic {basic}");
-
-        //    using var response = await httpClient.SendAsync(request, cancellationToken);
-        //    if (!response.IsSuccessStatusCode)
-        //        return null;
-
-        //    var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        //    if (string.IsNullOrWhiteSpace(json))
-        //        return null;
-
-        //    try
-        //    {
-        //        var node = JsonNode.Parse(json);
-        //        var accessToken = node?["data"]?["accessToken"]?.GetValue<string>();
-        //        if (string.IsNullOrWhiteSpace(accessToken))
-        //            return null;
-
-        //        return $"Bearer {accessToken}";
-        //    }
-        //    catch (JsonException)
-        //    {
-        //        return null;
-        //    }
-        //}
     }
 }

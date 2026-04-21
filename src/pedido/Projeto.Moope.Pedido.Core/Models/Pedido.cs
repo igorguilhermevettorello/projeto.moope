@@ -1,12 +1,8 @@
-﻿using Projeto.Moope.Core.Models;
+﻿using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Data;
+using Projeto.Moope.Core.Models;
 using Projeto.Moope.Pedido.Core.Enums;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Projeto.Moope.Pedido.Core.Models
 {
@@ -32,7 +28,8 @@ namespace Projeto.Moope.Pedido.Core.Models
         public int? GalaxPayId { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
-
+        public TipoPessoa TipoPessoa { get; set; }
+        public string? Estado { get; set; }
         public ICollection<Transacao> Transacoes { get; set; } = new List<Transacao>();
         public Desconto? Desconto { get; set; }
     }

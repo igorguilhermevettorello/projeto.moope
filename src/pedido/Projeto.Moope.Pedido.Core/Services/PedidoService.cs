@@ -1,7 +1,10 @@
 using MediatR;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Projeto.Moope.Core.DTOs;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Services;
+using Projeto.Moope.Pedido.Core.DTOs.Pedido;
 using Projeto.Moope.Pedido.Core.Interfaces.Repositories;
 using Projeto.Moope.Pedido.Core.Interfaces.Services;
 using Projeto.Moope.Pedido.Core.Queries.Plano.ObterPlanoPorId;
@@ -14,14 +17,26 @@ namespace Projeto.Moope.Pedido.Core.Services
     {
         private readonly IPedidoRepository _pedidoRepository;
         private readonly IMediator _mediator;
+        private readonly IDescontoService _descontoService;
+        private readonly ILogger<PedidoService> _logger;
+        private readonly IConfiguration _configuration;
+
+        private decimal ValorTotalTaxaAdesao;
+        private decimal PlanoValorTotal;
 
         public PedidoService(
             IPedidoRepository pedidoRepository,
             IMediator mediator,
+            IDescontoService descontoService,
+            ILogger<PedidoService> logger,
+            IConfiguration configuration,
             INotificador notificador) : base(notificador)
         {
             _pedidoRepository = pedidoRepository;
             _mediator = mediator;
+            _descontoService = descontoService;
+            _logger = logger;
+            _configuration = configuration;
         }
 
         public async Task<PedidoModel?> BuscarPorIdAsync(Guid id)
@@ -39,9 +54,9 @@ namespace Projeto.Moope.Pedido.Core.Services
             return await _pedidoRepository.BuscarPorIdComTransacoesEDescontoAsync(id);
         }
 
-        public async Task<ResultDto<PedidoModel>> SalvarAsync(PedidoModel pedido)
+        public async Task<ResultDto<PedidoModel>> SalvarAsync(PedidoCreateDto pedidoCreateDto)
         {
-            if (pedido.PlanoId == Guid.Empty)
+            if (pedidoCreateDto.PlanoId == Guid.Empty)
             {
                 return new ResultDto<PedidoModel>
                 {
@@ -50,7 +65,7 @@ namespace Projeto.Moope.Pedido.Core.Services
                 };
             }
 
-            var plano = await _mediator.Send(new ObterPlanoPorIdQuery { PlanoId = pedido.PlanoId });
+            var plano = await _mediator.Send(new ObterPlanoPorIdQuery { PlanoId = pedidoCreateDto.PlanoId });
             if (plano == null)
             {
                 return new ResultDto<PedidoModel>
@@ -69,27 +84,68 @@ namespace Projeto.Moope.Pedido.Core.Services
                 };
             }
 
-            pedido.PlanoCodigo = plano.Codigo;
-            pedido.PlanoDescricao = plano.Descricao;
-            pedido.PlanoValor = plano.Valor;
-            pedido.PlanoTaxaAdesao = plano.TaxaAdesao ?? 0;
+            var semTaxaAdesao = _configuration
+                    .GetSection("semTaxaAdesao")
+                    .GetChildren()
+                    .Select(c => c.Value)
+                    .Where(v => !string.IsNullOrWhiteSpace(v))
+                    .ToArray();
 
-            var agora = DateTime.UtcNow;
-            pedido.Created = agora;
-            pedido.Updated = agora;
+            _logger.LogInformation("Configuração semTaxaAdesao carregada: {SemTaxaAdesao}", string.Join(", ", semTaxaAdesao));
 
-            if (pedido.Transacoes is { Count: > 0 })
+            var codigosDesconto = new List<string>();
+
+            decimal planoTaxaAdesao = 0;
+            decimal percentualTotalDescontos = 0;
+            decimal planoValorComDesconto = 0;
+            decimal totalCalculado = 0;
+            if (plano.Plataforma)
             {
-                foreach (var transacao in pedido.Transacoes)
+                if (pedidoCreateDto.Quantidade > 40)
                 {
-                    transacao.PedidoId = pedido.Id;
-                    transacao.Created = agora;
-                    transacao.Updated = agora;
+                    totalCalculado = 790;
+                    PlanoValorTotal = 790;
                 }
+                else
+                {
+                    totalCalculado = Math.Round((plano.Valor * pedidoCreateDto.Quantidade), 2);
+                    PlanoValorTotal = Math.Round((plano.Valor * pedidoCreateDto.Quantidade), 2);
+                }
+
+                planoValorComDesconto = plano.Valor;
+                percentualTotalDescontos = 0;
+                ValorTotalTaxaAdesao = 0;
+            }
+            else
+            {
+                var estadoIsentoTaxa = !string.IsNullOrWhiteSpace(pedidoCreateDto.Estado) && semTaxaAdesao.Contains(pedidoCreateDto.Estado);
+                planoTaxaAdesao = estadoIsentoTaxa ? 0 : (plano.TaxaAdesao ?? 0);
+                percentualTotalDescontos = _descontoService.ObterPercentualTotalDescontosAsync(codigosDesconto, pedidoCreateDto.TipoPessoa);
+                planoValorComDesconto = Math.Round(plano.Valor - ((plano.Valor * percentualTotalDescontos) / 100), 2);
+                totalCalculado = Math.Round(((planoValorComDesconto * pedidoCreateDto.Quantidade) + (planoTaxaAdesao * pedidoCreateDto.Quantidade)), 2);
+                PlanoValorTotal = Math.Round((planoValorComDesconto * pedidoCreateDto.Quantidade), 2);
+                ValorTotalTaxaAdesao = Math.Round((planoTaxaAdesao * pedidoCreateDto.Quantidade), 2);
             }
 
-            if (pedido.Desconto != null)
-                pedido.Desconto.PedidoId = pedido.Id;
+            var pedido = new PedidoModel
+            {
+                ClienteId = pedidoCreateDto.ClienteId,
+                VendedorId = pedidoCreateDto.VendedorId,
+                PlanoId = pedidoCreateDto.PlanoId,
+                Quantidade = pedidoCreateDto.Quantidade,
+                TipoPessoa = pedidoCreateDto.TipoPessoa,
+                Estado = pedidoCreateDto.Estado,
+                Total = totalCalculado,
+                StatusAssinatura = Core.Enums.StatusAssinatura.WaitingPayment,
+                PlanoPercentualDesconto = percentualTotalDescontos,
+                PlanoValorComDesconto = planoValorComDesconto,
+                PlanoCodigo = plano.Codigo,
+                PlanoDescricao = plano.Descricao,
+                PlanoValor = plano.Valor,
+                PlanoTaxaAdesao = plano.TaxaAdesao ?? 0,
+                Created = DateTime.UtcNow,
+                Updated = DateTime.UtcNow,
+            };
 
             var entity = await _pedidoRepository.SalvarAsync(pedido);
 

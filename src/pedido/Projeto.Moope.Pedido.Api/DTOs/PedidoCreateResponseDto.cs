@@ -1,3 +1,4 @@
+using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Pedido.Core.Enums;
 
 namespace Projeto.Moope.Pedido.Api.DTOs
@@ -9,6 +10,8 @@ namespace Projeto.Moope.Pedido.Api.DTOs
         public Guid? VendedorId { get; set; }
         public Guid PlanoId { get; set; }
         public int Quantidade { get; set; }
+        public TipoPessoa TipoPessoa { get; set; }
+        public string? Estado { get; set; }
         public decimal PlanoValor { get; set; }
         public string PlanoDescricao { get; set; } = string.Empty;
         public string PlanoCodigo { get; set; } = string.Empty;

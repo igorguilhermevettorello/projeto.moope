@@ -1,12 +1,13 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
 using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Pedido.Api.DTOs;
+using Projeto.Moope.Pedido.Core.DTOs.Pedido;
 using Projeto.Moope.Pedido.Core.Interfaces.Services;
 using PedidoModel = Projeto.Moope.Pedido.Core.Models.Pedido;
-using DescontoModel = Projeto.Moope.Pedido.Core.Models.Desconto;
 using TransacaoModel = Projeto.Moope.Pedido.Core.Models.Transacao;
 
 namespace Projeto.Moope.Pedido.Api.Controllers
@@ -17,10 +18,12 @@ namespace Projeto.Moope.Pedido.Api.Controllers
     public class PedidoController : MainController
     {
         private readonly IPedidoService _pedidoService;
+        private readonly IMapper _mapper;
 
-        public PedidoController(IPedidoService pedidoService, INotificador notificador, IUser appUser) : base(notificador, appUser)
+        public PedidoController(IPedidoService pedidoService, IMapper mapper, INotificador notificador, IUser appUser) : base(notificador, appUser)
         {
             _pedidoService = pedidoService;
+            _mapper = mapper;
         }
 
         [HttpGet("{id:guid}")]
@@ -54,53 +57,9 @@ namespace Projeto.Moope.Pedido.Api.Controllers
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
 
-            var pedido = new PedidoModel
-            {
-                ClienteId = dto.ClienteId,
-                VendedorId = dto.VendedorId,
-                PlanoId = dto.PlanoId,
-                Quantidade = dto.Quantidade,
-                PlanoValor = dto.PlanoValor,
-                PlanoDescricao = dto.PlanoDescricao,
-                PlanoCodigo = dto.PlanoCodigo,
-                PlanoTaxaAdesao = dto.PlanoTaxaAdesao,
-                PlanoPercentualDesconto = dto.PlanoPercentualDesconto,
-                PlanoValorComDesconto = dto.PlanoValorComDesconto,
-                Total = dto.Total,
-                StatusAssinatura = dto.StatusAssinatura,
-                Status = dto.Status,
-                StatusDescricao = dto.StatusDescricao,
-                GalaxPayId = dto.GalaxPayId
-            };
+            var pedidoCreateDto = _mapper.Map<PedidoCreateDto>(dto);
 
-            if (dto.Desconto != null)
-            {
-                pedido.Desconto = new DescontoModel
-                {
-                    ValorPercentual = dto.Desconto.ValorPercentual,
-                    Descricao = dto.Desconto.Descricao,
-                    TipoPessoa = dto.Desconto.TipoPessoa,
-                    CodigoDesconto = dto.Desconto.CodigoDesconto,
-                    ValorDesconto = dto.Desconto.ValorDesconto,
-                    Ativo = dto.Desconto.Ativo
-                };
-            }
-
-            if (dto.Transacoes is { Count: > 0 })
-            {
-                pedido.Transacoes = dto.Transacoes.Select(t => new TransacaoModel
-                {
-                    Valor = t.Valor,
-                    DataPagamento = t.DataPagamento,
-                    StatusPagamento = t.StatusPagamento,
-                    Status = t.Status,
-                    StatusDescricao = t.StatusDescricao,
-                    GalaxPayId = t.GalaxPayId,
-                    MetodoPagamento = t.MetodoPagamento
-                }).ToList();
-            }
-
-            var result = await _pedidoService.SalvarAsync(pedido);
+            var result = await _pedidoService.SalvarAsync(pedidoCreateDto);
             if (!result.Status)
                 return CustomResponse(result);
 
@@ -155,6 +114,8 @@ namespace Projeto.Moope.Pedido.Api.Controllers
                 VendedorId = pedido.VendedorId,
                 PlanoId = pedido.PlanoId,
                 Quantidade = pedido.Quantidade,
+                TipoPessoa = pedido.TipoPessoa,
+                Estado = pedido.Estado,
                 PlanoValor = pedido.PlanoValor,
                 PlanoDescricao = pedido.PlanoDescricao,
                 PlanoCodigo = pedido.PlanoCodigo,

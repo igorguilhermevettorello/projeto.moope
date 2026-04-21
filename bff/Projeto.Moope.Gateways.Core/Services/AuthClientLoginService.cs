@@ -21,7 +21,7 @@ namespace Projeto.Moope.Gateways.Core.Services
             _apis = apis.Value;
         }           
         
-        public async Task<Result<string>> ExecutarAsync(CancellationToken cancellationToken)
+        public async Task<ResultDto<string>> ExecutarAsync(CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(_apis.Auth)
                 || string.IsNullOrWhiteSpace(_apis.AuthClientId)
@@ -54,7 +54,7 @@ namespace Projeto.Moope.Gateways.Core.Services
                 if (string.IsNullOrWhiteSpace(accessToken))
                     return Utils.FalhaConfig<string>("Nao foi possivel obter token do servico Auth (client/login).");
 
-                return new Result<string>
+                return new ResultDto<string>
                 {
                     Status = true,
                     StatusCode = 200,

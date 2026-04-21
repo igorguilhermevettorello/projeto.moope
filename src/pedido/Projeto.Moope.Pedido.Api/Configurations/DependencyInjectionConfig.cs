@@ -1,9 +1,11 @@
+using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Options;
 using Projeto.Moope.Api.Utils;
 using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Notifications;
+using Projeto.Moope.Pedido.Api.Mappings;
 using Projeto.Moope.Pedido.Core.Interfaces.Gateways;
 using Projeto.Moope.Pedido.Core.Interfaces.Repositories;
 using Projeto.Moope.Pedido.Core.Interfaces.Services;
@@ -20,6 +22,8 @@ namespace Projeto.Moope.Pedido.Api.Configurations
     {
         public static void RegisterServices(IServiceCollection services, IConfiguration configuration)
         {
+            services.AddAutoMapper(typeof(PedidoMappingProfile).Assembly);
+
             services.Configure<PlanoApiOptions>(configuration.GetSection(PlanoApiOptions.SectionName));
 
             services.AddTransient<AuthorizationForwardingHandler>();
@@ -35,6 +39,8 @@ namespace Projeto.Moope.Pedido.Api.Configurations
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(ObterPlanoPorIdQuery).Assembly));
 
             services.AddScoped<INotificador, Notificador>();
+            services.AddScoped<IDescontoRepository, DescontoRepository>();
+            services.AddScoped<IDescontoService, DescontoService>();
             services.AddScoped<IPedidoRepository, PedidoRepository>();
             services.AddScoped<IPedidoService, PedidoService>();
             services.AddScoped<IUser, AspNetUser>();
