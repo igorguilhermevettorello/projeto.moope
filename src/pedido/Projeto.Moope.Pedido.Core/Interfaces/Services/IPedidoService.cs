@@ -9,8 +9,8 @@ namespace Projeto.Moope.Pedido.Core.Interfaces.Services
         Task<PedidoModel?> BuscarPorIdAsync(Guid id);
         Task<PedidoModel?> BuscarPorIdAsNotrackingAsync(Guid id);
         Task<PedidoModel?> BuscarPorIdComDadosAsync(Guid id);
-        Task<Result<PedidoModel>> SalvarAsync(PedidoModel pedido);
-        Task<Result> AtualizarTransacoesAsync(Guid pedidoId, IEnumerable<TransacaoModel> transacoes);
+        Task<ResultDto<PedidoModel>> SalvarAsync(PedidoModel pedido);
+        Task<ResultDto<PedidoModel>> AtualizarTransacoesAsync(Guid pedidoId, IEnumerable<TransacaoModel> transacoes);
     }
 }
 

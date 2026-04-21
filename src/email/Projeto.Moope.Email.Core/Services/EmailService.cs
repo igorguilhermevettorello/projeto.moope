@@ -33,20 +33,20 @@ namespace Projeto.Moope.Email.Core.Services
             return await _emailRepository.BuscarTodosAsync();
         }
 
-        public async Task<Result<EmailModel>> SalvarAsync(EmailModel email)
+        public async Task<ResultDto<EmailModel>> SalvarAsync(EmailModel email)
         {
             var entity = await _emailRepository.SalvarAsync(email);
-            return new Result<EmailModel>
+            return new ResultDto<EmailModel>
             {
                 Status = true,
                 Dados = entity
             };
         }
 
-        public async Task<Result<EmailModel>> AtualizarAsync(EmailModel email)
+        public async Task<ResultDto<EmailModel>> AtualizarAsync(EmailModel email)
         {
             var entity = await _emailRepository.AtualizarAsync(email);
-            return new Result<EmailModel>
+            return new ResultDto<EmailModel>
             {
                 Status = true,
                 Dados = entity

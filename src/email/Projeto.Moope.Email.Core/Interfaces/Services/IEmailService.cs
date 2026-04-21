@@ -8,8 +8,8 @@ namespace Projeto.Moope.Email.Core.Interfaces.Services
         Task<EmailModel?> BuscarPorIdAsync(Guid id);
         Task<EmailModel?> BuscarPorIdAsNoTrackingAsync(Guid id);
         Task<IEnumerable<EmailModel>> BuscarTodosAsync();
-        Task<Result<EmailModel>> SalvarAsync(EmailModel email);
-        Task<Result<EmailModel>> AtualizarAsync(EmailModel email);
+        Task<ResultDto<EmailModel>> SalvarAsync(EmailModel email);
+        Task<ResultDto<EmailModel>> AtualizarAsync(EmailModel email);
         Task<bool> RemoverAsync(Guid id);
     }
 }

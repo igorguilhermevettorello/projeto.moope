@@ -1,3 +1,4 @@
+using Projeto.Moope.Core.DTOs;
 using Projeto.Moope.Gateways.Core.DTOs;
 
 namespace Projeto.Moope.Gateways.Core.Interfaces.Services

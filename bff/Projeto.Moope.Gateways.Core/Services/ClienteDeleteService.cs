@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Projeto.Moope.Core.DTOs;
 using Projeto.Moope.Gateways.Core.DTOs;
 using Projeto.Moope.Gateways.Core.Helpers;
 using Projeto.Moope.Gateways.Core.Interfaces.Services;

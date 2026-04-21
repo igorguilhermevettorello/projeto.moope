@@ -13,14 +13,14 @@ namespace Projeto.Moope.Vendedor.Core.Interfaces.Services
 
         Task<IEnumerable<VendedorModel>> BuscarTodosAsync();
 
-        Task<Result<VendedorModel>> SalvarAsync(VendedorModel vendedor);
+        Task<ResultDto<VendedorModel>> SalvarAsync(VendedorModel vendedor);
 
-        Task<Result<VendedorModel>> AtualizarAsync(VendedorModel vendedor);
+        Task<ResultDto<VendedorModel>> AtualizarAsync(VendedorModel vendedor);
 
         Task<IEnumerable<T>> BuscarVendedoresComDadosAsync<T>();
         Task<T?> BuscarVendedorPorIdComDadosAsync<T>(Guid id);
         Task<bool> RemoverAsync(Guid id);
 
-        Task<Result> AtualizarEndereco(Guid vendedorId, Guid enderecoId);
+        Task<ResultDto> AtualizarEndereco(Guid vendedorId, Guid enderecoId);
     }
 }

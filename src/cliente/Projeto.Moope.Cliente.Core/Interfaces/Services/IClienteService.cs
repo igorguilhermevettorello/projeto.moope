@@ -13,14 +13,15 @@ namespace Projeto.Moope.Cliente.Core.Interfaces.Services
 
         Task<IEnumerable<ClienteModel>> BuscarTodosAsync();
 
-        Task<Result<ClienteModel>> SalvarAsync(ClienteModel cliente);
+        Task<ResultDto<ClienteModel>> SalvarAsync(ClienteModel cliente);
 
-        Task<Result<ClienteModel>> AtualizarAsync(ClienteModel cliente);
+        Task<ResultDto<ClienteModel>> AtualizarAsync(ClienteModel cliente);
 
         Task<IEnumerable<T>> BuscarClientesComDadosAsync<T>();
         Task<T?> BuscarClientePorIdComDadosAsync<T>(Guid id);
+        Task<T?> BuscarClientePorEmailComDadosAsync<T>(string email);
         Task<bool> RemoverAsync(Guid id);
 
-        Task<Result> AtualizarEndereco(Guid clienteId, Guid enderecoId);
+        Task<ResultDto> AtualizarEndereco(Guid clienteId, Guid enderecoId);
     }
 }

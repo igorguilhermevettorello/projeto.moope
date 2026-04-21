@@ -26,6 +26,7 @@ namespace Projeto.Moope.Cliente.Api.Configurations
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Projeto.Moope.Cliente.Api", Version = "v1" });
+                c.OperationFilter<ApiKeyHeaderOperationFilter>();
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT: Bearer {token}",

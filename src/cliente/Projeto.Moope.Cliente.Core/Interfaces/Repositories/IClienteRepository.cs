@@ -10,5 +10,6 @@ namespace Projeto.Moope.Cliente.Core.Interfaces.Repositories
         Task<ClienteModel?> BuscarPorCodigoCupomAsync(string codigoCupom);
         Task<IEnumerable<T>> BuscarClientesComDadosAsync<T>();
         Task<T?> BuscarClientePorIdComDadosAsync<T>(Guid id);
+        Task<T?> BuscarClientePorEmailComDadosAsync<T>(string email);
     }
 }

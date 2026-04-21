@@ -38,11 +38,11 @@ namespace Projeto.Moope.Plano.Core.Services
             return await _planoRepository.BuscarTodosAsync();
         }
 
-        public async Task<Result<PlanoModel>> SalvarAsync(PlanoModel plano)
+        public async Task<ResultDto<PlanoModel>> SalvarAsync(PlanoModel plano)
         {
             //if (!ExecutarValidacao(new PlanoValidator(), plano))
             //{
-            //    return new Result<PlanoModel>()
+            //    return new ResultDto<PlanoModel>()
             //    {
             //        Status = false,
             //        Mensagem = "Não foi possível salvar o plano. Por favor, tente novamente em alguns instantes."
@@ -50,25 +50,25 @@ namespace Projeto.Moope.Plano.Core.Services
             //}
 
             var entity = await _planoRepository.SalvarAsync(plano);
-            return new Result<PlanoModel>()
+            return new ResultDto<PlanoModel>()
             {
                 Status = true,
                 Dados = entity
             };
         }
 
-        public async Task<Result<PlanoModel>> AtualizarAsync(PlanoModel plano)
+        public async Task<ResultDto<PlanoModel>> AtualizarAsync(PlanoModel plano)
         {
             //if (!ExecutarValidacao(new PlanoValidator(), plano))
             //{
-            //    return new Result<PlanoModel>()
+            //    return new ResultDto<PlanoModel>()
             //    {
             //        Status = false
             //    };
             //}
 
             var entity = await _planoRepository.AtualizarAsync(plano);
-            return new Result<PlanoModel>()
+            return new ResultDto<PlanoModel>()
             {
                 Status = true,
                 Dados = entity
@@ -81,11 +81,11 @@ namespace Projeto.Moope.Plano.Core.Services
             return true;
         }
 
-        public async Task<Result<PlanoModel>> AtivarInativarAsync(PlanoModel plano, bool status)
+        public async Task<ResultDto<PlanoModel>> AtivarInativarAsync(PlanoModel plano, bool status)
         {
             plano.Status = status;
             var entity = await _planoRepository.AtualizarAsync(plano);
-            return new Result<PlanoModel>()
+            return new ResultDto<PlanoModel>()
             {
                 Status = true,
                 Dados = entity

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Projeto.Moope.Auth.Api.Options;
 using Projeto.Moope.Auth.Api.Services;
 using Projeto.Moope.Auth.Api.Utils;
 using System.Text;
@@ -17,6 +18,8 @@ namespace Projeto.Moope.Auth.Api.Configurations
             var jwtSettingsSection = configuration.GetSection("Jwt");
             services.Configure<JwtSettings>(jwtSettingsSection);
             services.AddSingleton<IJwtSigningKeyProvider, JwtSigningKeyProvider>();
+
+            services.Configure<ClientCredentialsOptions>(configuration.GetSection(ClientCredentialsOptions.SectionName));
 
             var jwtSettings = jwtSettingsSection.Get<JwtSettings>()
                 ?? throw new InvalidOperationException("Seção de configuração 'Jwt' é obrigatória.");

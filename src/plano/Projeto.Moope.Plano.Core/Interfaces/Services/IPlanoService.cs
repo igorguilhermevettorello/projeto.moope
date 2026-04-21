@@ -9,9 +9,9 @@ namespace Projeto.Moope.Plano.Core.Interfaces.Services
         Task<PlanoModel?> BuscarPorIdAsNotrackingAsync(Guid id);
         Task<PlanoModel?> BuscarPorPlanoSelecionadoAsync(string codigo);
         Task<IEnumerable<PlanoModel>> BuscarTodosAsync();
-        Task<Result<PlanoModel>> SalvarAsync(PlanoModel plano);
-        Task<Result<PlanoModel>> AtualizarAsync(PlanoModel plano);
-        Task<Result<PlanoModel>> AtivarInativarAsync(PlanoModel plano, bool status);
+        Task<ResultDto<PlanoModel>> SalvarAsync(PlanoModel plano);
+        Task<ResultDto<PlanoModel>> AtualizarAsync(PlanoModel plano);
+        Task<ResultDto<PlanoModel>> AtivarInativarAsync(PlanoModel plano, bool status);
         Task<bool> RemoverAsync(Guid id);
     }
 }

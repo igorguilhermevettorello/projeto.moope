@@ -9,9 +9,9 @@ namespace Projeto.Moope.Comodato.Core.Interfaces.Services
         Task<ComodatoModel?> BuscarPorIdAsNotrackingAsync(Guid id);
         Task<IEnumerable<ComodatoModel>> BuscarTodosAsync();
         Task<IEnumerable<ComodatoModel>> BuscarPorClienteIdAsync(Guid clienteId);
-        Task<Result<ComodatoModel>> SalvarAsync(ComodatoModel comodato);
-        Task<Result<ComodatoModel>> AtualizarAsync(ComodatoModel comodato);
-        Task<Result<ComodatoModel>> AlterarStatusAsync(ComodatoModel comodato, Projeto.Moope.Core.Enums.ComodatoStatus status);
+        Task<ResultDto<ComodatoModel>> SalvarAsync(ComodatoModel comodato);
+        Task<ResultDto<ComodatoModel>> AtualizarAsync(ComodatoModel comodato);
+        Task<ResultDto<ComodatoModel>> AlterarStatusAsync(ComodatoModel comodato, Projeto.Moope.Core.Enums.ComodatoStatus status);
         Task<bool> RemoverAsync(Guid id);
     }
 }

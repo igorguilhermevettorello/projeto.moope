@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Projeto.Moope.Core.DTOs;
 using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Gateways.Core.DTOs;
 using Projeto.Moope.Gateways.Core.DTOs.Cliente;
 using Projeto.Moope.Gateways.Core.Helpers;
 using Projeto.Moope.Gateways.Core.Interfaces.Services;
-using Projeto.Moope.Gateways.Core.Models;
 using Projeto.Moope.Gateways.Core.Options;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -23,9 +23,7 @@ namespace Projeto.Moope.Gateways.Core.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly DownstreamApisOptions _apis;
 
-        public ClienteCreateService(
-            IHttpClientFactory httpClientFactory,
-            IOptions<DownstreamApisOptions> apis)
+        public ClienteCreateService(IHttpClientFactory httpClientFactory, IOptions<DownstreamApisOptions> apis)
         {
             _httpClientFactory = httpClientFactory;
             _apis = apis.Value;
@@ -79,8 +77,7 @@ namespace Projeto.Moope.Gateways.Core.Services
                     Mensagem = rs.Mensagem ?? "Erro desconhecido ao criar usuario."
                 };
             }
-                
-
+            
             var usuarioId = await Utils.LerGuidRespostaAsync(usuarioResponse, cancellationToken);
             if (usuarioId == null)
             {
@@ -96,11 +93,7 @@ namespace Projeto.Moope.Gateways.Core.Services
             var clienteUrl = Utils.Combine(_apis.Cliente, "/api/cliente");
             var clienteBody = new
             {
-                request.TipoPessoa,
-                request.CpfCnpj,
-                request.PercentualComissao,
-                request.ChavePix,
-                request.CodigoCupom,
+                request.Telefone,
                 request.VendedorId,
                 UsuarioId = (Guid)usuarioId
             };
@@ -122,7 +115,6 @@ namespace Projeto.Moope.Gateways.Core.Services
                 };  
             }
             
-
             var clienteId = await Utils.LerGuidRespostaAsync(clienteResponse, cancellationToken);
             if (clienteId == null)
             {
@@ -135,63 +127,67 @@ namespace Projeto.Moope.Gateways.Core.Services
                 };
             }
 
-            var enderecoUrl = Utils.Combine(_apis.Endereco, "/api/endereco");
-            var enderecoBody = new
+            Guid? enderecoId = null;
+            if (request.Endereco != null)
             {
-                request.Endereco.Cep,
-                request.Endereco.Logradouro,
-                Numero = request.Endereco.Numero ?? string.Empty,
-                Complemento = request.Endereco.Complemento ?? string.Empty,
-                request.Endereco.Bairro,
-                request.Endereco.Cidade,
-                request.Endereco.Estado
-            };
-
-            using var enderecoRequest = new HttpRequestMessage(HttpMethod.Post, enderecoUrl);
-            Utils.AplicarAutorizacao(enderecoRequest, authorizationHeader);
-            enderecoRequest.Content = JsonContent.Create(enderecoBody, options: JsonOptions);
-
-            using var enderecoResponse = await httpClient.SendAsync(enderecoRequest, cancellationToken);
-            if (!enderecoResponse.IsSuccessStatusCode)
-            {
-                var rs = await Utils.FalhaDownstreamAsync(enderecoResponse, cancellationToken);
-                return new ResultDto<ClienteCreateResultDto>
+                var enderecoUrl = Utils.Combine(_apis.Endereco, "/api/endereco");
+                var enderecoBody = new
                 {
-                    Status = false,
-                    StatusCode = rs.StatusCode,
-                    Dados = null,
-                    Mensagem = rs.Mensagem ?? "Erro desconhecido ao criar endereco."
+                    request.Endereco.Cep,
+                    request.Endereco.Logradouro,
+                    Numero = request.Endereco.Numero ?? string.Empty,
+                    Complemento = request.Endereco.Complemento ?? string.Empty,
+                    request.Endereco.Bairro,
+                    request.Endereco.Cidade,
+                    request.Endereco.Estado
                 };
-            }
-            
 
-            var enderecoId = await Utils.LerGuidRespostaAsync(enderecoResponse, cancellationToken);
-            if (enderecoId == null)
-            {
-                return new ResultDto<ClienteCreateResultDto>
+                using var enderecoRequest = new HttpRequestMessage(HttpMethod.Post, enderecoUrl);
+                Utils.AplicarAutorizacao(enderecoRequest, authorizationHeader);
+                enderecoRequest.Content = JsonContent.Create(enderecoBody, options: JsonOptions);
+
+                using var enderecoResponse = await httpClient.SendAsync(enderecoRequest, cancellationToken);
+                if (!enderecoResponse.IsSuccessStatusCode)
                 {
-                    Status = false,
-                    StatusCode = StatusCodes.Status502BadGateway,
-                    Dados = null,
-                    Mensagem = "Resposta invalida do servico Endereco (Id ausente)."
-                };
-            }
+                    var rs = await Utils.FalhaDownstreamAsync(enderecoResponse, cancellationToken);
+                    return new ResultDto<ClienteCreateResultDto>
+                    {
+                        Status = false,
+                        StatusCode = rs.StatusCode,
+                        Dados = null,
+                        Mensagem = rs.Mensagem ?? "Erro desconhecido ao criar endereco."
+                    };
+                }
 
-            var atualizarEnderecoUrl = Utils.Combine(_apis.Cliente, $"/api/cliente/{clienteId}/endereco/{enderecoId}");
-            using var atualizarEnderecoRequest = new HttpRequestMessage(HttpMethod.Patch, atualizarEnderecoUrl);
-            Utils.AplicarAutorizacao(atualizarEnderecoRequest, authorizationHeader);
 
-            using var atualizarEnderecoResponse = await httpClient.SendAsync(atualizarEnderecoRequest, cancellationToken);
-            if (!atualizarEnderecoResponse.IsSuccessStatusCode)
-            {
-                var rs = await Utils.FalhaDownstreamAsync(atualizarEnderecoResponse, cancellationToken);
-                return new ResultDto<ClienteCreateResultDto>
+                enderecoId = await Utils.LerGuidRespostaAsync(enderecoResponse, cancellationToken);
+                if (enderecoId == null)
                 {
-                    Status = false,
-                    StatusCode = rs.StatusCode,
-                    Dados = null,
-                    Mensagem = rs.Mensagem ?? "Erro desconhecido ao atualizar endereco."
-                };  
+                    return new ResultDto<ClienteCreateResultDto>
+                    {
+                        Status = false,
+                        StatusCode = StatusCodes.Status502BadGateway,
+                        Dados = null,
+                        Mensagem = "Resposta invalida do servico Endereco (Id ausente)."
+                    };
+                }
+
+                var atualizarEnderecoUrl = Utils.Combine(_apis.Cliente, $"/api/cliente/{clienteId}/endereco/{enderecoId}");
+                using var atualizarEnderecoRequest = new HttpRequestMessage(HttpMethod.Patch, atualizarEnderecoUrl);
+                Utils.AplicarAutorizacao(atualizarEnderecoRequest, authorizationHeader);
+
+                using var atualizarEnderecoResponse = await httpClient.SendAsync(atualizarEnderecoRequest, cancellationToken);
+                if (!atualizarEnderecoResponse.IsSuccessStatusCode)
+                {
+                    var rs = await Utils.FalhaDownstreamAsync(atualizarEnderecoResponse, cancellationToken);
+                    return new ResultDto<ClienteCreateResultDto>
+                    {
+                        Status = false,
+                        StatusCode = rs.StatusCode,
+                        Dados = null,
+                        Mensagem = rs.Mensagem ?? "Erro desconhecido ao atualizar endereco."
+                    };
+                }
             }
             
             return new ResultDto<ClienteCreateResultDto>

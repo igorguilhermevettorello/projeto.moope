@@ -8,14 +8,20 @@ namespace Projeto.Moope.Gateways.Api.Options
 
         public string Auth { get; set; } = string.Empty;
 
+        public string AuthClientId { get; set; } = string.Empty;
+
+        public string AuthClientSecret { get; set; } = string.Empty;
+
         public string Endereco { get; set; } = string.Empty;
 
         public string Cliente { get; set; } = string.Empty;
+        
+        public string ClienteApiKey { get; set; } = string.Empty;
 
         public string Plano { get; set; } = string.Empty;
 
         public string Pagamento { get; set; } = string.Empty;
 
-        public string Venda { get; set; } = string.Empty;
+        public string Pedido { get; set; } = string.Empty;
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Projeto.Moope.Api.Controllers;
+using Projeto.Moope.Auth.Api.Options;
 using Projeto.Moope.Auth.Api.Services;
 using Projeto.Moope.Auth.Api.Utils;
 using Projeto.Moope.Auth.Core.DTOs.Login;
@@ -29,6 +30,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
         private readonly ILogger _logger;
         private readonly IGoogleRecaptchaService _recaptchaService;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly ClientCredentialsOptions _clientCredentialsOptions;
 
         private string[] ErrorPassowrd = { "PasswordTooShort", "PasswordRequiresNonAlphanumeric", "PasswordRequiresLower", "PasswordRequiresUpper", "PasswordRequiresDigit" };
         private string[] ErrorEmail = { "DuplicateUserName" };
@@ -38,6 +40,7 @@ namespace Projeto.Moope.Auth.Api.Controllers
             UserManager<IdentityUser<Guid>> userManager,
             IOptions<JwtSettings> config,
             IJwtSigningKeyProvider jwtSigningKeys,
+            IOptions<ClientCredentialsOptions> clientCredentialsOptions,
             ILogger<AuthController> logger,
             IGoogleRecaptchaService recaptchaService,
             INotificador notificador,
@@ -48,9 +51,87 @@ namespace Projeto.Moope.Auth.Api.Controllers
             _userManager = userManager;
             _jwtSettings = config.Value;
             _jwtSigningKeys = jwtSigningKeys;
+            _clientCredentialsOptions = clientCredentialsOptions.Value;
             _logger = logger;
             _recaptchaService = recaptchaService;
             _refreshTokenRepository = refreshTokenRepository;
+        }
+
+        [HttpPost("client/login")]
+        [ProducesResponseType(typeof(ClientLoginResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ClientLogin()
+        {
+            if (!Request.Headers.TryGetValue("Authorization", out var authHeaderValues))
+            {
+                ModelState.AddModelError("Authorization", "Header Authorization é obrigatório.");
+                return CustomResponse(ModelState);
+            }
+
+            var authHeader = authHeaderValues.ToString();
+            if (string.IsNullOrWhiteSpace(authHeader) ||
+                !authHeader.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError("Authorization", "Authorization deve ser do tipo Basic.");
+                return CustomResponse(ModelState);
+            }
+
+            var encoded = authHeader["Basic ".Length..].Trim();
+            if (string.IsNullOrWhiteSpace(encoded))
+            {
+                ModelState.AddModelError("Authorization", "Authorization Basic inválido.");
+                return CustomResponse(ModelState);
+            }
+
+            string decoded;
+            try
+            {
+                decoded = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encoded));
+            }
+            catch (FormatException)
+            {
+                ModelState.AddModelError("Authorization", "Authorization Basic inválido (Base64).");
+                return CustomResponse(ModelState);
+            }
+
+            var separatorIndex = decoded.IndexOf(':', StringComparison.Ordinal);
+            if (separatorIndex <= 0 || separatorIndex == decoded.Length - 1)
+            {
+                ModelState.AddModelError("Authorization", "Authorization Basic deve ser Base64 de 'clienteId:secretKey'.");
+                return CustomResponse(ModelState);
+            }
+
+            var clienteId = decoded[..separatorIndex];
+            var secretKey = decoded[(separatorIndex + 1)..];
+
+            var client = _clientCredentialsOptions.Clients.FirstOrDefault(c =>
+                string.Equals(c.ClienteId, clienteId, StringComparison.Ordinal));
+
+            if (client == null || !CryptographicOperations.FixedTimeEquals(
+                    SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(client.SecretKey ?? string.Empty)),
+                    SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(secretKey))))
+            {
+                ModelState.AddModelError("ClientLogin", "ClienteId ou SecretKey inválidos.");
+                return CustomResponse(ModelState);
+            }
+
+            // Integra com Identity usando o usuário técnico seeded (SeedDataConfig),
+            // e retorna o mesmo JWT (com refresh token) gerado pelo fluxo padrão.
+            var technicalEmail = $"{clienteId}@client.local";
+            var signInResult = await _signInManager.PasswordSignInAsync(
+                technicalEmail,
+                secretKey,
+                isPersistent: false,
+                lockoutOnFailure: true);
+
+            if (!signInResult.Succeeded)
+            {
+                ModelState.AddModelError("ClientLogin", "Falha ao autenticar o client no Identity (verifique o seed do usuário técnico).");
+                return CustomResponse(ModelState);
+            }
+
+            var token = await GerarJwt(technicalEmail, TipoUsuario.Administrador);
+            return CustomResponse(new { data = token });
         }
 
         [HttpPost("login")]

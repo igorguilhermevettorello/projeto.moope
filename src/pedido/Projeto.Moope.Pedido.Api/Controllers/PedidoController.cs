@@ -24,7 +24,7 @@ namespace Projeto.Moope.Pedido.Api.Controllers
         }
 
         [HttpGet("{id:guid}")]
-        [ProducesResponseType(typeof(PedidoResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PedidoCreateResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -45,11 +45,11 @@ namespace Projeto.Moope.Pedido.Api.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(PedidoResponseDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(PedidoCreateResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Criar([FromBody] PedidoCreateDto dto)
+        public async Task<IActionResult> Criar([FromBody] PedidoCreateRequestDto dto)
         {
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
@@ -146,9 +146,9 @@ namespace Projeto.Moope.Pedido.Api.Controllers
             return NoContent();
         }
 
-        private static PedidoResponseDto MapToResponseDto(PedidoModel pedido)
+        private static PedidoCreateResponseDto MapToResponseDto(PedidoModel pedido)
         {
-            return new PedidoResponseDto
+            return new PedidoCreateResponseDto
             {
                 Id = pedido.Id,
                 ClienteId = pedido.ClienteId,

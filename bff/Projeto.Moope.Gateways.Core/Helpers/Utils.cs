@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Projeto.Moope.Gateways.Core.DTOs;
-using Projeto.Moope.Gateways.Core.DTOs.Vendedor;
-using Projeto.Moope.Gateways.Core.Services;
+using Projeto.Moope.Core.DTOs;
 using System.Text.Json;
 
 namespace Projeto.Moope.Gateways.Core.Helpers
@@ -78,6 +76,46 @@ namespace Projeto.Moope.Gateways.Core.Helpers
                 Status = false,
                 StatusCode = statusNormalizado,
                 Mensagem = corpo?.ToString() ?? "Erro desconhecido"
+            };
+        }
+
+        public static async Task<Guid?> LerGuidDoCorpoJsonAsync(
+            HttpResponseMessage response,
+            CancellationToken cancellationToken)
+        {
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+            var root = doc.RootElement;
+
+            if (root.ValueKind == JsonValueKind.String
+                && Guid.TryParse(root.GetString(), out var guidFromString))
+                return guidFromString;
+
+            foreach (var name in new[] { "id", "Id" })
+            {
+                if (root.TryGetProperty(name, out var idProp))
+                {
+                    if (idProp.ValueKind == JsonValueKind.String && Guid.TryParse(idProp.GetString(), out var g))
+                        return g;
+                    if (idProp.ValueKind == JsonValueKind.Object
+                        && idProp.TryGetProperty("id", out var nested)
+                        && nested.ValueKind == JsonValueKind.String
+                        && Guid.TryParse(nested.GetString(), out var nestedGuid))
+                        return nestedGuid;
+                }
+            }
+
+            return null;
+        }
+
+        public static ResultDto<T> FalhaConfig<T>(string mensagem)
+        {
+            return new ResultDto<T>
+            {
+                Status = false,
+                StatusCode = StatusCodes.Status500InternalServerError,
+                Mensagem = mensagem,
+                Dados = default(T)
             };
         }
     }

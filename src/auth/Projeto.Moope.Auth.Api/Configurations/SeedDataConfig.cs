@@ -41,38 +41,71 @@ namespace Projeto.Moope.Auth.Api.Configurations
             IConfiguration configuration)
         {
             var emailAdmin = "admin@moope.com.br";
-            if (await userManager.FindByEmailAsync(emailAdmin) != null)
+            var adminIdentityUser = await userManager.FindByEmailAsync(emailAdmin);
+            if (adminIdentityUser == null)
             {
-                return;
+                var user = new IdentityUser<Guid>
+                {
+                    UserName = emailAdmin,
+                    Email = emailAdmin,
+                    EmailConfirmed = true,
+                    LockoutEnabled = true
+                };
+
+                var adminPassword = configuration["Admin:Password"] ?? "Admin@123";
+                var result = await userManager.CreateAsync(user, adminPassword);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(user, TipoUsuario.Administrador.ToString());
+
+                    var novoUsuario = new Usuario
+                    {
+                        Nome = "Administrador do Sistema",
+                        Id = user.Id,
+                        Created = DateTime.UtcNow,
+                        Updated = DateTime.UtcNow
+                    };
+                    await context.Usuarios.AddAsync(novoUsuario);
+                    await context.SaveChangesAsync();
+                }
             }
 
-            var user = new IdentityUser<Guid>
+            // Seed de um usuário "técnico" Administrador (ClienteApiKey) baseado no ClientCredentials do appsettings.
+            // Objetivo: manter um registro no Identity/DB (auditoria/uso futuro), enquanto o ClientLogin atual usa Basic + config.
+            var authClientId = configuration["ClientCredentials:Clients:0:ClienteId"];
+            var authClientSecret = configuration["ClientCredentials:Clients:0:SecretKey"];
+            if (!string.IsNullOrWhiteSpace(authClientId) && !string.IsNullOrWhiteSpace(authClientSecret))
             {
-                UserName = emailAdmin,
-                Email = emailAdmin,
-                EmailConfirmed = true,
-                LockoutEnabled = true
-            };
+                var technicalEmail = $"{authClientId}@client.local";
+                var technicalUser = await userManager.FindByEmailAsync(technicalEmail);
+                if (technicalUser == null)
+                {
+                    var user = new IdentityUser<Guid>
+                    {
+                        UserName = technicalEmail,
+                        Email = technicalEmail,
+                        EmailConfirmed = true,
+                        LockoutEnabled = false
+                    };
 
-            var adminPassword = configuration["Admin:Password"] ?? "Admin@123";
-            var result = await userManager.CreateAsync(user, adminPassword);
+                    var result = await userManager.CreateAsync(user, authClientSecret);
+                    if (result.Succeeded)
+                    {
+                        await userManager.AddToRoleAsync(user, TipoUsuario.Administrador.ToString());
 
-            if (!result.Succeeded)
-            {
-                return;
+                        var novoUsuario = new Usuario
+                        {
+                            Nome = $"ClienteApiKey ({authClientId})",
+                            Id = user.Id,
+                            Created = DateTime.UtcNow,
+                            Updated = DateTime.UtcNow
+                        };
+
+                        await context.Usuarios.AddAsync(novoUsuario);
+                        await context.SaveChangesAsync();
+                    }
+                }
             }
-
-            await userManager.AddToRoleAsync(user, TipoUsuario.Administrador.ToString());
-
-            var novoUsuario = new Usuario
-            {
-                Nome = "Administrador do Sistema",
-                Id = user.Id,
-                Created = DateTime.UtcNow,
-                Updated = DateTime.UtcNow
-            };
-            await context.Usuarios.AddAsync(novoUsuario);
-            await context.SaveChangesAsync();
         }
     }
 }

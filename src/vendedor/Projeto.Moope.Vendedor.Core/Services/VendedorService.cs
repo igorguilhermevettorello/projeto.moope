@@ -49,26 +49,26 @@ namespace Projeto.Moope.Vendedor.Core.Services
             return await _vendedorRepository.BuscarTodosAsync();
         }
 
-        public async Task<Result<VendedorModel>> SalvarAsync(VendedorModel vendedor)
+        public async Task<ResultDto<VendedorModel>> SalvarAsync(VendedorModel vendedor)
         {
             var agora = DateTime.UtcNow;
             vendedor.Created = agora;
             vendedor.Updated = agora;
 
             var entity = await _vendedorRepository.SalvarAsync(vendedor);
-            return new Result<VendedorModel>
+            return new ResultDto<VendedorModel>
             {
                 Status = true,
                 Dados = entity
             };
         }
 
-        public async Task<Result<VendedorModel>> AtualizarAsync(VendedorModel vendedor)
+        public async Task<ResultDto<VendedorModel>> AtualizarAsync(VendedorModel vendedor)
         {
             vendedor.Updated = DateTime.UtcNow;
 
             var entity = await _vendedorRepository.AtualizarAsync(vendedor);
-            return new Result<VendedorModel>
+            return new ResultDto<VendedorModel>
             {
                 Status = true,
                 Dados = entity
@@ -81,19 +81,19 @@ namespace Projeto.Moope.Vendedor.Core.Services
             return true;
         }
 
-        public async Task<Result> AtualizarEndereco(Guid vendedorId, Guid enderecoId)
+        public async Task<ResultDto> AtualizarEndereco(Guid vendedorId, Guid enderecoId)
         {
             try
             {
                 if (vendedorId == Guid.Empty || enderecoId == Guid.Empty)
                 {
-                    return new Result { Status = false, Mensagem = "Cliente ou endereço inválidos" };
+                    return new ResultDto { Status = false, Mensagem = "Cliente ou endereço inválidos" };
                 }
 
                 var vendedor = await _vendedorRepository.BuscarPorIdAsync(vendedorId);
                 if (vendedor == null || vendedor.Id == Guid.Empty)
                 {
-                    return new Result { Status = false, Mensagem = "Usuário não encontrado" };
+                    return new ResultDto { Status = false, Mensagem = "Usuário não encontrado" };
                 }
 
                 vendedor.Updated = DateTime.UtcNow;
@@ -103,12 +103,12 @@ namespace Projeto.Moope.Vendedor.Core.Services
 
                 _ = await _vendedorRepository.UnitOfWork.Commit();
 
-                return new Result { Status = true };
+                return new ResultDto { Status = true };
             }
 
             catch (Exception)
             {
-                return new Result { Status = false, Mensagem = "Erro ao atualizar endereço do usuário" };
+                return new ResultDto { Status = false, Mensagem = "Erro ao atualizar endereço do usuário" };
             } 
         }
     }

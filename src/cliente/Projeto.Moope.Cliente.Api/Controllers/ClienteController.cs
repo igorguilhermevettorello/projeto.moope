@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Cryptography;
+using System.Net.Mail;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
+using Projeto.Moope.Cliente.Api.Configurations;
 using Projeto.Moope.Cliente.Api.DTOs;
 using Projeto.Moope.Cliente.Core.Interfaces.Services;
 using Projeto.Moope.Core.Enums;
@@ -17,10 +21,16 @@ namespace Projeto.Moope.Cliente.Api.Controllers
     public class ClienteController : MainController
     {
         private readonly IClienteService _clienteService;
+        private readonly AnonymousEndpointKeysSettings _anonymousEndpointKeysSettings;
 
-        public ClienteController(IClienteService clienteService, INotificador notificador, IUser appUser) : base(notificador, appUser)
+        public ClienteController(
+            IClienteService clienteService,
+            IOptions<AnonymousEndpointKeysSettings> anonymousEndpointKeysSettings,
+            INotificador notificador,
+            IUser appUser) : base(notificador, appUser)
         {
             _clienteService = clienteService;
+            _anonymousEndpointKeysSettings = anonymousEndpointKeysSettings.Value;
         }
 
         [HttpGet]
@@ -57,35 +67,46 @@ namespace Projeto.Moope.Cliente.Api.Controllers
             return Ok(cliente);
         }
 
-        //[HttpGet("cupom/{codigoCupom}")]
-        //[AllowAnonymous]
-        //[ProducesResponseType(typeof(ClienteResponseDto), StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> BuscarPorCodigoCupom(string codigoCupom)
-        //{
-        //    var cliente = await _clienteService.BuscarPorCodigoCupomAsync(codigoCupom);
-        //    if (cliente == null)
-        //        return NotFound();
+        [HttpGet("email")]
+        [AllowAnonymous]
+        [ApiKeyRequired]
+        [ProducesResponseType(typeof(ClienteDetalheDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> BuscarPorEmail([FromQuery] string email)
+        {
+            if (!TryValidateApiKey())
+                return Unauthorized();
 
-        //    return Ok(MapToResponseDto(cliente));
-        //}
+            if (string.IsNullOrWhiteSpace(email))
+                return BadRequest("Email é obrigatório.");
+
+            if (!IsValidEmail(email))
+                return BadRequest("Email inválido.");
+
+            var cliente = await _clienteService.BuscarClientePorEmailComDadosAsync<ClienteDetalheDto>(email);
+            if (cliente == null)
+                return NotFound("Cliente não encontrado");
+
+            return Ok(cliente);
+        }
 
         [HttpPost]
         [Authorize(Roles = nameof(TipoUsuario.Administrador))]
-        [ProducesResponseType(typeof(ClienteResponseDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ClienteCreateDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Criar([FromBody] CriarClienteDto dto)
+        public async Task<IActionResult> Criar([FromBody] ClienteCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
 
             var cliente = new ClienteModel
             {
-                TipoPessoa = dto.TipoPessoa,
-                CpfCnpj = dto.CpfCnpj,
+                Telefone = dto.Telefone,
+                TelefoneEmergencia = dto.TelefoneEmergencia,
                 VendedorId = dto.VendedorId
             };
 
@@ -105,7 +126,7 @@ namespace Projeto.Moope.Cliente.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Atualizar(Guid id, [FromBody] AlterarClienteDto dto)
+        public async Task<IActionResult> Atualizar(Guid id, [FromBody] ClienteUpdateDto dto)
         {
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
@@ -117,8 +138,8 @@ namespace Projeto.Moope.Cliente.Api.Controllers
             if (existing == null)
                 return NotFound();
 
-            existing.TipoPessoa = dto.TipoPessoa;
-            existing.CpfCnpj = dto.CpfCnpj;
+            existing.Telefone = dto.Telefone;
+            existing.TelefoneEmergencia = dto.TelefoneEmergencia;
             existing.VendedorId = dto.VendedorId;
 
             var result = await _clienteService.AtualizarAsync(existing);
@@ -196,6 +217,44 @@ namespace Projeto.Moope.Cliente.Api.Controllers
                 Updated = cliente.Updated,
                 VendedorId = cliente.VendedorId
             };
+        }
+
+        private bool TryValidateApiKey()
+        {
+            if (!Request.Headers.TryGetValue("x-api-key", out var apiKeyHeaderValues))
+                return false;
+
+            var providedApiKey = apiKeyHeaderValues.ToString();
+            if (string.IsNullOrWhiteSpace(providedApiKey))
+                return false;
+
+            var configuredApiKey = _anonymousEndpointKeysSettings.BuscarClientePorEmail;
+            if (string.IsNullOrWhiteSpace(configuredApiKey))
+                return false;
+
+            return FixedTimeEquals(providedApiKey.Trim(), configuredApiKey.Trim());
+        }
+
+        private static bool FixedTimeEquals(string left, string right)
+        {
+            var leftBytes = System.Text.Encoding.UTF8.GetBytes(left);
+            var rightBytes = System.Text.Encoding.UTF8.GetBytes(right);
+            if (leftBytes.Length != rightBytes.Length)
+                return false;
+            return CryptographicOperations.FixedTimeEquals(leftBytes, rightBytes);
+        }
+
+        private static bool IsValidEmail(string email)
+        {
+            try
+            {
+                var mailAddress = new MailAddress(email);
+                return mailAddress.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

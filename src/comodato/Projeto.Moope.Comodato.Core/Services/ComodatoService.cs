@@ -39,31 +39,31 @@ namespace Projeto.Moope.Comodato.Core.Services
             return await _comodatoRepository.BuscarPorClienteIdAsync(clienteId);
         }
 
-        public async Task<Result<ComodatoModel>> SalvarAsync(ComodatoModel comodato)
+        public async Task<ResultDto<ComodatoModel>> SalvarAsync(ComodatoModel comodato)
         {
             var entity = await _comodatoRepository.SalvarAsync(comodato);
-            return new Result<ComodatoModel>
+            return new ResultDto<ComodatoModel>
             {
                 Status = true,
                 Dados = entity
             };
         }
 
-        public async Task<Result<ComodatoModel>> AtualizarAsync(ComodatoModel comodato)
+        public async Task<ResultDto<ComodatoModel>> AtualizarAsync(ComodatoModel comodato)
         {
             var entity = await _comodatoRepository.AtualizarAsync(comodato);
-            return new Result<ComodatoModel>
+            return new ResultDto<ComodatoModel>
             {
                 Status = true,
                 Dados = entity
             };
         }
 
-        public async Task<Result<ComodatoModel>> AlterarStatusAsync(ComodatoModel comodato, ComodatoStatus status)
+        public async Task<ResultDto<ComodatoModel>> AlterarStatusAsync(ComodatoModel comodato, ComodatoStatus status)
         {
             comodato.Status = status;
             var entity = await _comodatoRepository.AtualizarAsync(comodato);
-            return new Result<ComodatoModel>
+            return new ResultDto<ComodatoModel>
             {
                 Status = true,
                 Dados = entity

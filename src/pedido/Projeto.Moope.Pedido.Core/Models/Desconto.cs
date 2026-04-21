@@ -1,11 +1,12 @@
-﻿using Projeto.Moope.Core.Models;
+﻿using Projeto.Moope.Core.Interfaces.Data;
+using Projeto.Moope.Core.Models;
 using Projeto.Moope.Pedido.Core.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Projeto.Moope.Pedido.Core.Models
 {
     [Table("Desconto")]
-    public class Desconto : Entity
+    public class Desconto : Entity, IAggregateRoot
     {
         public Guid PedidoId { get; set; }
         public decimal ValorPercentual { get; set; }

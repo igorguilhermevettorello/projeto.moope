@@ -39,6 +39,11 @@ namespace Projeto.Moope.Cliente.Core.Services
             return await _clienteRepository.BuscarClientePorIdComDadosAsync<T>(id);
         }
 
+        public async Task<T?> BuscarClientePorEmailComDadosAsync<T>(string email)
+        {
+            return await _clienteRepository.BuscarClientePorEmailComDadosAsync<T>(email);
+        }
+
         public async Task<ClienteModel?> BuscarPorCodigoCupomAsync(string codigoCupom)
         {
             return await _clienteRepository.BuscarPorCodigoCupomAsync(codigoCupom);
@@ -49,26 +54,26 @@ namespace Projeto.Moope.Cliente.Core.Services
             return await _clienteRepository.BuscarTodosAsync();
         }
 
-        public async Task<Result<ClienteModel>> SalvarAsync(ClienteModel cliente)
+        public async Task<ResultDto<ClienteModel>> SalvarAsync(ClienteModel cliente)
         {
             var agora = DateTime.UtcNow;
             cliente.Created = agora;
             cliente.Updated = agora;
 
             var entity = await _clienteRepository.SalvarAsync(cliente);
-            return new Result<ClienteModel>
+            return new ResultDto<ClienteModel>
             {
                 Status = true,
                 Dados = entity
             };
         }
 
-        public async Task<Result<ClienteModel>> AtualizarAsync(ClienteModel cliente)
+        public async Task<ResultDto<ClienteModel>> AtualizarAsync(ClienteModel cliente)
         {
             cliente.Updated = DateTime.UtcNow;
 
             var entity = await _clienteRepository.AtualizarAsync(cliente);
-            return new Result<ClienteModel>
+            return new ResultDto<ClienteModel>
             {
                 Status = true,
                 Dados = entity
@@ -81,17 +86,17 @@ namespace Projeto.Moope.Cliente.Core.Services
             return true;
         }
 
-        public async Task<Result> AtualizarEndereco(Guid clienteId, Guid enderecoId)
+        public async Task<ResultDto> AtualizarEndereco(Guid clienteId, Guid enderecoId)
         {
             if (clienteId == Guid.Empty || enderecoId == Guid.Empty)
             {
-                return new Result { Status = false, Mensagem = "Cliente ou endereço inválidos" };
+                return new ResultDto { Status = false, Mensagem = "Cliente ou endereço inválidos" };
             }
 
             var cliente = await _clienteRepository.BuscarPorIdAsync(clienteId);
             if (cliente == null || cliente.Id == Guid.Empty)
             {
-                return new Result { Status = false, Mensagem = "Usuário não encontrado" };
+                return new ResultDto { Status = false, Mensagem = "Usuário não encontrado" };
             }
 
             cliente.Updated = DateTime.UtcNow;
@@ -102,10 +107,10 @@ namespace Projeto.Moope.Cliente.Core.Services
             var commitSucesso = await _clienteRepository.UnitOfWork.Commit();
             if (!commitSucesso)
             {
-                return new Result { Status = false, Mensagem = "Erro ao atualizar endereço do usuário" };
+                return new ResultDto { Status = false, Mensagem = "Erro ao atualizar endereço do usuário" };
             }
 
-            return new Result { Status = true };
+            return new ResultDto { Status = true };
         }
     }
 }

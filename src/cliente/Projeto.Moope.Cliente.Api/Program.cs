@@ -7,6 +7,8 @@ builder.Services.AddApiConfig();
 builder.Services.AddAuthConfig(builder.Configuration, builder.Environment);
 builder.Services.AddConectionConfig(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
+builder.Services.Configure<AnonymousEndpointKeysSettings>(
+    builder.Configuration.GetSection(AnonymousEndpointKeysSettings.SectionPath));
 DependencyInjectionConfig.RegisterServices(builder.Services, builder.Configuration);
 
 var app = builder.Build();

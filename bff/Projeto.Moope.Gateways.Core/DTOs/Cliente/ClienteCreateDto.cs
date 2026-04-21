@@ -27,12 +27,6 @@ namespace Projeto.Moope.Gateways.Core.DTOs.Cliente
 
         public string InscricaoEstadual { get; set; } = string.Empty;
 
-        public decimal PercentualComissao { get; set; }
-
-        public string ChavePix { get; set; } = string.Empty;
-
-        public string CodigoCupom { get; set; } = string.Empty;
-
         public Guid? VendedorId { get; set; }
     }
 }

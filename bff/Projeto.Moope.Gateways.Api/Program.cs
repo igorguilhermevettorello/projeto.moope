@@ -25,6 +25,7 @@ builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<VendedorMappingProfile>();
     cfg.AddProfile<ClienteMappingProfile>();
+    cfg.AddProfile<VendaMappingProfile>();
 });
 
 builder.Services.Configure<DownstreamApisOptions>(
@@ -40,7 +41,10 @@ builder.Services.AddScoped<IClienteDeleteService, ClienteDeleteService>();
 builder.Services.AddScoped<IVendedorCreateService, VendedorCreateService>();
 builder.Services.AddScoped<IVendedorGetByIdService, VendedorGetByIdService>();
 builder.Services.AddScoped<IVendedorUpdateService, VendedorUpdateService>();
-builder.Services.AddScoped<IProcessarVendaOrchestrator, ProcessarVendaOrchestrator>();
+builder.Services.AddScoped<IProcessarVendaService, ProcessarVendaService>();
+builder.Services.AddScoped<IPlanoGetById, PlanoGetById>();
+
+
 builder.Services.AddScoped<IUser, AspNetUser>();
 
 var app = builder.Build();
