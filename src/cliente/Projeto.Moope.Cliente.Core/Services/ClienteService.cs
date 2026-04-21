@@ -112,5 +112,32 @@ namespace Projeto.Moope.Cliente.Core.Services
 
             return new ResultDto { Status = true };
         }
+
+        public async Task<ResultDto> AtualizarGalaxPayId(Guid clienteId, int galaxPayId)
+        {
+            if (clienteId == Guid.Empty || galaxPayId == 0)
+            {
+                return new ResultDto { Status = false, Mensagem = "Cliente ou GalaxPayId inválidos" };
+            }
+
+            var cliente = await _clienteRepository.BuscarPorIdAsync(clienteId);
+            if (cliente == null || cliente.Id == Guid.Empty)
+            {
+                return new ResultDto { Status = false, Mensagem = "Usuário não encontrado" };
+            }
+
+            cliente.Updated = DateTime.UtcNow;
+            cliente.GalaxPayId = galaxPayId;
+
+            await _clienteRepository.AtualizarAsync(cliente);
+
+            var commitSucesso = await _clienteRepository.UnitOfWork.Commit();
+            if (!commitSucesso)
+            {
+                return new ResultDto { Status = false, Mensagem = "Erro ao atualizar GalaxPayId do usuário" };
+            }
+
+            return new ResultDto { Status = true };
+        }
     }
 }

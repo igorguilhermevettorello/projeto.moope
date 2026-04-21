@@ -10,7 +10,9 @@ namespace Projeto.Moope.Pagamento.Api.DTOs
     public class CriarClienteRequestDto
     {
         public Guid? ClienteId { get; set; }
-        public JsonElement Payload { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Document { get; set; } = string.Empty;
     }
 
     public class CriarPlanoRequestDto
@@ -22,7 +24,11 @@ namespace Projeto.Moope.Pagamento.Api.DTOs
     {
         public string CustomerId { get; set; } = string.Empty;
         public string TypeId { get; set; } = "galaxPayId";
-        public JsonElement Payload { get; set; }
+        //public JsonElement Payload { get; set; }
+        public string Number { get; set; } = string.Empty;
+        public string Holder { get; set; } = string.Empty;
+        public string ExpiresAt { get; set; } = string.Empty;
+        public string Cvv { get; set; } = string.Empty;
     }
 
     public class CriarAssinaturaRequestDto

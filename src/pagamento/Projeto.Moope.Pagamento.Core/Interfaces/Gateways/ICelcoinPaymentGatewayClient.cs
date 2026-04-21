@@ -1,3 +1,4 @@
+using Projeto.Moope.Pagamento.Core.Services.Models;
 using System.Text.Json;
 
 namespace Projeto.Moope.Pagamento.Core.Interfaces.Gateways
@@ -6,7 +7,7 @@ namespace Projeto.Moope.Pagamento.Core.Interfaces.Gateways
     {
         Task<JsonElement> AutenticarAsync(string scope, CancellationToken cancellationToken = default);
 
-        Task<JsonElement> CriarClienteAsync(object request, CancellationToken cancellationToken = default);
+        Task<JsonElement> CriarClienteAsync(CriarClienteGatewayRequestDto request, CancellationToken cancellationToken = default);
         Task<JsonElement> ListarClientesAsync(IDictionary<string, string?>? query = null, CancellationToken cancellationToken = default);
 
         Task<JsonElement> CriarPlanoAsync(object request, CancellationToken cancellationToken = default);

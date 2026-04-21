@@ -5,13 +5,13 @@ using Projeto.Moope.Gateways.Core.DTOs;
 using Projeto.Moope.Gateways.Core.DTOs.Cliente;
 using Projeto.Moope.Gateways.Core.DTOs.Endereco;
 using Projeto.Moope.Gateways.Core.Helpers;
-using Projeto.Moope.Gateways.Core.Interfaces.Services;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Cliente;
 using Projeto.Moope.Gateways.Core.Options;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace Projeto.Moope.Gateways.Core.Services
+namespace Projeto.Moope.Gateways.Core.Services.Cliente
 {
     public sealed class ClienteGetByIdService : IClienteGetByIdService
     {

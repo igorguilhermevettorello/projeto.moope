@@ -3,10 +3,10 @@ using Microsoft.Extensions.Options;
 using Projeto.Moope.Core.DTOs;
 using Projeto.Moope.Gateways.Core.DTOs;
 using Projeto.Moope.Gateways.Core.Helpers;
-using Projeto.Moope.Gateways.Core.Interfaces.Services;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Cliente;
 using Projeto.Moope.Gateways.Core.Options;
 
-namespace Projeto.Moope.Gateways.Core.Services
+namespace Projeto.Moope.Gateways.Core.Services.Cliente
 {
     public sealed class ClienteDeleteService : IClienteDeleteService
     {

@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Projeto.Moope.Core.DTOs;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Services;
@@ -8,6 +7,8 @@ using Projeto.Moope.Pagamento.Core.Interfaces.Repositories;
 using Projeto.Moope.Pagamento.Core.Interfaces.Services;
 using Projeto.Moope.Pagamento.Core.Models;
 using Projeto.Moope.Pagamento.Core.Services.Models;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Projeto.Moope.Pagamento.Core.Services
 {
@@ -55,37 +56,11 @@ namespace Projeto.Moope.Pagamento.Core.Services
         {
             try
             {
-                var json = await _gatewayClient.CriarClienteAsync(request.Payload, cancellationToken);
-
-                if (request.ClienteId.HasValue && request.ClienteId.Value != Guid.Empty)
-                {
-                    var gatewayCustomerId = TryGetFirstId(json);
-                    if (!string.IsNullOrWhiteSpace(gatewayCustomerId))
-                    {
-                        var existing = await _referenciaRepository.BuscarPorClienteIdAsync(request.ClienteId.Value);
-                        var now = DateTime.UtcNow;
-
-                        if (existing == null)
-                        {
-                            var entity = new PagamentoReferencia
-                            {
-                                ClienteId = request.ClienteId.Value,
-                                GatewayCustomerId = gatewayCustomerId!,
-                                Created = now,
-                                Updated = now
-                            };
-                            await _referenciaRepository.SalvarAsync(entity);
-                        }
-                        else
-                        {
-                            existing.GatewayCustomerId = gatewayCustomerId!;
-                            existing.Updated = now;
-                            await _referenciaRepository.AtualizarAsync(existing);
-                        }
-                    }
-                }
-
-                return new ResultDto<JsonElement> { Status = true, Dados = json };
+                var json = await _gatewayClient.CriarClienteAsync(request, cancellationToken);
+                var gatewayCustomerId = TryGetFirstId(json);
+                var dados = new { galaxPay = gatewayCustomerId };
+                var galaxPay = JsonSerializer.SerializeToElement(dados);    
+                return new ResultDto<JsonElement> { Status = true, Dados = galaxPay };
             }
             catch (Exception ex)
             {
@@ -137,7 +112,10 @@ namespace Projeto.Moope.Pagamento.Core.Services
             try
             {
                 var json = await _gatewayClient.CriarCartaoAsync(request.CustomerId, request.TypeId, request.Payload, cancellationToken);
-                return new ResultDto<JsonElement> { Status = true, Dados = json };
+                var gatewayCardId = TryGetFirstId(json);
+                var dados = new { galaxPay = gatewayCardId };
+                var galaxPay = JsonSerializer.SerializeToElement(dados);
+                return new ResultDto<JsonElement> { Status = true, Dados = galaxPay };
             }
             catch (Exception ex)
             {
@@ -292,19 +270,77 @@ namespace Projeto.Moope.Pagamento.Core.Services
 
         private static string? TryGetFirstId(JsonElement json)
         {
-            // Assunção defensiva: o gateway geralmente retorna um identificador numérico/string em algum campo comum.
-            // Mantemos heurística mínima para permitir persistir mapping sem acoplar no schema.
-            if (json.ValueKind != JsonValueKind.Object)
+            // Extrator genérico: percorre o JSON (objetos/arrays) buscando um ID em campos comuns
+            // (ex.: galaxPayId) sem acoplar no schema de cada endpoint.
+            var candidates = new[]
+            {
+                "galaxPayId",
+                "id",
+                "customerId"
+            };
+
+            return TryFindFirstPropertyValue(json, candidates, maxDepth: 10);
+        }
+
+        private static string? TryFindFirstPropertyValue(JsonElement element, IReadOnlyList<string> candidatePropertyNames, int maxDepth)
+        {
+            if (maxDepth < 0)
                 return null;
 
-            if (json.TryGetProperty("galaxPayId", out var galaxPayId))
-                return galaxPayId.ToString();
+            static string? AsNonEmptyString(JsonElement value)
+            {
+                if (value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+                    return null;
 
-            if (json.TryGetProperty("id", out var id))
-                return id.ToString();
+                var s = value.ValueKind == JsonValueKind.String ? value.GetString() : value.ToString();
+                return string.IsNullOrWhiteSpace(s) ? null : s;
+            }
 
-            if (json.TryGetProperty("customerId", out var customerId))
-                return customerId.ToString();
+            static bool TryGetPropertyIgnoreCase(JsonElement obj, string name, out JsonElement value)
+            {
+                foreach (var prop in obj.EnumerateObject())
+                {
+                    if (string.Equals(prop.Name, name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        value = prop.Value;
+                        return true;
+                    }
+                }
+
+                value = default;
+                return false;
+            }
+
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                // Prioriza encontrar o ID no nível atual (envelope ou entidade)
+                foreach (var candidate in candidatePropertyNames)
+                {
+                    if (TryGetPropertyIgnoreCase(element, candidate, out var value))
+                    {
+                        var s = AsNonEmptyString(value);
+                        if (!string.IsNullOrWhiteSpace(s))
+                            return s;
+                    }
+                }
+
+                // Depois, desce recursivamente em todas as propriedades (ex.: Customer, Card, etc.)
+                foreach (var prop in element.EnumerateObject())
+                {
+                    var nested = TryFindFirstPropertyValue(prop.Value, candidatePropertyNames, maxDepth - 1);
+                    if (!string.IsNullOrWhiteSpace(nested))
+                        return nested;
+                }
+            }
+            else if (element.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in element.EnumerateArray())
+                {
+                    var nested = TryFindFirstPropertyValue(item, candidatePropertyNames, maxDepth - 1);
+                    if (!string.IsNullOrWhiteSpace(nested))
+                        return nested;
+                }
+            }
 
             return null;
         }

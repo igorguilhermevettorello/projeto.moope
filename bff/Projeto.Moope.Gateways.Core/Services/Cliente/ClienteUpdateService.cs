@@ -2,17 +2,17 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Projeto.Moope.Core.DTOs;
 using Projeto.Moope.Gateways.Core.DTOs;
+using Projeto.Moope.Gateways.Core.DTOs.Cliente;
 using Projeto.Moope.Gateways.Core.DTOs.Endereco;
-using Projeto.Moope.Gateways.Core.DTOs.Vendedor;
 using Projeto.Moope.Gateways.Core.Helpers;
-using Projeto.Moope.Gateways.Core.Interfaces.Services;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Cliente;
 using Projeto.Moope.Gateways.Core.Options;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace Projeto.Moope.Gateways.Core.Services
+namespace Projeto.Moope.Gateways.Core.Services.Cliente
 {
-    public class VendedorUpdateService : IVendedorUpdateService
+    public sealed class ClienteUpdateService : IClienteUpdateService
     {
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
@@ -22,42 +22,42 @@ namespace Projeto.Moope.Gateways.Core.Services
 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly DownstreamApisOptions _apis;
-        private readonly IVendedorGetByIdService _vendedorGetByIdService;
+        private readonly IClienteGetByIdService _clienteGetByIdService;
 
-        public VendedorUpdateService(
+        public ClienteUpdateService(
             IHttpClientFactory httpClientFactory,
             IOptions<DownstreamApisOptions> apis,
-            IVendedorGetByIdService vendedorGetByIdService)
+            IClienteGetByIdService clienteGetByIdService)
         {
             _httpClientFactory = httpClientFactory;
             _apis = apis.Value;
-            _vendedorGetByIdService = vendedorGetByIdService;
+            _clienteGetByIdService = clienteGetByIdService;
         }
 
-        public async Task<ResultDto<VendedorDetailDto>> ExecutarAsync(VendedorUpdateDto request, string? authorizationHeader, CancellationToken cancellationToken)
+        public async Task<ResultDto<ClienteDetailDto>> ExecutarAsync(ClienteUpdateDto request, string? authorizationHeader, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(_apis.Vendedor)
+            if (string.IsNullOrWhiteSpace(_apis.Cliente)
                 || string.IsNullOrWhiteSpace(_apis.Auth)
                 || string.IsNullOrWhiteSpace(_apis.Endereco))
             {
-                return new ResultDto<VendedorDetailDto>
+                return new ResultDto<ClienteDetailDto>
                 {
                     Status = false,
                     StatusCode = StatusCodes.Status500InternalServerError,
                     Dados = null,
-                    Mensagem = "DownstreamApis (Vendedor, Auth, Endereco) nao configurados."
+                    Mensagem = "DownstreamApis (Cliente, Auth, Endereco) nao configurados."
                 };
             }
 
-            var existente = await _vendedorGetByIdService.ExecutarAsync(request.Id, authorizationHeader, cancellationToken);
+            var existente = await _clienteGetByIdService.ExecutarAsync(request.Id, authorizationHeader, cancellationToken);
             if (!existente.Status || existente.Dados == null)
             {
-                return new ResultDto<VendedorDetailDto>
+                return new ResultDto<ClienteDetailDto>
                 {
                     Status = false,
                     StatusCode = existente.StatusCode,
                     Dados = null,
-                    Mensagem = existente.Mensagem ?? "Vendedor nao encontrado."
+                    Mensagem = existente.Mensagem ?? "Cliente nao encontrado."
                 };
             }
 
@@ -66,7 +66,7 @@ namespace Projeto.Moope.Gateways.Core.Services
             var usuarioUrl = Utils.Combine(_apis.Auth, $"/api/usuario/{request.Id}");
             var usuarioBody = new
             {
-                Id = request.Id,
+                request.Id,
                 request.Nome,
                 request.Email,
                 request.CpfCnpj,
@@ -85,7 +85,7 @@ namespace Projeto.Moope.Gateways.Core.Services
             if (!usuarioResponse.IsSuccessStatusCode)
             {
                 var rs = await Utils.FalhaDownstreamAsync(usuarioResponse, cancellationToken);
-                return new ResultDto<VendedorDetailDto>
+                return new ResultDto<ClienteDetailDto>
                 {
                     Status = false,
                     StatusCode = rs.StatusCode,
@@ -94,10 +94,10 @@ namespace Projeto.Moope.Gateways.Core.Services
                 };
             }
 
-            var vendedorUrl = Utils.Combine(_apis.Vendedor, $"/api/vendedor/{request.Id}");
-            var vendedorBody = new
+            var clienteUrl = Utils.Combine(_apis.Cliente, $"/api/cliente/{request.Id}");
+            var clienteBody = new
             {
-                Id = request.Id,
+                request.Id,
                 request.TipoPessoa,
                 request.CpfCnpj,
                 request.PercentualComissao,
@@ -106,20 +106,20 @@ namespace Projeto.Moope.Gateways.Core.Services
                 request.VendedorId
             };
 
-            using var vendedorRequest = new HttpRequestMessage(HttpMethod.Put, vendedorUrl);
-            Utils.AplicarAutorizacao(vendedorRequest, authorizationHeader);
-            vendedorRequest.Content = JsonContent.Create(vendedorBody, options: JsonOptions);
+            using var clienteRequest = new HttpRequestMessage(HttpMethod.Put, clienteUrl);
+            Utils.AplicarAutorizacao(clienteRequest, authorizationHeader);
+            clienteRequest.Content = JsonContent.Create(clienteBody, options: JsonOptions);
 
-            using var vendedorResponse = await httpClient.SendAsync(vendedorRequest, cancellationToken);
-            if (!vendedorResponse.IsSuccessStatusCode)
+            using var clienteResponse = await httpClient.SendAsync(clienteRequest, cancellationToken);
+            if (!clienteResponse.IsSuccessStatusCode)
             {
-                var rs = await Utils.FalhaDownstreamAsync(vendedorResponse, cancellationToken);
-                return new ResultDto<VendedorDetailDto>
+                var rs = await Utils.FalhaDownstreamAsync(clienteResponse, cancellationToken);
+                return new ResultDto<ClienteDetailDto>
                 {
                     Status = false,
                     StatusCode = rs.StatusCode,
                     Dados = null,
-                    Mensagem = rs.Mensagem ?? "Erro desconhecido ao atualizar vendedor."
+                    Mensagem = rs.Mensagem ?? "Erro desconhecido ao atualizar cliente."
                 };
             }
 
@@ -137,13 +137,13 @@ namespace Projeto.Moope.Gateways.Core.Services
                     return enderecoResultado;
             }
 
-            return await _vendedorGetByIdService.ExecutarAsync(request.Id, authorizationHeader, cancellationToken);
+            return await _clienteGetByIdService.ExecutarAsync(request.Id, authorizationHeader, cancellationToken);
         }
 
-        private async Task<ResultDto<VendedorDetailDto>> ProcessarEnderecoAsync(
+        private async Task<ResultDto<ClienteDetailDto>> ProcessarEnderecoAsync(
             HttpClient httpClient,
             Guid? enderecoIdAtual,
-            Guid vendedorId,
+            Guid clienteId,
             EnderecoUpdateDto endereco,
             string? authorizationHeader,
             CancellationToken cancellationToken)
@@ -171,7 +171,7 @@ namespace Projeto.Moope.Gateways.Core.Services
                 if (!enderecoResponse.IsSuccessStatusCode)
                 {
                     var rs = await Utils.FalhaDownstreamAsync(enderecoResponse, cancellationToken);
-                    return new ResultDto<VendedorDetailDto>
+                    return new ResultDto<ClienteDetailDto>
                     {
                         Status = false,
                         StatusCode = rs.StatusCode,
@@ -180,7 +180,7 @@ namespace Projeto.Moope.Gateways.Core.Services
                     };
                 }
 
-                return new ResultDto<VendedorDetailDto> { Status = true, StatusCode = StatusCodes.Status200OK };
+                return new ResultDto<ClienteDetailDto> { Status = true, StatusCode = StatusCodes.Status200OK };
             }
 
             var criarUrl = Utils.Combine(_apis.Endereco, "/api/endereco");
@@ -203,7 +203,7 @@ namespace Projeto.Moope.Gateways.Core.Services
             if (!criarResponse.IsSuccessStatusCode)
             {
                 var rs = await Utils.FalhaDownstreamAsync(criarResponse, cancellationToken);
-                return new ResultDto<VendedorDetailDto>
+                return new ResultDto<ClienteDetailDto>
                 {
                     Status = false,
                     StatusCode = rs.StatusCode,
@@ -215,7 +215,7 @@ namespace Projeto.Moope.Gateways.Core.Services
             var novoEnderecoId = await Utils.LerGuidRespostaAsync(criarResponse, cancellationToken);
             if (novoEnderecoId == null)
             {
-                return new ResultDto<VendedorDetailDto>
+                return new ResultDto<ClienteDetailDto>
                 {
                     Status = false,
                     StatusCode = StatusCodes.Status502BadGateway,
@@ -224,7 +224,7 @@ namespace Projeto.Moope.Gateways.Core.Services
                 };
             }
 
-            var vincularUrl = Utils.Combine(_apis.Vendedor, $"/api/vendedor/{vendedorId}/endereco/{novoEnderecoId}");
+            var vincularUrl = Utils.Combine(_apis.Cliente, $"/api/cliente/{clienteId}/endereco/{novoEnderecoId}");
             using var vincularRequest = new HttpRequestMessage(HttpMethod.Patch, vincularUrl);
             Utils.AplicarAutorizacao(vincularRequest, authorizationHeader);
 
@@ -232,16 +232,17 @@ namespace Projeto.Moope.Gateways.Core.Services
             if (!vincularResponse.IsSuccessStatusCode)
             {
                 var rs = await Utils.FalhaDownstreamAsync(vincularResponse, cancellationToken);
-                return new ResultDto<VendedorDetailDto>
+                return new ResultDto<ClienteDetailDto>
                 {
                     Status = false,
                     StatusCode = rs.StatusCode,
                     Dados = null,
-                    Mensagem = rs.Mensagem ?? "Erro desconhecido ao vincular endereco ao vendedor."
+                    Mensagem = rs.Mensagem ?? "Erro desconhecido ao vincular endereco ao cliente."
                 };
             }
 
-            return new ResultDto<VendedorDetailDto> { Status = true, StatusCode = StatusCodes.Status200OK };
+            return new ResultDto<ClienteDetailDto> { Status = true, StatusCode = StatusCodes.Status200OK };
         }
     }
 }
+

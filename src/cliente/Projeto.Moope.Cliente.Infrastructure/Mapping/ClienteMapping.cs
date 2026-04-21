@@ -28,6 +28,9 @@ namespace Projeto.Moope.Cliente.Infrastructure.Mapping
             builder.Property(c => c.Updated)
                 .IsRequired();
 
+            builder.Property(c => c.GalaxPayId)
+                .IsRequired(false);
+
             builder.ToTable("Cliente");
         }
     }

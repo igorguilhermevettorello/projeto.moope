@@ -57,7 +57,7 @@ namespace Projeto.Moope.Cliente.Api.Controllers
                 return CustomResponse(ModelState);
             }
 
-            var cliente = await _clienteService.BuscarClientePorIdComDadosAsync<ClienteDetalheDto>(id);
+            var cliente = await _clienteService.BuscarClientePorIdComDadosAsync<ClienteDetailResponseDto>(id);
 
             if (cliente == null)
             {
@@ -70,7 +70,7 @@ namespace Projeto.Moope.Cliente.Api.Controllers
         [HttpGet("email")]
         [AllowAnonymous]
         [ApiKeyRequired]
-        [ProducesResponseType(typeof(ClienteDetalheDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ClienteDetailResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -85,7 +85,7 @@ namespace Projeto.Moope.Cliente.Api.Controllers
             if (!IsValidEmail(email))
                 return BadRequest("Email inválido.");
 
-            var cliente = await _clienteService.BuscarClientePorEmailComDadosAsync<ClienteDetalheDto>(email);
+            var cliente = await _clienteService.BuscarClientePorEmailComDadosAsync<ClienteDetailResponseDto>(email);
             if (cliente == null)
                 return NotFound("Cliente não encontrado");
 
@@ -182,6 +182,35 @@ namespace Projeto.Moope.Cliente.Api.Controllers
 
             var result = await _clienteService.AtualizarEndereco(clienteId, enderecoId);
 
+            if (!result.Status)
+            {
+                NotificarErro("Mensagem", result.Mensagem ?? "Erro ao atualizar endereço do usuário");
+
+                if (string.Equals(result.Mensagem, "Usuário não encontrado", StringComparison.OrdinalIgnoreCase))
+                    return NotFound(result.Mensagem);
+
+                return CustomResponse();
+            }
+
+            return NoContent();
+        }
+
+        [HttpPatch("{clienteId}/galaxpay/{galaxPayId}")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> AtualizarGalaxPayId(Guid clienteId, int galaxPayId)
+        {
+            if (clienteId == Guid.Empty || galaxPayId == 0)
+            {
+                ModelState.AddModelError("Id", "Usuário e o GalaxPayId são obrigatórios.");
+                return CustomResponse(ModelState);
+            }
+
+            var result = await _clienteService.AtualizarGalaxPayId(clienteId, galaxPayId);
             if (!result.Status)
             {
                 NotificarErro("Mensagem", result.Mensagem ?? "Erro ao atualizar endereço do usuário");

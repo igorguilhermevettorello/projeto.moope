@@ -1,11 +1,12 @@
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Projeto.Moope.Pagamento.Core.Exceptions;
 using Projeto.Moope.Pagamento.Core.Interfaces.Gateways;
+using Projeto.Moope.Pagamento.Core.Services.Models;
 using Projeto.Moope.Pagamento.Infrastructure.Configurations;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 
 namespace Projeto.Moope.Pagamento.Infrastructure.Services
 {
@@ -51,8 +52,8 @@ namespace Projeto.Moope.Pagamento.Infrastructure.Services
             return doc.RootElement.Clone();
         }
 
-        public Task<JsonElement> CriarClienteAsync(object request, CancellationToken cancellationToken = default) =>
-            SendJsonAsync(HttpMethod.Post, "customers", scope: "customers.write", request, cancellationToken);
+        public Task<JsonElement> CriarClienteAsync(CriarClienteGatewayRequestDto request, CancellationToken cancellationToken = default) =>
+            SendJsonAsync(HttpMethod.Post, "customers", scope: "customers.write", request.Payload, cancellationToken);
 
         public Task<JsonElement> ListarClientesAsync(IDictionary<string, string?>? query = null, CancellationToken cancellationToken = default) =>
             SendJsonAsync(HttpMethod.Get, BuildPath("customers", query), scope: "customers.read", body: null, cancellationToken);

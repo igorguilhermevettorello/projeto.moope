@@ -31,6 +31,8 @@ namespace Projeto.Moope.Gateways.Core.DTOs.Cliente
         public Guid? EnderecoId { get; set; }
 
         public EnderecoDetailDto? Endereco { get; set; }
+
+        public int? GalaxPayId { get; set; }
     }
 }
 

@@ -16,6 +16,7 @@ namespace Projeto.Moope.Cliente.Core.Models
         public string? TelefoneEmergencia { get; set; }
         public Guid? EnderecoId { get; set; }
         public Guid? VendedorId { get; set; }
+        public int? GalaxPayId { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }        
         [NotMapped]

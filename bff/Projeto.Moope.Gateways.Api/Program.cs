@@ -1,3 +1,4 @@
+using MediatR;
 using Projeto.Moope.Api.Utils;
 using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
@@ -5,8 +6,18 @@ using Projeto.Moope.Core.Notifications;
 using Projeto.Moope.Gateways.Api.Configurations;
 using Projeto.Moope.Gateways.Api.Mappings;
 using Projeto.Moope.Gateways.Core.Interfaces.Services;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Cliente;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.GalaxPay;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Pedido;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.RabbitMQ;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Vendedor;
 using Projeto.Moope.Gateways.Core.Options;
 using Projeto.Moope.Gateways.Core.Services;
+using Projeto.Moope.Gateways.Core.Services.Cliente;
+using Projeto.Moope.Gateways.Core.Services.GalaxPay;
+using Projeto.Moope.Gateways.Core.Services.Pedido;
+using Projeto.Moope.Gateways.Core.Services.RabbitMQ;
+using Projeto.Moope.Gateways.Core.Services.Vendedor;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +41,8 @@ builder.Services.AddAutoMapper(cfg =>
 
 builder.Services.Configure<DownstreamApisOptions>(
     builder.Configuration.GetSection(DownstreamApisOptions.SectionName));
+builder.Services.Configure<RabbitMqOptions>(
+    builder.Configuration.GetSection(RabbitMqOptions.SectionName));
 
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
@@ -42,8 +55,15 @@ builder.Services.AddScoped<IVendedorCreateService, VendedorCreateService>();
 builder.Services.AddScoped<IVendedorGetByIdService, VendedorGetByIdService>();
 builder.Services.AddScoped<IVendedorUpdateService, VendedorUpdateService>();
 builder.Services.AddScoped<IProcessarVendaService, ProcessarVendaService>();
+builder.Services.AddScoped<IVendedorGetByCupom, VendedorGetByCupom>();
+builder.Services.AddScoped<IVendaSendQueueService, VendaSendQueueService>();
 builder.Services.AddScoped<IPlanoGetById, PlanoGetById>();
 builder.Services.AddScoped<IAuthClientLoginService, AuthClientLoginService>();
+builder.Services.AddScoped<IClienteGalaxPayUpdateService, ClienteGalaxPayUpdateService>();
+builder.Services.AddScoped<IClienteGalaxPayCreateService, ClienteGalaxPayCreateService>();
+builder.Services.AddScoped<ICartaoGalaxPayCreateService, CartaoGalaxPayCreateService>();
+builder.Services.AddScoped<IPedidoCreateService, PedidoCreateService>();
+
 
 builder.Services.AddScoped<IUser, AspNetUser>();
 

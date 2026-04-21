@@ -7,7 +7,7 @@ using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Gateways.Api.DTOs.Cliente;
 using Projeto.Moope.Gateways.Core.DTOs.Cliente;
-using Projeto.Moope.Gateways.Core.Interfaces.Services;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Cliente;
 
 namespace Projeto.Moope.Gateways.Api.Controllers
 {

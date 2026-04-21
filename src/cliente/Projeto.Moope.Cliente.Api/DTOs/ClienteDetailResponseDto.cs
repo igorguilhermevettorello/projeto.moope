@@ -1,6 +1,6 @@
 ﻿namespace Projeto.Moope.Cliente.Api.DTOs
 {
-    public class ClienteDetalheDto
+    public class ClienteDetailResponseDto
     {
         public Guid Id { get; set; }
         public required string Nome { get; set; }
@@ -18,5 +18,6 @@
         public string? Bairro { get; set; }
         public string? Cidade { get; set; }
         public string? Estado { get; set; }
+        public int? GalaxPayId { get; set; }
     }
 }

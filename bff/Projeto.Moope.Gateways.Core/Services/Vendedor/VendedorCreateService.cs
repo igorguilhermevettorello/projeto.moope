@@ -2,21 +2,14 @@
 using Microsoft.Extensions.Options;
 using Projeto.Moope.Core.DTOs;
 using Projeto.Moope.Core.Enums;
-using Projeto.Moope.Gateways.Core.DTOs;
 using Projeto.Moope.Gateways.Core.DTOs.Vendedor;
 using Projeto.Moope.Gateways.Core.Helpers;
-using Projeto.Moope.Gateways.Core.Interfaces.Services;
-using Projeto.Moope.Gateways.Core.Models;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Vendedor;
 using Projeto.Moope.Gateways.Core.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
-namespace Projeto.Moope.Gateways.Core.Services
+namespace Projeto.Moope.Gateways.Core.Services.Vendedor
 {
     public class VendedorCreateService : IVendedorCreateService
     {

@@ -114,7 +114,8 @@ namespace Projeto.Moope.Cliente.Infrastructure.Repositories
                        e.Cidade as Cidade,
                        e.Estado as Estado,
                        pj.NomeFantasia as NomeFantasia,
-                       pj.InscricaoEstadual as InscricaoEstadual
+                       pj.InscricaoEstadual as InscricaoEstadual,
+                       c.GalaxPayId as GalaxPayId
                 FROM Cliente c
                 LEFT JOIN AspNetUsers au ON au.Id = c.Id
                 LEFT JOIN Usuario u ON u.Id = c.Id
@@ -148,7 +149,8 @@ namespace Projeto.Moope.Cliente.Infrastructure.Repositories
                        e.Cidade as Cidade,
                        e.Estado as Estado,
                        pj.NomeFantasia as NomeFantasia,
-                       pj.InscricaoEstadual as InscricaoEstadual
+                       pj.InscricaoEstadual as InscricaoEstadual,
+                       c.GalaxPayId as GalaxPayId
                 FROM Cliente c
                 LEFT JOIN AspNetUsers au ON au.Id = c.Id
                 LEFT JOIN Usuario u ON u.Id = c.Id

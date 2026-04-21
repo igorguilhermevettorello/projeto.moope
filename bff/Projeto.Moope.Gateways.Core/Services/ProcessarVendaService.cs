@@ -1,13 +1,21 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Projeto.Moope.Core.DTOs;
-using Projeto.Moope.Core.Enums;
+using Projeto.Moope.Gateways.Core.DTOs.Cartao;
 using Projeto.Moope.Gateways.Core.DTOs.Cliente;
+using Projeto.Moope.Gateways.Core.DTOs.Cliente.GalaxPay;
+using Projeto.Moope.Gateways.Core.DTOs.Pedido;
 using Projeto.Moope.Gateways.Core.DTOs.Venda;
 using Projeto.Moope.Gateways.Core.Helpers;
 using Projeto.Moope.Gateways.Core.Interfaces.Services;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Cliente;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.GalaxPay;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Pedido;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.RabbitMQ;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Vendedor;
 using Projeto.Moope.Gateways.Core.Options;
-using System.ComponentModel.DataAnnotations;
+using Projeto.Moope.Gateways.Core.Services.Cliente;
+using Projeto.Moope.Gateways.Core.Services.Pedido;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -29,19 +37,36 @@ namespace Projeto.Moope.Gateways.Core.Services
         private readonly IClienteCreateService _clienteCreateService;
         private readonly IAuthClientLoginService _authClientLoginService;
         private readonly IPlanoGetById _planoGetById;
-
+        private readonly IVendedorGetByCupom _vendedorGetByCupom;
+        private readonly IClienteGalaxPayCreateService _clienteGalaxPayCreateService;
+        private readonly ICartaoGalaxPayCreateService _cartaoGalaxPayCreateService;
+        private readonly IVendaSendQueueService _vendaSendQueueService;
+        private readonly IClienteGalaxPayUpdateService _clienteGalaxPayUpdateService;
+        private readonly IPedidoCreateService _pedidoCreateService;
         public ProcessarVendaService(
             IHttpClientFactory httpClientFactory,
             IOptions<DownstreamApisOptions> apis,
             IClienteCreateService clienteCreateService,
             IAuthClientLoginService authClientLoginService,
-            IPlanoGetById planoGetById)
+            IPlanoGetById planoGetById,
+            IVendedorGetByCupom vendedorGetByCupom,
+            IClienteGalaxPayCreateService clienteGalaxPayCreateService,
+            ICartaoGalaxPayCreateService cartaoGalaxPayCreateService,
+            IVendaSendQueueService vendaSendQueueService,
+            IClienteGalaxPayUpdateService clienteGalaxPayUpdateService,
+            IPedidoCreateService pedidoCreateService)   
         {
             _httpClientFactory = httpClientFactory;
             _apis = apis.Value;
             _clienteCreateService = clienteCreateService;
             _authClientLoginService = authClientLoginService;
             _planoGetById = planoGetById;
+            _vendedorGetByCupom = vendedorGetByCupom;
+            _clienteGalaxPayCreateService = clienteGalaxPayCreateService;
+            _cartaoGalaxPayCreateService = cartaoGalaxPayCreateService;
+            _vendaSendQueueService = vendaSendQueueService;
+            _clienteGalaxPayUpdateService = clienteGalaxPayUpdateService;
+            _pedidoCreateService = pedidoCreateService;
         }
 
         public async Task<ResultDto<VendaProcessingDto>> ExecutarAsync(
@@ -94,57 +119,28 @@ namespace Projeto.Moope.Gateways.Core.Services
             }
             var authBearerHeader = rsAuth.Dados;
 
-            Guid? vendedorResolvido = request.VendedorId;
+            Guid? vendedorId = request.VendedorId;
             if (!string.IsNullOrWhiteSpace(request.CodigoCupom))
             {
-                var cupomUrl = Utils.Combine(_apis.Vendedor!, $"/api/vendedor/cupom/{Uri.EscapeDataString(request.CodigoCupom.Trim())}");
-                using var cupomRequest = new HttpRequestMessage(HttpMethod.Get, cupomUrl);
-                Utils.AplicarAutorizacao(cupomRequest, authorizationHeader);
-                using var cupomResponse = await httpClient.SendAsync(cupomRequest, cancellationToken);
-
-                if (cupomResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+                var cupomResult = await _vendedorGetByCupom.ExecutarAsync(request.CodigoCupom, authorizationHeader, cancellationToken);
+                if (!cupomResult.Status)
                 {
                     return new ResultDto<VendaProcessingDto>
                     {
                         Status = false,
-                        Mensagem = "Cupom de vendedor invalido ou nao encontrado.",
+                        Mensagem = cupomResult.Mensagem,
                         Dados = null,
                     };
                 }
 
-                if (!cupomResponse.IsSuccessStatusCode) 
-                {
-                    var rs =  await Utils.FalhaDownstreamAsync(cupomResponse, cancellationToken);
-                    return new ResultDto<VendaProcessingDto>
-                    {
-                        Status = false,
-                        Mensagem = rs.Mensagem,
-                        Dados = null,
-                    };  
-                }
-                
-                var cupomId = await Utils.LerGuidRespostaAsync(cupomResponse, cancellationToken);
-                if (cupomId == null)
-                {
-                    return new ResultDto<VendaProcessingDto>
-                    {
-                        Status = false,
-                        StatusCode = StatusCodes.Status502BadGateway,
-                        Mensagem = "Resposta invalida do servico Vendedor (Id ausente).",
-                        Dados = null,
-                    };
-                }
-
-                vendedorResolvido = cupomId;
+                vendedorId = cupomResult.Dados?.Id;
             }
-
-            var vendedorIdEfetivoPedido = vendedorResolvido ?? Guid.Empty;
 
             var clienteId = await ClienteAsync(
                 httpClient,
                 request,
                 usuario,
-                vendedorResolvido,
+                vendedorId,
                 authBearerHeader,
                 cancellationToken);
 
@@ -188,34 +184,118 @@ namespace Projeto.Moope.Gateways.Core.Services
                 ? string.Empty
                 : Regex.Replace(request.CpfCnpj, @"\D", "");
 
-            // Pedido (Venda.Api) orquestra pagamento internamente; o BFF apenas envia o payload completo.
-            var pedidoUrl = Utils.Combine(_apis.Pedido, "/api/pedido");
-            var pedidoBody = new
+            var rsPedido = await _pedidoCreateService.ExecutarAsync(new PedidoCreateDto
             {
                 ClienteId = clienteId.Value,
-                VendedorId = vendedorIdEfetivoPedido == Guid.Empty ? (Guid?)null : vendedorIdEfetivoPedido,
-                request.PlanoId,
-                request.Quantidade,
-                request.TipoPessoa,
-                request.Estado
-            };
-
-            using var pedidoRequest = new HttpRequestMessage(HttpMethod.Post, pedidoUrl);
-            Utils.AplicarAutorizacao(pedidoRequest, authBearerHeader);
-            pedidoRequest.Content = JsonContent.Create(pedidoBody, options: JsonOptions);
-
-            using var pedidoResponse = await httpClient.SendAsync(pedidoRequest, cancellationToken);
-            if (!pedidoResponse.IsSuccessStatusCode)
+                VendedorId = vendedorId == Guid.Empty ? (Guid?)null : vendedorId,
+                PlanoId = request.PlanoId,
+                Quantidade = request.Quantidade,
+                TipoPessoa = request.TipoPessoa,
+                Estado = request.Estado,
+                IdempotencyKey = idempotencyKey
+            }, authBearerHeader, cancellationToken);
+            if (!rsPedido.Status)
             {
-                var rs = await Utils.FalhaDownstreamAsync(pedidoResponse, cancellationToken);
-                return new ResultDto<VendaProcessingDto>    
+                return new ResultDto<VendaProcessingDto>
                 {
                     Status = false,
-                    StatusCode = rs.StatusCode,
-                    Dados = null,
-                    Mensagem = rs.Mensagem ?? "Erro desconhecido ao criar venda."
+                    StatusCode = rsPedido.StatusCode,
+                    Mensagem = rsPedido.Mensagem ?? "Erro desconhecido ao criar pedido.",
+                    Dados = null
                 };
             }
+
+            var pedidoId = rsPedido.Dados?.Id;
+
+            //// Pedido (Venda.Api) orquestra pagamento internamente; o BFF apenas envia o payload completo.
+            //var pedidoUrl = Utils.Combine(_apis.Pedido, "/api/pedido");
+            //var pedidoBody = new
+            //{
+            //    ClienteId = clienteId.Value,
+            //    VendedorId = vendedorId == Guid.Empty ? (Guid?)null : vendedorId,
+            //    request.PlanoId,
+            //    request.Quantidade,
+            //    request.TipoPessoa,
+            //    request.Estado
+            //};
+
+            //using var pedidoRequest = new HttpRequestMessage(HttpMethod.Post, pedidoUrl);
+            //Utils.AplicarAutorizacao(pedidoRequest, authBearerHeader);
+            //pedidoRequest.Content = JsonContent.Create(pedidoBody, options: JsonOptions);
+
+            //using var pedidoResponse = await httpClient.SendAsync(pedidoRequest, cancellationToken);
+            //if (!pedidoResponse.IsSuccessStatusCode)
+            //{
+            //    var rs = await Utils.FalhaDownstreamAsync(pedidoResponse, cancellationToken);
+            //    return new ResultDto<VendaProcessingDto>    
+            //    {
+            //        Status = false,
+            //        StatusCode = rs.StatusCode,
+            //        Dados = null,
+            //        Mensagem = rs.Mensagem ?? "Erro desconhecido ao criar venda."
+            //    };
+            //}
+
+            var rsCliente = await _clienteGalaxPayCreateService.ExecutarAsync(new ClienteGalaxPayCreateDto
+            {
+                Name = request.NomeCliente,
+                Email = request.Email,
+                Document = documento
+            }, cancellationToken);
+            if (rsCliente == null || !rsCliente.Status || rsCliente.Dados == null)
+            {
+                return new ResultDto<VendaProcessingDto>
+                {
+                    Status = false,
+                    StatusCode = StatusCodes.Status502BadGateway,
+                    Mensagem = "Nao foi possivel criar cliente no GalaxPay.",
+                    Dados = null
+                };
+            }
+            var galaxPayCustomerId = rsCliente.Dados.GalaxPayId;
+
+            var rsClienteGalaxPay = await _clienteGalaxPayUpdateService.ExecutarAsync(new ClienteGalaxPayUpdateDto()
+            {
+                ClienteId = clienteId.Value,
+                GalaxPayCustomerId = galaxPayCustomerId
+            }, authorizationHeader, cancellationToken);
+
+            if (rsClienteGalaxPay == null || !rsClienteGalaxPay.Status || rsClienteGalaxPay.Dados == null)
+            {
+                return new ResultDto<VendaProcessingDto>
+                {
+                    Status = false,
+                    StatusCode = StatusCodes.Status502BadGateway,
+                    Mensagem = "Nao foi possivel atualizar cliente no GalaxPay.",
+                    Dados = null
+                };
+            }
+
+            var (mes, ano) = ExtrairMesAnoValidade(request.DataValidade);
+            var rsCartao = await _cartaoGalaxPayCreateService.ExecutarAsync(new CartaoGalaxPayCreateDto
+            {
+                CustomerId = galaxPayCustomerId,
+                Holder = request.NomeCartao,
+                Number = request.NumeroCartao,
+                ExpiresAt = $"{ano}-{mes}",
+                Cvv = request.Cvv
+            }, cancellationToken);
+            if (rsCartao == null || !rsCartao.Status || rsCartao.Dados == null)
+            {
+                return new ResultDto<VendaProcessingDto>
+                {
+                    Status = false,
+                    StatusCode = StatusCodes.Status502BadGateway,
+                    Mensagem = "Nao foi possivel criar cartao no GalaxPay.",
+                    Dados = null
+                };
+            }
+
+            var rsQueue = await _vendaSendQueueService.ExecutarAsync(new VendaQueueDto
+            {
+                Nome = request.NomeCliente,
+                Email = request.Email
+            }, cancellationToken);
 
 
 
@@ -229,6 +309,19 @@ namespace Projeto.Moope.Gateways.Core.Services
                     teste = "ok"
                 }
             };
+        }
+
+        private (string mes, string ano) ExtrairMesAnoValidade(string dataValidade)
+        {
+            var partes = dataValidade.Split('/');
+            if (partes.Length == 2)
+            {
+                var mes = partes[0];
+                var ano = "20" + partes[1]; // Assumindo formato MM/YY
+                return (mes, ano);
+            }
+
+            throw new ArgumentException("Formato de data de validade inválido. Use MM/YY");
         }
 
         private async Task<Guid?> ClienteAsync(

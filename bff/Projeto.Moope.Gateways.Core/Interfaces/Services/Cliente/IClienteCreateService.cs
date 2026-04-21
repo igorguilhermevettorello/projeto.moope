@@ -2,7 +2,7 @@
 using Projeto.Moope.Gateways.Core.DTOs;
 using Projeto.Moope.Gateways.Core.DTOs.Cliente;
 
-namespace Projeto.Moope.Gateways.Core.Interfaces.Services
+namespace Projeto.Moope.Gateways.Core.Interfaces.Services.Cliente
 {
     public interface IClienteCreateService
     {

@@ -1,17 +1,16 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Projeto.Moope.Core.DTOs;
-using Projeto.Moope.Gateways.Core.DTOs;
 using Projeto.Moope.Gateways.Core.DTOs.Endereco;
 using Projeto.Moope.Gateways.Core.DTOs.Vendedor;
 using Projeto.Moope.Gateways.Core.Helpers;
-using Projeto.Moope.Gateways.Core.Interfaces.Services;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Vendedor;
 using Projeto.Moope.Gateways.Core.Options;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace Projeto.Moope.Gateways.Core.Services
+namespace Projeto.Moope.Gateways.Core.Services.Vendedor
 {
     public class VendedorGetByIdService : IVendedorGetByIdService
     {

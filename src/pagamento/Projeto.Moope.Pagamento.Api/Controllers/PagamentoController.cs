@@ -11,7 +11,6 @@ namespace Projeto.Moope.Pagamento.Api.Controllers
 {
     [ApiController]
     [Route("api/pagamento")]
-    [Authorize]
     public class PagamentoController : MainController
     {
         private readonly IPagamentoService _pagamentoService;
@@ -52,9 +51,17 @@ namespace Projeto.Moope.Pagamento.Api.Controllers
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
 
+            var obj = new
+            {
+                myId = dto.ClienteId,
+                name = dto.Name,
+                emails = new[] { dto.Email },
+                document =  dto.Document
+            };
+
             var request = new CriarClienteGatewayRequestDto(
                 Scope: "customers.write",
-                Payload: dto.Payload,
+                Payload: obj,
                 ClienteId: dto.ClienteId);
 
             var result = await _pagamentoService.CriarClienteAsync(request, cancellationToken);
@@ -121,11 +128,19 @@ namespace Projeto.Moope.Pagamento.Api.Controllers
                 return CustomResponse(ModelState);
             }
 
+            var obj = new
+            {
+                number = dto.Number,
+                holder = dto.Holder,
+                expiresAt = dto.ExpiresAt,
+                cvv = dto.Cvv
+            };
+
             var request = new CriarCartaoGatewayRequestDto(
                 Scope: "cards.write",
                 CustomerId: dto.CustomerId,
                 TypeId: string.IsNullOrWhiteSpace(dto.TypeId) ? "galaxPayId" : dto.TypeId,
-                Payload: dto.Payload);
+                Payload: obj);
 
             var result = await _pagamentoService.CriarCartaoAsync(request, cancellationToken);
             if (!result.Status)

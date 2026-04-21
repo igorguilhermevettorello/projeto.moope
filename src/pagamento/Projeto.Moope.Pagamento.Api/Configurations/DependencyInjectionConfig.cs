@@ -40,4 +40,3 @@ namespace Projeto.Moope.Pagamento.Api.Configurations
         }
     }
 }
-

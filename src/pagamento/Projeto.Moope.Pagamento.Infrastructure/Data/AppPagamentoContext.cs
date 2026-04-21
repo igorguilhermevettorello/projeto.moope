@@ -35,4 +35,3 @@ namespace Projeto.Moope.Pagamento.Infrastructure.Data
         }
     }
 }
-

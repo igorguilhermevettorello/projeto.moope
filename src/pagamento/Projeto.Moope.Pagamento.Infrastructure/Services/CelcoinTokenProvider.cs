@@ -75,12 +75,12 @@ namespace Projeto.Moope.Pagamento.Infrastructure.Services
             }
 
             // Assunção: OAuth2 client_credentials + scope via x-www-form-urlencoded (docs não exibem schema no fetch).
-            request.Content = new FormUrlEncodedContent(new Dictionary<string, string>
-            {
-                ["grant_type"] = "client_credentials",
-                ["scope"] = scope
-            });
+            var jsonBody = $@"{{
+                ""grant_type"": ""authorization_code"",
+                ""scope"": ""{scope}""
+            }}";
 
+            request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
             using var response = await _httpClient.SendAsync(request, cancellationToken);
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
 
