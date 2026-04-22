@@ -42,14 +42,14 @@ namespace Projeto.Moope.Cliente.Infrastructure.Repositories
         public async Task<ClienteModel> SalvarAsync(ClienteModel entity)
         {
             await _context.Clientes.AddAsync(entity);
-            await _context.SaveChangesAsync();
+            //await _context.SaveChangesAsync();
             return entity;
         }
 
         public async Task<ClienteModel> AtualizarAsync(ClienteModel entity)
         {
             _context.Clientes.Update(entity);
-            await _context.SaveChangesAsync();
+            //await _context.SaveChangesAsync();
             return entity;
         }
 

@@ -1,9 +1,12 @@
+using System.Numerics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
+using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Pagamento.Api.DTOs;
+using Projeto.Moope.Pagamento.Core.DTOs;
 using Projeto.Moope.Pagamento.Core.Interfaces.Services;
 using Projeto.Moope.Pagamento.Core.Services.Models;
 
@@ -169,7 +172,29 @@ namespace Projeto.Moope.Pagamento.Api.Controllers
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
 
-            var request = new CriarAssinaturaSemPlanoGatewayRequestDto("subscriptions.write", dto.Payload);
+            var payload = new CelPayAssinaturaSemPlanoRequestDto
+            {
+                MyId = dto.PedidoId.ToString(),
+                Value = (int)(dto.Valor * 100),
+                Quantity = 0,
+                Periodicity = dto.Periodicidade,
+                FirstPayDayDate = DateTime.Now.ToString("yyyy-MM-dd"),
+                MainPaymentMethodId = dto.MetodoPagamento,
+                AdditionalInfo = dto.Observacao,
+                Customer = new CelPayCustomerDto
+                {
+                    GalaxPayId = dto.GalaxPayCustomerId,
+                    Name = dto.Name,
+                    Emails = new List<string> { dto.Email }
+                },
+                Card = new CelPayCardDto                 
+                {
+                    GalaxPayId = dto.GalaxPayCardId
+                }
+
+            };
+
+            var request = new CriarAssinaturaSemPlanoGatewayRequestDto("subscriptions.write", payload);
             var result = await _pagamentoService.CriarAssinaturaSemPlanoAsync(request, cancellationToken);
             if (!result.Status)
                 return CustomResponse(result);

@@ -1,8 +1,8 @@
 ﻿using Projeto.Moope.Core.Enums;
 
-namespace Projeto.Moope.Gateways.Core.DTOs.Venda
+namespace Projeto.Moope.RabbitMQ.Core.DTOs
 {
-    public class VendaQueueDto
+    public class PagamentoDto
     {
         public string Name { get; init; }
         public string Email { get; init; }

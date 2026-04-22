@@ -1,3 +1,5 @@
+using Projeto.Moope.Pagamento.Core.DTOs;
+
 namespace Projeto.Moope.Pagamento.Core.Services.Models
 {
     public record GatewayTokenDto(
@@ -33,7 +35,7 @@ namespace Projeto.Moope.Pagamento.Core.Services.Models
 
     public record CriarAssinaturaSemPlanoGatewayRequestDto(
         string Scope,
-        object Payload
+        CelPayAssinaturaSemPlanoRequestDto Payload
     );
 
     public record CriarAssinaturaManualGatewayRequestDto(

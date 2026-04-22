@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Projeto.Moope.Core.DTOs;
+using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Gateways.Core.DTOs.Cartao;
 using Projeto.Moope.Gateways.Core.DTOs.Cliente;
 using Projeto.Moope.Gateways.Core.DTOs.Cliente.GalaxPay;
@@ -14,9 +15,6 @@ using Projeto.Moope.Gateways.Core.Interfaces.Services.Pedido;
 using Projeto.Moope.Gateways.Core.Interfaces.Services.RabbitMQ;
 using Projeto.Moope.Gateways.Core.Interfaces.Services.Vendedor;
 using Projeto.Moope.Gateways.Core.Options;
-using Projeto.Moope.Gateways.Core.Services.Cliente;
-using Projeto.Moope.Gateways.Core.Services.Pedido;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -207,35 +205,6 @@ namespace Projeto.Moope.Gateways.Core.Services
 
             var pedidoId = rsPedido.Dados?.Id;
 
-            //// Pedido (Venda.Api) orquestra pagamento internamente; o BFF apenas envia o payload completo.
-            //var pedidoUrl = Utils.Combine(_apis.Pedido, "/api/pedido");
-            //var pedidoBody = new
-            //{
-            //    ClienteId = clienteId.Value,
-            //    VendedorId = vendedorId == Guid.Empty ? (Guid?)null : vendedorId,
-            //    request.PlanoId,
-            //    request.Quantidade,
-            //    request.TipoPessoa,
-            //    request.Estado
-            //};
-
-            //using var pedidoRequest = new HttpRequestMessage(HttpMethod.Post, pedidoUrl);
-            //Utils.AplicarAutorizacao(pedidoRequest, authBearerHeader);
-            //pedidoRequest.Content = JsonContent.Create(pedidoBody, options: JsonOptions);
-
-            //using var pedidoResponse = await httpClient.SendAsync(pedidoRequest, cancellationToken);
-            //if (!pedidoResponse.IsSuccessStatusCode)
-            //{
-            //    var rs = await Utils.FalhaDownstreamAsync(pedidoResponse, cancellationToken);
-            //    return new ResultDto<VendaProcessingDto>    
-            //    {
-            //        Status = false,
-            //        StatusCode = rs.StatusCode,
-            //        Dados = null,
-            //        Mensagem = rs.Mensagem ?? "Erro desconhecido ao criar venda."
-            //    };
-            //}
-
             var rsCliente = await _clienteGalaxPayCreateService.ExecutarAsync(new ClienteGalaxPayCreateDto
             {
                 Name = request.NomeCliente,
@@ -258,7 +227,7 @@ namespace Projeto.Moope.Gateways.Core.Services
             {
                 ClienteId = clienteId.Value,
                 GalaxPayCustomerId = galaxPayCustomerId
-            }, authorizationHeader, cancellationToken);
+            }, authBearerHeader, cancellationToken);
 
             if (rsClienteGalaxPay == null || !rsClienteGalaxPay.Status || rsClienteGalaxPay.Dados == null)
             {
@@ -291,13 +260,20 @@ namespace Projeto.Moope.Gateways.Core.Services
                 };
             }
 
+            var galaxPayCardId = rsCartao.Dados.GalaxPayId;
+
             var rsQueue = await _vendaSendQueueService.ExecutarAsync(new VendaQueueDto
             {
-                Nome = request.NomeCliente,
-                Email = request.Email
+                Name = request.NomeCliente,
+                Email = request.Email,
+                PedidoId = pedidoId.Value,
+                Valor = plano.Valor,
+                Periodicidade = Periodicidade.Monthly,
+                MetodoPagamento = MetodoPagamento.CreditCard,
+                GalaxPayCustomerId = galaxPayCustomerId,
+                GalaxPayCardId = galaxPayCardId,
+                Observacao = $"{plano.Descricao} - Mensalidade"
             }, cancellationToken);
-
-
 
             return new ResultDto<VendaProcessingDto>
             {
