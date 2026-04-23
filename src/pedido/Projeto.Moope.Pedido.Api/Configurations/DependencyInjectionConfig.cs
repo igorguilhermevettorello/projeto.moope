@@ -20,13 +20,14 @@ namespace Projeto.Moope.Pedido.Api.Configurations
 {
     public static class DependencyInjectionConfig
     {
-        public static void RegisterServices(IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddAutoMapper(typeof(PedidoMappingProfile).Assembly);
 
             services.Configure<PlanoApiOptions>(configuration.GetSection(PlanoApiOptions.SectionName));
 
             services.AddTransient<AuthorizationForwardingHandler>();
+            
             services.AddHttpClient<IPlanoReadGateway, PlanoHttpReadGateway>((serviceProvider, client) =>
             {
                 var planoApiOptions = serviceProvider.GetRequiredService<IOptions<PlanoApiOptions>>().Value;
@@ -44,6 +45,7 @@ namespace Projeto.Moope.Pedido.Api.Configurations
             services.AddScoped<IPedidoRepository, PedidoRepository>();
             services.AddScoped<IPedidoService, PedidoService>();
             services.AddScoped<IUser, AspNetUser>();
+            return services;
         }
     }
 }

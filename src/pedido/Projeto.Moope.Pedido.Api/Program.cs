@@ -7,19 +7,29 @@ builder.Services.AddApiConfig();
 builder.Services.AddAuthConfig(builder.Configuration, builder.Environment);
 builder.Services.AddConectionConfig(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
-DependencyInjectionConfig.RegisterServices(builder.Services, builder.Configuration);
+builder.Services.Configure<SwaggerAuthConfig>(builder.Configuration.GetSection("SwaggerAuth"));
+builder.Services.RegisterServices(builder.Configuration);
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+
+app.UseSwaggerConfig();
 
 app.UseHttpsRedirection();
 
-app.UseCors("CorsPolicy");
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("CorsDevelopmentPolicy");
+}
+else if (app.Environment.IsStaging())
+{
+    app.UseCors("CorsStagingPolicy");
+}
+else if (app.Environment.IsProduction())
+{
+    app.UseCors("CorsProductionPolicy");
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

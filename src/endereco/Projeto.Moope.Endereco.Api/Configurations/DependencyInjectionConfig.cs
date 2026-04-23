@@ -11,12 +11,13 @@ namespace Projeto.Moope.Endereco.Api.Configurations
 {
     public static class DependencyInjectionConfig
     {
-        public static void RegisterServices(IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<INotificador, Notificador>();
             services.AddScoped<IEnderecoRepository, EnderecoRepository>();
             services.AddScoped<IEnderecoService, EnderecoService>();
             services.AddScoped<IUser, AspNetUser>();
+            return services;
         }
     }
 }

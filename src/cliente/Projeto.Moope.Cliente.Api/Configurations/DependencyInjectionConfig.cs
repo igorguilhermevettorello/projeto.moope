@@ -11,12 +11,13 @@ namespace Projeto.Moope.Cliente.Api.Configurations
 {
     public static class DependencyInjectionConfig
     {
-        public static void RegisterServices(IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<INotificador, Notificador>();
             services.AddScoped<IClienteRepository, ClienteRepository>();
             services.AddScoped<IClienteService, ClienteService>();
             services.AddScoped<IUser, AspNetUser>();
+            return services;
         }
     }
 }

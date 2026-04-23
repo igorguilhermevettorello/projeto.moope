@@ -3,25 +3,33 @@ using Projeto.Moope.Cliente.Api.Configurations;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddApiConfig();
 builder.Services.AddAuthConfig(builder.Configuration, builder.Environment);
 builder.Services.AddConectionConfig(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
+builder.Services.Configure<SwaggerAuthConfig>(builder.Configuration.GetSection("SwaggerAuth"));
 builder.Services.Configure<AnonymousEndpointKeysSettings>(
-    builder.Configuration.GetSection(AnonymousEndpointKeysSettings.SectionPath));
-DependencyInjectionConfig.RegisterServices(builder.Services, builder.Configuration);
+builder.Configuration.GetSection(AnonymousEndpointKeysSettings.SectionPath));
+builder.Services.RegisterServices(builder.Configuration);
 
 var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwaggerConfig();
 
 app.UseHttpsRedirection();
 
-app.UseCors("CorsPolicy");
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("CorsDevelopmentPolicy");
+}
+else if (app.Environment.IsStaging())
+{
+    app.UseCors("CorsStagingPolicy");
+}
+else if (app.Environment.IsProduction())
+{
+    app.UseCors("CorsProductionPolicy");
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

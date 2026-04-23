@@ -63,6 +63,7 @@ namespace Projeto.Moope.Pedido.Api.Controllers
             if (!result.Status)
                 return CustomResponse(result);
 
+
             return CreatedAtAction(nameof(BuscarPorId), new { id = result.Dados!.Id }, MapToResponseDto(result.Dados!));
         }
 

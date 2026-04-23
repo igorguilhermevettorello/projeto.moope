@@ -3,7 +3,6 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Projeto.Moope.Core.DTOs;
-using Projeto.Moope.Core.Enums;
 using Projeto.Moope.RabbitMQ.Core.DTOs;
 using Projeto.Moope.RabbitMQ.Core.Helpers;
 using Projeto.Moope.RabbitMQ.Core.Interfaces.Services;
@@ -46,6 +45,12 @@ namespace Projeto.Moope.RabbitMQ.Core.Services
             }
 
             var endpoint = "/api/pagamento/assinaturas/sem-plano";
+            if (request.TaxaAdesao > 0)
+            {
+                endpoint = "/api/pagamento/assinaturas/sem-plano-com-taxa";
+            }
+
+            //var endpoint = "/api/pagamento/assinaturas/sem-plano";
             var url = UrlHelper.Combine(apis.Pagamento, endpoint);
             var payload = new 
             {
@@ -74,6 +79,7 @@ namespace Projeto.Moope.RabbitMQ.Core.Services
                 request.GalaxPayCustomerId ,
                 request.GalaxPayCardId,
                 request.Observacao,
+                request.TaxaAdesao,
                 payload 
             };
 

@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Options;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Notifications;
 using Projeto.Moope.Email.Core.Interfaces.Repositories;
@@ -12,7 +11,7 @@ namespace Projeto.Moope.Email.Api.Configurations
 {
     public static class DependencyInjectionConfig
     {
-        public static void RegisterServices(IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<INotificador, Notificador>();
             services.AddScoped<IEmailRepository, EmailRepository>();
@@ -28,6 +27,8 @@ namespace Projeto.Moope.Email.Api.Configurations
                     client.BaseAddress = new Uri(emailSettings.ApiUrl.TrimEnd('/') + "/");
                 }
             });
+
+            return services;
         }
     }
 }

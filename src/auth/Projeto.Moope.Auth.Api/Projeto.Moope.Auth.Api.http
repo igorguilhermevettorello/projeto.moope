@@ -1,4 +1,4 @@
-@Projeto.Moope.Auth.Api_HostAddress = http://localhost:5245
+@Projeto.Moope.Auth.Api_HostAddress = https://localhost:6101
 
 GET {{Projeto.Moope.Auth.Api_HostAddress}}/weatherforecast/
 Accept: application/json

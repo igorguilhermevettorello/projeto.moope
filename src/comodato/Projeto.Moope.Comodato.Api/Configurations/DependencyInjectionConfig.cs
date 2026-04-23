@@ -9,11 +9,12 @@ namespace Projeto.Moope.Comodato.Api.Configurations
 {
     public static class DependencyInjectionConfig
     {
-        public static void RegisterServices(IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<INotificador, Notificador>();
             services.AddScoped<IComodatoRepository, ComodatoRepository>();
             services.AddScoped<IComodatoService, ComodatoService>();
+            return services;
         }
     }
 }

@@ -8,6 +8,7 @@ namespace Projeto.Moope.Gateways.Core.DTOs.Venda
         public string Email { get; init; }
         public Guid PedidoId { get; init; }
         public decimal Valor { get; init; }
+        public decimal TaxaAdesao { get; init; }
         public Periodicidade Periodicidade { get; init; }
         public MetodoPagamento MetodoPagamento { get; init; }
         public int GalaxPayCustomerId { get; init; }

@@ -202,9 +202,9 @@ namespace Projeto.Moope.Gateways.Core.Services
                     Dados = null
                 };
             }
-
             var pedidoId = rsPedido.Dados?.Id;
-
+            var total = rsPedido.Dados?.Total;
+            var taxaAdesao = rsPedido.Dados?.PlanoTaxaAdesao;
             var rsCliente = await _clienteGalaxPayCreateService.ExecutarAsync(new ClienteGalaxPayCreateDto
             {
                 Name = request.NomeCliente,
@@ -261,13 +261,14 @@ namespace Projeto.Moope.Gateways.Core.Services
             }
 
             var galaxPayCardId = rsCartao.Dados.GalaxPayId;
-
+            var taxa = true;
             var rsQueue = await _vendaSendQueueService.ExecutarAsync(new VendaQueueDto
             {
                 Name = request.NomeCliente,
                 Email = request.Email,
                 PedidoId = pedidoId.Value,
-                Valor = plano.Valor,
+                Valor = total ?? 0,
+                TaxaAdesao = taxaAdesao ?? 0,
                 Periodicidade = Periodicidade.Monthly,
                 MetodoPagamento = MetodoPagamento.CreditCard,
                 GalaxPayCustomerId = galaxPayCustomerId,

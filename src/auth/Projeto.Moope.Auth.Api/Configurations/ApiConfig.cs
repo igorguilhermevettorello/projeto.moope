@@ -13,28 +13,32 @@ namespace Projeto.Moope.Auth.Api.Configurations
 
             services.AddCors(options =>
             {
-                options.AddPolicy("CorsPolicy", policy =>
+                options.AddPolicy("CorsDevelopmentPolicy", policy =>
                 {
                     policy
-                        .WithOrigins("https://compre.moope.com.br")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials();
-                });
-
-                // Política mais permissiva para desenvolvimento
-                options.AddPolicy("DevelopmentCorsPolicy", policy =>
-                {
-                    policy
-                        .AllowAnyOrigin()
+                        .WithOrigins("http://localhost:4200")
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });
+            });
 
-                options.AddPolicy("StagingCorsPolicy", policy =>
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsStagingPolicy", policy =>
                 {
                     policy
-                        .AllowAnyOrigin()
+                        .WithOrigins("https://staging-compre.moope.com.br")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
+            
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsProductionPolicy", policy =>
+                {
+                    policy
+                        .WithOrigins("https://compre.moope.com.br")
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });

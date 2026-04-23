@@ -15,7 +15,7 @@ namespace Projeto.Moope.Pagamento.Api.Configurations
 {
     public static class DependencyInjectionConfig
     {
-        public static void RegisterServices(IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<INotificador, Notificador>();
             services.AddScoped<IUser, AspNetUser>();
@@ -37,6 +37,8 @@ namespace Projeto.Moope.Pagamento.Api.Configurations
                 var settings = sp.GetRequiredService<IOptions<CelcoinPaymentsSettings>>().Value;
                 client.BaseAddress = new Uri(settings.BaseUrl.TrimEnd('/') + "/");
             });
+
+            return services;
         }
     }
 }

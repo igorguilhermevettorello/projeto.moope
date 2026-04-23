@@ -202,6 +202,54 @@ namespace Projeto.Moope.Pagamento.Api.Controllers
             return Ok(result.Dados);
         }
 
+        [HttpPost("assinaturas/sem-plano-com-taxa")]
+        public async Task<IActionResult> CriarAssinaturaSemPlanoComTaxa([FromBody] CriarAssinaturaRequestDto dto, CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
+                return CustomResponse(ModelState);
+
+            var payload = new CelPayAssinaturaSemPlanoRequestDto
+            {
+                MyId = dto.PedidoId.ToString(),
+                Value = (int)(dto.Valor * 100),
+                Quantity = 0,
+                Periodicity = dto.Periodicidade,
+                FirstPayDayDate = DateTime.Now.ToString("yyyy-MM-dd"),
+                MainPaymentMethodId = dto.MetodoPagamento,
+                AdditionalInfo = dto.Observacao,
+                Customer = new CelPayCustomerDto
+                {
+                    GalaxPayId = dto.GalaxPayCustomerId,
+                    Name = dto.Name,
+                    Emails = new List<string> { dto.Email }
+                },
+                Card = new CelPayCardDto
+                {
+                    GalaxPayId = dto.GalaxPayCardId
+                }
+
+            };
+
+            payload.Transactions = new List<CelPayTransactionDto>
+            {
+                new CelPayTransactionDto
+                {
+                    Installment = 1,
+                    Value = (int) (dto.TaxaAdesao * 100),
+                    Payday = DateTime.Now.ToString("yyyy-MM-dd"),
+                    PayedOutsideGalaxPay = false,
+                    AdditionalInfo = $"{dto.Observacao} - Taxa de adesão"
+                },
+            };
+
+            var request = new CriarAssinaturaSemPlanoGatewayRequestDto("subscriptions.write", payload);
+            var result = await _pagamentoService.CriarAssinaturaSemPlanoAsync(request, cancellationToken);
+            if (!result.Status)
+                return CustomResponse(result);
+
+            return Ok(result.Dados);
+        }
+
         [HttpPost("assinaturas/manual")]
         public async Task<IActionResult> CriarAssinaturaManual([FromBody] CriarAssinaturaManualRequestDto dto, CancellationToken cancellationToken)
         {

@@ -31,6 +31,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddApiConfig();
 builder.Services.AddAuthConfig(builder.Configuration, builder.Environment);
+builder.Services.Configure<SwaggerAuthConfig>(builder.Configuration.GetSection("SwaggerAuth"));
 
 builder.Services.AddAutoMapper(cfg =>
 {
@@ -63,21 +64,25 @@ builder.Services.AddScoped<IClienteGalaxPayUpdateService, ClienteGalaxPayUpdateS
 builder.Services.AddScoped<IClienteGalaxPayCreateService, ClienteGalaxPayCreateService>();
 builder.Services.AddScoped<ICartaoGalaxPayCreateService, CartaoGalaxPayCreateService>();
 builder.Services.AddScoped<IPedidoCreateService, PedidoCreateService>();
-
-
 builder.Services.AddScoped<IUser, AspNetUser>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
+app.UseSwaggerConfig();
 app.UseHttpsRedirection();
 
-app.UseCors("CorsPolicy");
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("CorsDevelopmentPolicy");
+}
+else if (app.Environment.IsStaging())
+{
+    app.UseCors("CorsStagingPolicy");
+}
+else if (app.Environment.IsProduction())
+{
+    app.UseCors("CorsProductionPolicy");
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

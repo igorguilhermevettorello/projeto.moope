@@ -1,4 +1,4 @@
-@Projeto.Moope.Email.Api_HostAddress = http://localhost:5226
+@Projeto.Moope.Email.Api_HostAddress = https://localhost:6104
 
 ### Buscar todos os emails
 GET {{Projeto.Moope.Email.Api_HostAddress}}/api/email

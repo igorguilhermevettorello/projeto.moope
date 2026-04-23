@@ -16,15 +16,20 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddDependencyInjectionConfig(builder.Configuration);
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
+app.UseSwaggerConfig();
+await app.UseSeedDataAsync();
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwaggerConfig();
+    app.UseCors("CorsDevelopmentPolicy");
 }
-
-await app.UseSeedDataAsync();
-app.UseCors("DevelopmentCorsPolicy");
+else if (app.Environment.IsStaging())
+{
+    app.UseCors("CorsStagingPolicy");
+}
+else if (app.Environment.IsProduction())
+{
+    app.UseCors("CorsProductionPolicy");
+}
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

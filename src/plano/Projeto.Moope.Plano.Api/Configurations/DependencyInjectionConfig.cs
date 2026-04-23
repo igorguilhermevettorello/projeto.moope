@@ -13,7 +13,7 @@ namespace Projeto.Moope.Plano.Api.Configurations
 {
     public static class DependencyInjectionConfig
     {
-        public static void RegisterServices(IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddAutoMapper(typeof(PlanoMappingProfile).Assembly);
 
@@ -21,6 +21,7 @@ namespace Projeto.Moope.Plano.Api.Configurations
             services.AddScoped<IPlanoRepository, PlanoRepository>();
             services.AddScoped<IPlanoService, PlanoService>();
             services.AddScoped<IUser, AspNetUser>();
+            return services;
         }
     }
 }

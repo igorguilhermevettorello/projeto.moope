@@ -1,4 +1,4 @@
-@Projeto.Moope.Gateways.Api_HostAddress = https://localhost:7072
+@Projeto.Moope.Gateways.Api_HostAddress = https://localhost:6100
 
 ### Cadastro composto representante (JWT Administrador)
 POST {{Projeto.Moope.Gateways.Api_HostAddress}}/api/bff/representante/cadastro

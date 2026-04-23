@@ -1,0 +1,36 @@
+
+## entrar em cada um dos projeto e executar separadamente
+## windows
+# build local
+.\publish\docker\pedido\publish.ps1 -dockerHubUser "seuuser" -environment Production -version 1.0.0
+
+.\publish.ps1 -dockerHubUser "moopesc" -environment Staging -push
+
+# build + push
+.\publish\docker\pedido\publish.ps1 -dockerHubUser "seuuser" -environment Production -version 1.0.0 -push
+
+## linux
+# build local
+./publish/docker/pedido/publish.sh --dockerhub-user "seuuser" --environment Production --version 1.0.0
+
+# build + push
+./publish/docker/pedido/publish.sh --dockerhub-user "seuuser" --environment Production --version 1.0.0 --push
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+Exemplos de execução
+Rodar 1 serviço (usa versão do próprio appsettings)
+.\publish\docker\pedido\publish.ps1 -dockerHubUser "seuuser" -environment Production
+
+Rodar 1 serviço com override (só quando você quiser)
+.\publish\docker\pedido\publish.ps1 -dockerHubUser "seuuser" -environment Production -version 2.1.0
+
+Rodar todos (master), cada um com sua própria versão
+.\publish\docker\publish.ps1 -dockerHubUser "seuuser" -environment Production
+
+Rodar todos (master) com push
+.\publish\docker\publish.ps1 -dockerHubUser "seuuser" -environment Production -push
+
+Linux/macOS (master)
+./publish/docker/publish.sh --dockerhub-user "seuuser" --environment Production --push

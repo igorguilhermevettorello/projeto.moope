@@ -1,4 +1,4 @@
-@Projeto.Moope.Endereco.Api_HostAddress = http://localhost:5110
+@Projeto.Moope.Endereco.Api_HostAddress = https://localhost:6105
 
 GET {{Projeto.Moope.Endereco.Api_HostAddress}}/weatherforecast/
 Accept: application/json
