@@ -5,7 +5,6 @@ using Projeto.Moope.Pagamento.Core.Exceptions;
 using Projeto.Moope.Pagamento.Core.Interfaces.Gateways;
 using Projeto.Moope.Pagamento.Core.Interfaces.Repositories;
 using Projeto.Moope.Pagamento.Core.Interfaces.Services;
-using Projeto.Moope.Pagamento.Core.Models;
 using Projeto.Moope.Pagamento.Core.Services.Models;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -15,15 +14,15 @@ namespace Projeto.Moope.Pagamento.Core.Services
     public class PagamentoService : BaseService, IPagamentoService
     {
         private readonly ICelcoinPaymentGatewayClient _gatewayClient;
-        private readonly IPagamentoReferenciaRepository _referenciaRepository;
+        private readonly IPagamentoRepository _pagamentoRepository;
 
         public PagamentoService(
             ICelcoinPaymentGatewayClient gatewayClient,
-            IPagamentoReferenciaRepository referenciaRepository,
+            IPagamentoRepository pagamentoRepository,
             INotificador notificador) : base(notificador)
         {
             _gatewayClient = gatewayClient;
-            _referenciaRepository = referenciaRepository;
+            _pagamentoRepository = pagamentoRepository;
         }
 
         public async Task<ResultDto<GatewayTokenDto>> AutenticarGatewayAsync(string scope, CancellationToken cancellationToken = default)

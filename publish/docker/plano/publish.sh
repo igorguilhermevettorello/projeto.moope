@@ -3,7 +3,7 @@ set -euo pipefail
 
 service_key="plano"
 service_port="6108"
-image_name="moope-${service_key}"
+image_name=""
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/../../.." && pwd)"
@@ -87,6 +87,10 @@ if [[ ! -f "${dockerfile_path}" ]]; then
   exit 1
 fi
 
+environment_lower="${environment,,}"
+if [[ -z "${environment_lower}" ]]; then environment_lower="production"; fi
+image_name="moope-${service_key}-${environment_lower}"
+
 env_appsettings="${repo_root}/src/plano/Projeto.Moope.Plano.Api/appsettings.${environment}.json"
 version="$(resolve_app_version "${service_key}" "${environment}" "${appsettings_base_path}" "${env_appsettings}" "${version}")"
 echo "Resolved version: ${version}"
@@ -109,7 +113,6 @@ docker build \
   --file "${dockerfile_path}" \
   --tag "${version_tag}" \
   --tag "${latest_tag}" \
-  --build-arg "ASPNETCORE_ENVIRONMENT=${environment}" \
   "${build_context}"
 
 echo ""

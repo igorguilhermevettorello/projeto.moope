@@ -1,0 +1,64 @@
+services:
+  bff:
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    networks: [moope]
+
+  auth:
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    networks: [moope]
+
+  cliente:
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    networks: [moope]
+
+  comodato:
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    networks: [moope]
+
+  email:
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    networks: [moope]
+
+  endereco:
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    networks: [moope]
+
+  pagamento:
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    networks: [moope]
+
+  pedido:
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    networks: [moope]
+
+  plano:
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    networks: [moope]
+
+  vendedor:
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    networks: [moope]
+
+networks:
+  moope:
+    driver: bridge

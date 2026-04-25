@@ -34,3 +34,23 @@ Rodar todos (master) com push
 
 Linux/macOS (master)
 ./publish/docker/publish.sh --dockerhub-user "seuuser" --environment Production --push
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+## Deploy com Docker Compose (staging e production lado a lado)
+
+# 1) Criar um .env no servidor (use deploy/.env.example como base)
+#    DOCKERHUB_USER=seuuser
+#    (opcional) BFF_TAG=1.0.1, AUTH_TAG=1.0.1, etc.
+
+# 2) Subir STAGING (portas 6100-6109)
+docker compose -p moope-stg -f .\deploy\compose.yml -f .\deploy\compose.staging.yml --env-file .\deploy\.env up -d
+
+# 3) Subir PRODUCTION (portas 7100-7109)
+docker compose -p moope-prd -f .\deploy\compose.yml -f .\deploy\compose.production.yml --env-file .\deploy\.env up -d
+
+# 4) Atualizar um ambiente para uma versão específica (exemplo: BFF 1.0.1 em staging)
+#    Edite deploy/.env: BFF_TAG=1.0.1
+#    Depois:
+docker compose -p moope-stg -f .\deploy\compose.yml -f .\deploy\compose.staging.yml --env-file .\deploy\.env up -d

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Projeto.Moope.Auth.Infrastructure.ReadModels;
 
 namespace Projeto.Moope.Auth.Infrastructure.Data
 {
@@ -14,6 +15,14 @@ namespace Projeto.Moope.Auth.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<ClientePendenteReadModel>(b =>
+            {
+                b.HasNoKey();
+                b.ToView(null);
+                b.Property(p => p.Id).HasColumnName("Id");
+                b.Property(p => p.Email).HasColumnName("Email");
+            });
 
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {

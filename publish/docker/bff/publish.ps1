@@ -22,7 +22,9 @@ if (-not (Test-Path $commonPath)) { throw "common.ps1 not found at: $commonPath"
 
 $serviceKey = "bff"
 $servicePort = 6100
-$imageName = "moope-$serviceKey"
+$environmentSuffix = ([string]$environment).Trim().ToLowerInvariant()
+if ([string]::IsNullOrWhiteSpace($environmentSuffix)) { $environmentSuffix = "production" }
+$imageName = "moope-$serviceKey-$environmentSuffix"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
 $dockerfilePath = Join-Path $repoRoot "bff\Projeto.Moope.Gateways.Api\Dockerfile"
 $buildContext = $repoRoot
@@ -61,7 +63,6 @@ docker build `
   --file $dockerfilePath `
   --tag $versionTag `
   --tag $latestTag `
-  --build-arg "ASPNETCORE_ENVIRONMENT=$environment" `
   $buildContext
 
 Write-Host ""

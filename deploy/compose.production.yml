@@ -1,0 +1,60 @@
+services:
+  bff:
+    image: ${DOCKERHUB_USER:?}/moope-bff-production:${BFF_TAG:-latest}
+    ports: ["7100:8080"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  auth:
+    image: ${DOCKERHUB_USER:?}/moope-auth-production:${AUTH_TAG:-latest}
+    ports: ["7101:8080"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  cliente:
+    image: ${DOCKERHUB_USER:?}/moope-cliente-production:${CLIENTE_TAG:-latest}
+    ports: ["7102:8080"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  comodato:
+    image: ${DOCKERHUB_USER:?}/moope-comodato-production:${COMODATO_TAG:-latest}
+    ports: ["7103:8080"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  email:
+    image: ${DOCKERHUB_USER:?}/moope-email-production:${EMAIL_TAG:-latest}
+    ports: ["7104:8080"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  endereco:
+    image: ${DOCKERHUB_USER:?}/moope-endereco-production:${ENDERECO_TAG:-latest}
+    ports: ["7105:8080"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  pagamento:
+    image: ${DOCKERHUB_USER:?}/moope-pagamento-production:${PAGAMENTO_TAG:-latest}
+    ports: ["7106:8080"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  pedido:
+    image: ${DOCKERHUB_USER:?}/moope-pedido-production:${PEDIDO_TAG:-latest}
+    ports: ["7107:8080"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  plano:
+    image: ${DOCKERHUB_USER:?}/moope-plano-production:${PLANO_TAG:-latest}
+    ports: ["7108:8080"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  vendedor:
+    image: ${DOCKERHUB_USER:?}/moope-vendedor-production:${VENDEDOR_TAG:-latest}
+    ports: ["7109:8080"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production

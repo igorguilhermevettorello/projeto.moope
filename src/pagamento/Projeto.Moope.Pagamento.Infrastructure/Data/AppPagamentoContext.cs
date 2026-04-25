@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Projeto.Moope.Core.Interfaces.Data;
-using Projeto.Moope.Pagamento.Core.Models;
+using PagamentoModel = Projeto.Moope.Pagamento.Core.Models.Pagamento;
+using IdempotenciaModel = Projeto.Moope.Pagamento.Core.Models.IdempotenciaPagamento;
+using IntencaoModel = Projeto.Moope.Pagamento.Core.Models.IntencaoPagamento;
 
 namespace Projeto.Moope.Pagamento.Infrastructure.Data
 {
@@ -8,7 +10,9 @@ namespace Projeto.Moope.Pagamento.Infrastructure.Data
     {
         public AppPagamentoContext(DbContextOptions<AppPagamentoContext> options) : base(options) { }
 
-        public DbSet<PagamentoReferencia> PagamentoReferencias { get; set; }
+        public DbSet<PagamentoModel> Pagamentos { get; set; }
+        public DbSet<IdempotenciaModel> Idempotencias { get; set; }
+        public DbSet<IntencaoModel> IntencoesPagamento { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,14 +1,13 @@
-using System.Numerics;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
-using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Pagamento.Api.DTOs;
 using Projeto.Moope.Pagamento.Core.DTOs;
+using Projeto.Moope.Pagamento.Core.Excecoes.Idempotencia;
 using Projeto.Moope.Pagamento.Core.Interfaces.Services;
 using Projeto.Moope.Pagamento.Core.Services.Models;
+using System.Text.Json;
 
 namespace Projeto.Moope.Pagamento.Api.Controllers
 {
@@ -17,11 +16,20 @@ namespace Projeto.Moope.Pagamento.Api.Controllers
     public class PagamentoController : MainController
     {
         private readonly IPagamentoService _pagamentoService;
+        private readonly IIdempotenciaService _idempotenciaService;
+        private readonly IGeradorHashRequisicao _geradorHashRequisicao;
 
-        public PagamentoController(IPagamentoService pagamentoService, INotificador notificador, IUser appUser)
+        public PagamentoController(
+            IPagamentoService pagamentoService,
+            IIdempotenciaService idempotenciaService,
+            IGeradorHashRequisicao geradorHashRequisicao,
+            INotificador notificador,
+            IUser appUser)
             : base(notificador, appUser)
         {
             _pagamentoService = pagamentoService;
+            _idempotenciaService = idempotenciaService;
+            _geradorHashRequisicao = geradorHashRequisicao;
         }
 
         [HttpPost("gateway/token")]
@@ -172,6 +180,81 @@ namespace Projeto.Moope.Pagamento.Api.Controllers
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
 
+            var idempotencyKey = Request.Headers["Idempotency-Key"].FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                var scope = "Pagamento:CriarAssinaturaSemPlano";
+                var requestHash = _geradorHashRequisicao.GerarHash(dto);
+
+                try
+                {
+                    var inicio = await _idempotenciaService.IniciarProcessamentoAsync(
+                        idempotencyKey,
+                        scope,
+                        requestHash,
+                        cancellationToken);
+
+                    if (inicio.JaConcluido && inicio.ResponseStatusCode.HasValue && !string.IsNullOrWhiteSpace(inicio.ResponseBody))
+                    {
+                        return new ContentResult
+                        {
+                            StatusCode = inicio.ResponseStatusCode.Value,
+                            ContentType = "application/json",
+                            Content = inicio.ResponseBody
+                        };
+                    }
+
+                    if (!inicio.DeveProcessar)
+                        return Conflict("Uma solicitação com a mesma chave de idempotência já está em processamento.");
+
+                    var payloadIdempotente = new CelPayAssinaturaSemPlanoRequestDto
+                    {
+                        MyId = dto.PedidoId.ToString(),
+                        Value = (int)(dto.Valor * 100),
+                        Quantity = 0,
+                        Periodicity = dto.Periodicidade,
+                        FirstPayDayDate = DateTime.Now.ToString("yyyy-MM-dd"),
+                        MainPaymentMethodId = dto.MetodoPagamento,
+                        AdditionalInfo = dto.Observacao,
+                        Customer = new CelPayCustomerDto
+                        {
+                            GalaxPayId = dto.GalaxPayCustomerId,
+                            Name = dto.Name,
+                            Emails = new List<string> { dto.Email }
+                        },
+                        Card = new CelPayCardDto
+                        {
+                            GalaxPayId = dto.GalaxPayCardId
+                        }
+
+                    };
+
+                    var requestIdempotente = new CriarAssinaturaSemPlanoGatewayRequestDto("subscriptions.write", payloadIdempotente);
+                    var resultIdempotente = await _pagamentoService.CriarAssinaturaSemPlanoAsync(requestIdempotente, cancellationToken);
+                    if (!resultIdempotente.Status)
+                    {
+                        await _idempotenciaService.MarcarFalhaAsync(inicio.IdempotenciaId, cancellationToken);
+                        return CustomResponse(resultIdempotente);
+                    }
+
+                    var responseJson = JsonSerializer.Serialize(resultIdempotente.Dados);
+                    await _idempotenciaService.ConcluirAsync(
+                        inicio.IdempotenciaId,
+                        StatusCodes.Status200OK,
+                        responseJson,
+                        resourceId: dto.PedidoId.ToString(),
+                        resourceType: "AssinaturaSemPlano",
+                        cancellationToken);
+
+                    return Ok(resultIdempotente.Dados);
+                }
+                catch (ChaveIdempotenteReutilizadaComPayloadDiferenteException ex)
+                {
+                    NotificarErro("Idempotencia", ex.Message);
+                    return CustomResponse();
+                }
+            }
+
             var payload = new CelPayAssinaturaSemPlanoRequestDto
             {
                 MyId = dto.PedidoId.ToString(),
@@ -207,6 +290,81 @@ namespace Projeto.Moope.Pagamento.Api.Controllers
         {
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
+
+            var idempotencyKey = Request.Headers["Idempotency-Key"].FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                var scope = "Pagamento:CriarAssinaturaSemPlano";
+                var requestHash = _geradorHashRequisicao.GerarHash(dto);
+
+                try
+                {
+                    var inicio = await _idempotenciaService.IniciarProcessamentoAsync(
+                        idempotencyKey,
+                        scope,
+                        requestHash,
+                        cancellationToken);
+
+                    if (inicio.JaConcluido && inicio.ResponseStatusCode.HasValue && !string.IsNullOrWhiteSpace(inicio.ResponseBody))
+                    {
+                        return new ContentResult
+                        {
+                            StatusCode = inicio.ResponseStatusCode.Value,
+                            ContentType = "application/json",
+                            Content = inicio.ResponseBody
+                        };
+                    }
+
+                    if (!inicio.DeveProcessar)
+                        return Conflict("Uma solicitação com a mesma chave de idempotência já está em processamento.");
+
+                    var payloadIdempotente = new CelPayAssinaturaSemPlanoRequestDto
+                    {
+                        MyId = dto.PedidoId.ToString(),
+                        Value = (int)(dto.Valor * 100),
+                        Quantity = 0,
+                        Periodicity = dto.Periodicidade,
+                        FirstPayDayDate = DateTime.Now.ToString("yyyy-MM-dd"),
+                        MainPaymentMethodId = dto.MetodoPagamento,
+                        AdditionalInfo = dto.Observacao,
+                        Customer = new CelPayCustomerDto
+                        {
+                            GalaxPayId = dto.GalaxPayCustomerId,
+                            Name = dto.Name,
+                            Emails = new List<string> { dto.Email }
+                        },
+                        Card = new CelPayCardDto
+                        {
+                            GalaxPayId = dto.GalaxPayCardId
+                        }
+
+                    };
+
+                    var requestIdempotente = new CriarAssinaturaSemPlanoGatewayRequestDto("subscriptions.write", payloadIdempotente);
+                    var resultIdempotente = await _pagamentoService.CriarAssinaturaSemPlanoAsync(requestIdempotente, cancellationToken);
+                    if (!resultIdempotente.Status)
+                    {
+                        await _idempotenciaService.MarcarFalhaAsync(inicio.IdempotenciaId, cancellationToken);
+                        return CustomResponse(resultIdempotente);
+                    }
+
+                    var responseJson = JsonSerializer.Serialize(resultIdempotente.Dados);
+                    await _idempotenciaService.ConcluirAsync(
+                        inicio.IdempotenciaId,
+                        StatusCodes.Status200OK,
+                        responseJson,
+                        resourceId: dto.PedidoId.ToString(),
+                        resourceType: "AssinaturaSemPlano",
+                        cancellationToken);
+
+                    return Ok(resultIdempotente.Dados);
+                }
+                catch (ChaveIdempotenteReutilizadaComPayloadDiferenteException ex)
+                {
+                    NotificarErro("Idempotencia", ex.Message);
+                    return CustomResponse();
+                }
+            }
 
             var payload = new CelPayAssinaturaSemPlanoRequestDto
             {

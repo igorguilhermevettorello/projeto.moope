@@ -44,6 +44,7 @@ namespace Projeto.Moope.Auth.Api.Configurations
             service.AddScoped<IPessoaFisicaRepository, PessoaFisicaRepository>();
             service.AddScoped<IPessoaJuridicaRepository, PessoaJuridicaRepository>();
             service.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            service.AddScoped<IClientePendenteRepository, ClientePendenteRepository>();
             // other...
             //service.AddScoped<ITransacaoRepository, TransacaoRepository>();
             //service.AddScoped<IDescontoRepository, DescontoRepository>();

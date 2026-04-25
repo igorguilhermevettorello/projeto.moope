@@ -4,8 +4,8 @@ using Projeto.Moope.Core.Models;
 
 namespace Projeto.Moope.Pagamento.Core.Models
 {
-    [Table("PagamentoReferencia")]
-    public class PagamentoReferencia : Entity, IAggregateRoot
+    [Table("Pagamento")]
+    public class Pagamento : Entity, IAggregateRoot
     {
         public Guid ClienteId { get; set; }
 

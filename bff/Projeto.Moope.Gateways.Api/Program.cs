@@ -8,6 +8,7 @@ using Projeto.Moope.Gateways.Api.Mappings;
 using Projeto.Moope.Gateways.Core.Interfaces.Services;
 using Projeto.Moope.Gateways.Core.Interfaces.Services.Cliente;
 using Projeto.Moope.Gateways.Core.Interfaces.Services.GalaxPay;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Pagemento;
 using Projeto.Moope.Gateways.Core.Interfaces.Services.Pedido;
 using Projeto.Moope.Gateways.Core.Interfaces.Services.RabbitMQ;
 using Projeto.Moope.Gateways.Core.Interfaces.Services.Vendedor;
@@ -15,6 +16,7 @@ using Projeto.Moope.Gateways.Core.Options;
 using Projeto.Moope.Gateways.Core.Services;
 using Projeto.Moope.Gateways.Core.Services.Cliente;
 using Projeto.Moope.Gateways.Core.Services.GalaxPay;
+using Projeto.Moope.Gateways.Core.Services.Pagamento;
 using Projeto.Moope.Gateways.Core.Services.Pedido;
 using Projeto.Moope.Gateways.Core.Services.RabbitMQ;
 using Projeto.Moope.Gateways.Core.Services.Vendedor;
@@ -64,6 +66,7 @@ builder.Services.AddScoped<IClienteGalaxPayUpdateService, ClienteGalaxPayUpdateS
 builder.Services.AddScoped<IClienteGalaxPayCreateService, ClienteGalaxPayCreateService>();
 builder.Services.AddScoped<ICartaoGalaxPayCreateService, CartaoGalaxPayCreateService>();
 builder.Services.AddScoped<IPedidoCreateService, PedidoCreateService>();
+builder.Services.AddScoped<IPagamentoIntencaoGetByIdService, PagamentoIntencaoGetByIdService>();
 builder.Services.AddScoped<IUser, AspNetUser>();
 
 var app = builder.Build();

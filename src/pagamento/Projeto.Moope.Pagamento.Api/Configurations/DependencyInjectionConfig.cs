@@ -3,6 +3,7 @@ using Projeto.Moope.Api.Utils;
 using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Core.Notifications;
+using Projeto.Moope.Pagamento.Core.Configurations;
 using Projeto.Moope.Pagamento.Core.Interfaces.Gateways;
 using Projeto.Moope.Pagamento.Core.Interfaces.Repositories;
 using Projeto.Moope.Pagamento.Core.Interfaces.Services;
@@ -17,11 +18,23 @@ namespace Projeto.Moope.Pagamento.Api.Configurations
     {
         public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.Configure<IdempotencyKeyGeneratorOptions>(
+                configuration.GetSection(IdempotencyKeyGeneratorOptions.SectionName));
+
+            services.Configure<IntencaoPagamentoOptions>(
+                configuration.GetSection(IntencaoPagamentoOptions.SectionName));
+
             services.AddScoped<INotificador, Notificador>();
             services.AddScoped<IUser, AspNetUser>();
 
-            services.AddScoped<IPagamentoReferenciaRepository, PagamentoReferenciaRepository>();
+            services.AddScoped<IIntencaoPagamentoRepository, IntencaoPagamentoRepository>();
+            services.AddScoped<IIntencaoPagamentoService, IntencaoPagamentoService>();
+
+            services.AddScoped<IPagamentoRepository, PagamentoRepository>();
             services.AddScoped<IPagamentoService, PagamentoService>();
+            services.AddScoped<IIdempotenciaRepository, IdempotenciaRepository>();
+            services.AddScoped<IIdempotenciaService, IdempotenciaService>();
+            services.AddSingleton<IGeradorHashRequisicao, GeradorHashRequisicaoSha256>();
 
             services.Configure<CelcoinPaymentsSettings>(configuration.GetSection(CelcoinPaymentsSettings.SectionName));
 

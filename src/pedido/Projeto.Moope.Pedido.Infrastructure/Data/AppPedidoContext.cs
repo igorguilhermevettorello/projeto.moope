@@ -3,6 +3,7 @@ using Projeto.Moope.Core.Interfaces.Data;
 using PedidoModel = Projeto.Moope.Pedido.Core.Models.Pedido;
 using TransacaoModel = Projeto.Moope.Pedido.Core.Models.Transacao;
 using DescontoModel = Projeto.Moope.Pedido.Core.Models.Desconto;
+using IdempotenciaModel = Projeto.Moope.Pedido.Core.Models.IdempotenciaPedido;
 
 namespace Projeto.Moope.Pedido.Infrastructure.Data
 {
@@ -13,6 +14,7 @@ namespace Projeto.Moope.Pedido.Infrastructure.Data
         public DbSet<PedidoModel> Pedidos { get; set; }
         public DbSet<TransacaoModel> Transacoes { get; set; }
         public DbSet<DescontoModel> Descontos { get; set; }
+        public DbSet<IdempotenciaModel> Idempotencias { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

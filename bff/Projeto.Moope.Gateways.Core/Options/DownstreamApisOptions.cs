@@ -22,6 +22,8 @@ namespace Projeto.Moope.Gateways.Core.Options
 
         public string Pagamento { get; set; } = string.Empty;
 
+        public string PagamentoIdempotencyKeyGeneratorApiKey { get; set; } = string.Empty;
+
         public string Pedido { get; set; } = string.Empty;
     }
 }

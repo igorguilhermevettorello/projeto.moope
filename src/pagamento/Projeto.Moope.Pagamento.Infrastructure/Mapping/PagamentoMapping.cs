@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Projeto.Moope.Pagamento.Core.Models;
+using PagamentoModel = Projeto.Moope.Pagamento.Core.Models.Pagamento;
 
 namespace Projeto.Moope.Pagamento.Infrastructure.Mapping
 {
-    public class PagamentoReferenciaMapping : IEntityTypeConfiguration<PagamentoReferencia>
+    public class PagamentoMapping : IEntityTypeConfiguration<PagamentoModel>
     {
-        public void Configure(EntityTypeBuilder<PagamentoReferencia> builder)
+        public void Configure(EntityTypeBuilder<PagamentoModel> builder)
         {
             builder.HasKey(x => x.Id);
 
@@ -31,7 +31,7 @@ namespace Projeto.Moope.Pagamento.Infrastructure.Mapping
             builder.HasIndex(x => x.ClienteId).IsUnique();
             builder.HasIndex(x => x.GatewayCustomerId).IsUnique();
 
-            builder.ToTable("PagamentoReferencia");
+            builder.ToTable("Pagamento");
         }
     }
 }

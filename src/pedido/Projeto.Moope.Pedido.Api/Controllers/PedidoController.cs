@@ -1,11 +1,13 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using Projeto.Moope.Api.Controllers;
 using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Pedido.Api.DTOs;
 using Projeto.Moope.Pedido.Core.DTOs.Pedido;
+using Projeto.Moope.Pedido.Core.Excecoes.Idempotencia;
 using Projeto.Moope.Pedido.Core.Interfaces.Services;
 using PedidoModel = Projeto.Moope.Pedido.Core.Models.Pedido;
 using TransacaoModel = Projeto.Moope.Pedido.Core.Models.Transacao;
@@ -18,11 +20,21 @@ namespace Projeto.Moope.Pedido.Api.Controllers
     public class PedidoController : MainController
     {
         private readonly IPedidoService _pedidoService;
+        private readonly IIdempotenciaService _idempotenciaService;
+        private readonly IGeradorHashRequisicao _geradorHashRequisicao;
         private readonly IMapper _mapper;
 
-        public PedidoController(IPedidoService pedidoService, IMapper mapper, INotificador notificador, IUser appUser) : base(notificador, appUser)
+        public PedidoController(
+            IPedidoService pedidoService,
+            IIdempotenciaService idempotenciaService,
+            IGeradorHashRequisicao geradorHashRequisicao,
+            IMapper mapper,
+            INotificador notificador,
+            IUser appUser) : base(notificador, appUser)
         {
             _pedidoService = pedidoService;
+            _idempotenciaService = idempotenciaService;
+            _geradorHashRequisicao = geradorHashRequisicao;
             _mapper = mapper;
         }
 
@@ -57,14 +69,67 @@ namespace Projeto.Moope.Pedido.Api.Controllers
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
 
+            var idempotencyKey = Request.Headers["Idempotency-Key"].FirstOrDefault();
             var pedidoCreateDto = _mapper.Map<PedidoCreateDto>(dto);
 
-            var result = await _pedidoService.SalvarAsync(pedidoCreateDto);
-            if (!result.Status)
-                return CustomResponse(result);
+            if (!string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                var scope = "Pedido:Criar";
+                var requestHash = _geradorHashRequisicao.GerarHash(dto);
 
+                try
+                {
+                    var inicio = await _idempotenciaService.IniciarProcessamentoAsync(
+                        idempotencyKey,
+                        scope,
+                        requestHash,
+                        HttpContext.RequestAborted);
 
-            return CreatedAtAction(nameof(BuscarPorId), new { id = result.Dados!.Id }, MapToResponseDto(result.Dados!));
+                    if (inicio.JaConcluido && inicio.ResponseStatusCode.HasValue && !string.IsNullOrWhiteSpace(inicio.ResponseBody))
+                    {
+                        return new ContentResult
+                        {
+                            StatusCode = inicio.ResponseStatusCode.Value,
+                            ContentType = "application/json",
+                            Content = inicio.ResponseBody
+                        };
+                    }
+
+                    if (!inicio.DeveProcessar)
+                        return Conflict("Uma solicitação com a mesma chave de idempotência já está em processamento.");
+
+                    var result = await _pedidoService.SalvarAsync(pedidoCreateDto);
+                    if (!result.Status)
+                    {
+                        await _idempotenciaService.MarcarFalhaAsync(inicio.IdempotenciaId, HttpContext.RequestAborted);
+                        return CustomResponse(result);
+                    }
+
+                    var responseDto = MapToResponseDto(result.Dados!);
+                    var responseJson = JsonSerializer.Serialize(responseDto);
+
+                    await _idempotenciaService.ConcluirAsync(
+                        inicio.IdempotenciaId,
+                        StatusCodes.Status201Created,
+                        responseJson,
+                        result.Dados!.Id.ToString(),
+                        "Pedido",
+                        HttpContext.RequestAborted);
+
+                    return CreatedAtAction(nameof(BuscarPorId), new { id = result.Dados!.Id }, responseDto);
+                }
+                catch (ChaveIdempotenteReutilizadaComPayloadDiferenteException ex)
+                {
+                    NotificarErro("Idempotencia", ex.Message);
+                    return CustomResponse();
+                }
+            }
+
+            var resultSemIdempotencia = await _pedidoService.SalvarAsync(pedidoCreateDto);
+            if (!resultSemIdempotencia.Status)
+                return CustomResponse(resultSemIdempotencia);
+
+            return CreatedAtAction(nameof(BuscarPorId), new { id = resultSemIdempotencia.Dados!.Id }, MapToResponseDto(resultSemIdempotencia.Dados!));
         }
 
         [HttpPut("{id:guid}/transacoes")]

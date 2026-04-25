@@ -7,6 +7,7 @@ using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Gateways.Api.DTOs.Venda;
 using Projeto.Moope.Gateways.Core.DTOs.Venda;
+using Projeto.Moope.Gateways.Core.Interfaces.Services.Pagemento;
 using Projeto.Moope.Gateways.Core.Interfaces.Services;
 using System.Security.Claims;
 
@@ -17,16 +18,19 @@ namespace Projeto.Moope.Gateways.Api.Controllers
     public class VendaBffController : MainController
     {
         private readonly IProcessarVendaService _processarVendaService;
+        private readonly IPagamentoIntencaoGetByIdService _pagamentoIntencaoGetByIdService;
         private readonly IMapper _mapper;
 
         public VendaBffController(
             IProcessarVendaService processarVendaService,
+            IPagamentoIntencaoGetByIdService pagamentoIntencaoGetByIdService,
             IMapper mapper,
             INotificador notificador,
             IUser appUser)
             : base(notificador, appUser)
         {
             _processarVendaService = processarVendaService;
+            _pagamentoIntencaoGetByIdService = pagamentoIntencaoGetByIdService;
             _mapper = mapper;
         }
 
@@ -43,9 +47,24 @@ namespace Projeto.Moope.Gateways.Api.Controllers
 
             var usuario = LerUsuarioContexto(HttpContext);
             var authorizationHeader = Request.Headers.Authorization.ToString();
-            var idempotencyKey = Request.Headers.TryGetValue("Idempotency-Key", out var idem)
-                ? idem.ToString()
-                : null;
+
+            if (!Request.Headers.TryGetValue("Idempotency-Key", out var idem))
+                return BadRequest(new { mensagem = "Header Idempotency-Key e obrigatorio." });
+
+            var idempotencyKey = idem.ToString();
+            if (string.IsNullOrWhiteSpace(idempotencyKey))
+                return BadRequest(new { mensagem = "Header Idempotency-Key e obrigatorio." });
+
+            if (!Guid.TryParse(idempotencyKey, out var idempotencyKeyGuid) || idempotencyKeyGuid == Guid.Empty)
+                return BadRequest(new { mensagem = "Header Idempotency-Key invalido. Deve ser um GUID." });
+
+            var rsIntencao = await _pagamentoIntencaoGetByIdService.ExecutarAsync(
+                idempotencyKeyGuid,
+                idempotencyKey,
+                cancellationToken);
+
+            if (!rsIntencao.Status)
+                return StatusCode(rsIntencao.StatusCode, rsIntencao.Mensagem);
 
             var resultado = await _processarVendaService.ExecutarAsync(
                 _mapper.Map<VendaCreateDto>(request),

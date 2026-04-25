@@ -7,6 +7,7 @@ using Projeto.Moope.Auth.Application.Commands.Usuario.AtualizarEndereco;
 using Projeto.Moope.Auth.Application.Commands.Usuario.AlterarSenha;
 using Projeto.Moope.Auth.Application.Commands.Usuario.Criar;
 using Projeto.Moope.Auth.Application.Commands.Usuario.Deletar;
+using Projeto.Moope.Auth.Application.Queries.Usuario.ListarClientesPendentes;
 using Projeto.Moope.Auth.Application.Queries.Usuario.Listar;
 using Projeto.Moope.Auth.Application.Queries.Usuario.ObterPorId;
 using Projeto.Moope.Auth.Core.DTOs.Usuario;
@@ -36,6 +37,17 @@ namespace Projeto.Moope.Auth.Api.Controllers
         public async Task<IActionResult> Listar()
         {
             var result = await _mediator.Send(new ListarUsuarioQuery());
+            return Ok(result);
+        }
+
+        [HttpGet("clientes-pendentes")]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(typeof(IReadOnlyList<ClientePendenteDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> ListarClientesPendentes(CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(new ListarClientesPendentesQuery(), cancellationToken);
             return Ok(result);
         }
 

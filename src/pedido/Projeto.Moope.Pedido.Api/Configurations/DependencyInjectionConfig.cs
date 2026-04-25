@@ -44,6 +44,9 @@ namespace Projeto.Moope.Pedido.Api.Configurations
             services.AddScoped<IDescontoService, DescontoService>();
             services.AddScoped<IPedidoRepository, PedidoRepository>();
             services.AddScoped<IPedidoService, PedidoService>();
+            services.AddScoped<IIdempotenciaRepository, IdempotenciaRepository>();
+            services.AddScoped<IIdempotenciaService, IdempotenciaService>();
+            services.AddSingleton<IGeradorHashRequisicao, GeradorHashRequisicaoSha256>();
             services.AddScoped<IUser, AspNetUser>();
             return services;
         }
