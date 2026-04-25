@@ -41,6 +41,17 @@ namespace Projeto.Moope.Gateways.Core.Services.Pedido
                 };
             }
 
+            if (string.IsNullOrWhiteSpace(request.IdempotencyKey))
+            {
+                return new ResultDto<PedidoDetailDto>
+                {
+                    Status = false,
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Dados = null,
+                    Mensagem = "Header Idempotency-Key e obrigatorio."
+                };
+            }
+
             var httpClient = _httpClientFactory.CreateClient();
 
             // Pedido (Venda.Api) orquestra pagamento internamente; o BFF apenas envia o payload completo.
@@ -57,6 +68,7 @@ namespace Projeto.Moope.Gateways.Core.Services.Pedido
 
             using var pedidoRequest = new HttpRequestMessage(HttpMethod.Post, pedidoUrl);
             Utils.AplicarAutorizacao(pedidoRequest, authBearerHeader);
+            pedidoRequest.Headers.TryAddWithoutValidation("Idempotency-Key", request.IdempotencyKey);
             pedidoRequest.Content = JsonContent.Create(pedidoBody, options: JsonOptions);
 
             using var pedidoResponse = await httpClient.SendAsync(pedidoRequest, cancellationToken);

@@ -114,7 +114,7 @@ namespace Projeto.Moope.Pedido.Core.Services
 
                 planoValorComDesconto = plano.Valor;
                 percentualTotalDescontos = 0;
-                ValorTotalTaxaAdesao = 0;
+                //ValorTotalTaxaAdesao = 0;
             }
             else
             {
@@ -122,9 +122,13 @@ namespace Projeto.Moope.Pedido.Core.Services
                 planoTaxaAdesao = estadoIsentoTaxa ? 0 : (plano.TaxaAdesao ?? 0);
                 percentualTotalDescontos = _descontoService.ObterPercentualTotalDescontosAsync(codigosDesconto, pedidoCreateDto.TipoPessoa);
                 planoValorComDesconto = Math.Round(plano.Valor - ((plano.Valor * percentualTotalDescontos) / 100), 2);
-                totalCalculado = Math.Round(((planoValorComDesconto * pedidoCreateDto.Quantidade) + (planoTaxaAdesao * pedidoCreateDto.Quantidade)), 2);
-                PlanoValorTotal = Math.Round((planoValorComDesconto * pedidoCreateDto.Quantidade), 2);
-                ValorTotalTaxaAdesao = Math.Round((planoTaxaAdesao * pedidoCreateDto.Quantidade), 2);
+
+                totalCalculado = planoTaxaAdesao > 0 ?
+                    Math.Round((planoTaxaAdesao * pedidoCreateDto.Quantidade), 2)
+                        : Math.Round((planoValorComDesconto * pedidoCreateDto.Quantidade), 2);
+
+                //PlanoValorTotal = Math.Round((planoValorComDesconto * pedidoCreateDto.Quantidade), 2);
+                //ValorTotalTaxaAdesao = Math.Round((planoTaxaAdesao * pedidoCreateDto.Quantidade), 2);
             }
 
             var pedido = new PedidoModel

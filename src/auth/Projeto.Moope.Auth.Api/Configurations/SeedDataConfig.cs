@@ -69,43 +69,6 @@ namespace Projeto.Moope.Auth.Api.Configurations
                     await context.SaveChangesAsync();
                 }
             }
-
-            // Seed de um usuário "técnico" Administrador (ClienteApiKey) baseado no ClientCredentials do appsettings.
-            // Objetivo: manter um registro no Identity/DB (auditoria/uso futuro), enquanto o ClientLogin atual usa Basic + config.
-            var authClientId = configuration["ClientCredentials:Clients:0:ClienteId"];
-            var authClientSecret = configuration["ClientCredentials:Clients:0:SecretKey"];
-            if (!string.IsNullOrWhiteSpace(authClientId) && !string.IsNullOrWhiteSpace(authClientSecret))
-            {
-                var technicalEmail = $"{authClientId}@client.local";
-                var technicalUser = await userManager.FindByEmailAsync(technicalEmail);
-                if (technicalUser == null)
-                {
-                    var user = new IdentityUser<Guid>
-                    {
-                        UserName = technicalEmail,
-                        Email = technicalEmail,
-                        EmailConfirmed = true,
-                        LockoutEnabled = false
-                    };
-
-                    var result = await userManager.CreateAsync(user, authClientSecret);
-                    if (result.Succeeded)
-                    {
-                        await userManager.AddToRoleAsync(user, TipoUsuario.Administrador.ToString());
-
-                        var novoUsuario = new Usuario
-                        {
-                            Nome = $"ClienteApiKey ({authClientId})",
-                            Id = user.Id,
-                            Created = DateTime.UtcNow,
-                            Updated = DateTime.UtcNow
-                        };
-
-                        await context.Usuarios.AddAsync(novoUsuario);
-                        await context.SaveChangesAsync();
-                    }
-                }
-            }
         }
     }
 }

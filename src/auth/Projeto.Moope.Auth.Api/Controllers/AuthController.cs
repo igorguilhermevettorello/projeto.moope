@@ -115,23 +115,49 @@ namespace Projeto.Moope.Auth.Api.Controllers
                 return CustomResponse(ModelState);
             }
 
-            // Integra com Identity usando o usuário técnico seeded (SeedDataConfig),
-            // e retorna o mesmo JWT (com refresh token) gerado pelo fluxo padrão.
-            var technicalEmail = $"{clienteId}@client.local";
-            var signInResult = await _signInManager.PasswordSignInAsync(
-                technicalEmail,
-                secretKey,
-                isPersistent: false,
-                lockoutOnFailure: true);
-
-            if (!signInResult.Succeeded)
-            {
-                ModelState.AddModelError("ClientLogin", "Falha ao autenticar o client no Identity (verifique o seed do usuário técnico).");
-                return CustomResponse(ModelState);
-            }
-
-            var token = await GerarJwt(technicalEmail, TipoUsuario.Administrador);
+            var token = GerarJwtClientCredentials(clienteId);
             return CustomResponse(new { data = token });
+        }
+
+        private ClientLoginResponseDto GerarJwtClientCredentials(string clienteId)
+        {
+            var creds = _jwtSigningKeys.GetSigningCredentials();
+            var expires = DateTime.UtcNow.AddHours(_jwtSettings.ExpiracaoHoras);
+
+            var claims = new List<Claim>
+            {
+                new(JwtRegisteredClaimNames.Sub, clienteId),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new(JwtRegisteredClaimNames.Nbf, ToUnixEpochDate(DateTime.UtcNow).ToString()),
+                new(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(DateTime.UtcNow).ToString(), ClaimValueTypes.Integer64),
+                new("role", TipoUsuario.Administrador.ToString()),
+                new("perfil", TipoUsuario.Administrador.ToString().ToLower())
+            };
+
+            var identityClaims = new ClaimsIdentity();
+            identityClaims.AddClaims(claims);
+
+            var token = new SecurityTokenDescriptor
+            {
+                Subject = identityClaims,
+                Expires = expires,
+                SigningCredentials = creds,
+                Issuer = _jwtSettings.Issuer,
+                Audience = _jwtSettings.Audience
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var securityToken = tokenHandler.CreateToken(token);
+            var tokenString = tokenHandler.WriteToken(securityToken);
+
+            return new ClientLoginResponseDto
+            {
+                AccessToken = tokenString,
+                ExpiresIn = TimeSpan.FromHours(_jwtSettings.ExpiracaoHoras).TotalSeconds,
+                Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }),
+                Role = TipoUsuario.Administrador.ToString(),
+                Perfil = TipoUsuario.Administrador.ToString().ToLower()
+            };
         }
 
         [HttpPost("login")]

@@ -59,6 +59,39 @@ namespace Projeto.Moope.Pedido.Api.Controllers
             return Ok(MapToResponseDto(pedido));
         }
 
+        [HttpGet("{id:guid}/valores-pagamento")]
+        [ProducesResponseType(typeof(PedidoValoresPagamentoResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> ObterValoresPagamento(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                ModelState.AddModelError("Id", "ID do pedido é obrigatório");
+                return CustomResponse(ModelState);
+            }
+
+            var pedido = await _pedidoService.BuscarPorIdComDadosAsync(id);
+            if (pedido == null)
+                return NotFound("Pedido não encontrado");
+
+            var quantidade = pedido.Quantidade;
+
+            var valorTotalTaxaAdesao = Math.Round(pedido.PlanoTaxaAdesao * quantidade, 2);
+            var mensalidadeTotal = Math.Round(pedido.PlanoValorComDesconto * quantidade, 2);
+
+            var response = new PedidoValoresPagamentoResponseDto
+            {
+                PedidoId = pedido.Id,
+                ValorTotalTaxaAdesao = valorTotalTaxaAdesao,
+                ValorTotalMensalidade = mensalidadeTotal
+            };
+
+            return Ok(response);
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(PedidoCreateResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -69,67 +102,64 @@ namespace Projeto.Moope.Pedido.Api.Controllers
             if (!ModelState.IsValid)
                 return CustomResponse(ModelState);
 
-            var idempotencyKey = Request.Headers["Idempotency-Key"].FirstOrDefault();
+            if (!Request.Headers.TryGetValue("Idempotency-Key", out var idem))
+                return BadRequest(new { mensagem = "Header Idempotency-Key e obrigatorio." });
+
+            var idempotencyKey = idem.ToString();
+            if (string.IsNullOrWhiteSpace(idempotencyKey))
+                return BadRequest(new { mensagem = "Header Idempotency-Key e obrigatorio." });
+
             var pedidoCreateDto = _mapper.Map<PedidoCreateDto>(dto);
 
-            if (!string.IsNullOrWhiteSpace(idempotencyKey))
+            var scope = "Pedido:Criar";
+            var requestHash = _geradorHashRequisicao.GerarHash(dto);
+
+            try
             {
-                var scope = "Pedido:Criar";
-                var requestHash = _geradorHashRequisicao.GerarHash(dto);
+                var inicio = await _idempotenciaService.IniciarProcessamentoAsync(
+                    idempotencyKey,
+                    scope,
+                    requestHash,
+                    HttpContext.RequestAborted);
 
-                try
+                if (inicio.JaConcluido && inicio.ResponseStatusCode.HasValue && !string.IsNullOrWhiteSpace(inicio.ResponseBody))
                 {
-                    var inicio = await _idempotenciaService.IniciarProcessamentoAsync(
-                        idempotencyKey,
-                        scope,
-                        requestHash,
-                        HttpContext.RequestAborted);
-
-                    if (inicio.JaConcluido && inicio.ResponseStatusCode.HasValue && !string.IsNullOrWhiteSpace(inicio.ResponseBody))
+                    return new ContentResult
                     {
-                        return new ContentResult
-                        {
-                            StatusCode = inicio.ResponseStatusCode.Value,
-                            ContentType = "application/json",
-                            Content = inicio.ResponseBody
-                        };
-                    }
-
-                    if (!inicio.DeveProcessar)
-                        return Conflict("Uma solicitação com a mesma chave de idempotência já está em processamento.");
-
-                    var result = await _pedidoService.SalvarAsync(pedidoCreateDto);
-                    if (!result.Status)
-                    {
-                        await _idempotenciaService.MarcarFalhaAsync(inicio.IdempotenciaId, HttpContext.RequestAborted);
-                        return CustomResponse(result);
-                    }
-
-                    var responseDto = MapToResponseDto(result.Dados!);
-                    var responseJson = JsonSerializer.Serialize(responseDto);
-
-                    await _idempotenciaService.ConcluirAsync(
-                        inicio.IdempotenciaId,
-                        StatusCodes.Status201Created,
-                        responseJson,
-                        result.Dados!.Id.ToString(),
-                        "Pedido",
-                        HttpContext.RequestAborted);
-
-                    return CreatedAtAction(nameof(BuscarPorId), new { id = result.Dados!.Id }, responseDto);
+                        StatusCode = inicio.ResponseStatusCode.Value,
+                        ContentType = "application/json",
+                        Content = inicio.ResponseBody
+                    };
                 }
-                catch (ChaveIdempotenteReutilizadaComPayloadDiferenteException ex)
+
+                if (!inicio.DeveProcessar)
+                    return Conflict("Uma solicitação com a mesma chave de idempotência já está em processamento.");
+
+                var result = await _pedidoService.SalvarAsync(pedidoCreateDto);
+                if (!result.Status)
                 {
-                    NotificarErro("Idempotencia", ex.Message);
-                    return CustomResponse();
+                    await _idempotenciaService.MarcarFalhaAsync(inicio.IdempotenciaId, HttpContext.RequestAborted);
+                    return CustomResponse(result);
                 }
+
+                var responseDto = MapToResponseDto(result.Dados!);
+                var responseJson = JsonSerializer.Serialize(responseDto);
+
+                await _idempotenciaService.ConcluirAsync(
+                    inicio.IdempotenciaId,
+                    StatusCodes.Status201Created,
+                    responseJson,
+                    result.Dados!.Id.ToString(),
+                    "Pedido",
+                    HttpContext.RequestAborted);
+
+                return CreatedAtAction(nameof(BuscarPorId), new { id = result.Dados!.Id }, responseDto);
             }
-
-            var resultSemIdempotencia = await _pedidoService.SalvarAsync(pedidoCreateDto);
-            if (!resultSemIdempotencia.Status)
-                return CustomResponse(resultSemIdempotencia);
-
-            return CreatedAtAction(nameof(BuscarPorId), new { id = resultSemIdempotencia.Dados!.Id }, MapToResponseDto(resultSemIdempotencia.Dados!));
+            catch (ChaveIdempotenteReutilizadaComPayloadDiferenteException ex)
+            {
+                NotificarErro("Idempotencia", ex.Message);
+                return CustomResponse();
+            }
         }
 
         [HttpPut("{id:guid}/transacoes")]

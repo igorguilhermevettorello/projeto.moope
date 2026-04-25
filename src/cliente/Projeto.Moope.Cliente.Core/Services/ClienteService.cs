@@ -61,11 +61,13 @@ namespace Projeto.Moope.Cliente.Core.Services
             cliente.Updated = agora;
 
             var entity = await _clienteRepository.SalvarAsync(cliente);
-            return new ResultDto<ClienteModel>
+            var commitSucesso = await _clienteRepository.UnitOfWork.Commit();
+            if (!commitSucesso)
             {
-                Status = true,
-                Dados = entity
-            };
+                return new ResultDto<ClienteModel> { Status = false, Mensagem = "Erro ao atualizar endereço do usuário" };
+            }
+
+            return new ResultDto<ClienteModel> { Status = true, Dados = entity };
         }
 
         public async Task<ResultDto<ClienteModel>> AtualizarAsync(ClienteModel cliente)

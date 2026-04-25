@@ -23,15 +23,21 @@ namespace Projeto.Moope.RabbitMQ.Worker
         private readonly ILogger<Worker> _logger;
         private readonly RabbitMqOptions rabbitMqOptions;
         private readonly IEfetuarPagamentoService efetuarPagamentoService;
+        private readonly IAuthClientTokenService authClientTokenService;
+        private readonly IPedidoValoresPagamentoQueryService pedidoValoresPagamentoQueryService;
 
         public Worker(
             ILogger<Worker> logger,
             IOptions<RabbitMqOptions> rabbitMqOptions,
-            IEfetuarPagamentoService efetuarPagamentoService)
+            IEfetuarPagamentoService efetuarPagamentoService,
+            IAuthClientTokenService authClientTokenService,
+            IPedidoValoresPagamentoQueryService pedidoValoresPagamentoQueryService)
         {
             _logger = logger;
             this.rabbitMqOptions = rabbitMqOptions.Value;
             this.efetuarPagamentoService = efetuarPagamentoService;
+            this.authClientTokenService = authClientTokenService;
+            this.pedidoValoresPagamentoQueryService = pedidoValoresPagamentoQueryService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -113,7 +119,49 @@ namespace Projeto.Moope.RabbitMQ.Worker
                 var attempts = Math.Max(1, rabbitMqOptions.MaxRetryAttempts);
                 for (var attempt = 1; attempt <= attempts; attempt++)
                 {
-                    var rs = await efetuarPagamentoService.EfetuarPagamento(dto, authorizationHeader: null, cancellationToken: stoppingToken);
+                    var tokenRs = await authClientTokenService.GetClientAccessTokenAsync(stoppingToken);
+                    if (!tokenRs.Status || tokenRs.Dados == null || string.IsNullOrWhiteSpace(tokenRs.Dados.AccessToken))
+                    {
+                        _logger.LogWarning(
+                            "Falha ao obter access token do Auth (tentativa {Attempt}/{Attempts}). PedidoId: {PedidoId}. StatusCode: {StatusCode}. Msg: {Mensagem}",
+                            attempt, attempts, dto.PedidoId, tokenRs.StatusCode, tokenRs.Mensagem);
+
+                        if (attempt < attempts)
+                            await Task.Delay(TimeSpan.FromSeconds(Math.Max(1, rabbitMqOptions.RetryIntervalSeconds)), stoppingToken);
+
+                        continue;
+                    }
+
+                    var authorizationHeader = $"Bearer {tokenRs.Dados.AccessToken}";
+
+                    var valoresRs = await pedidoValoresPagamentoQueryService.ObterValoresPagamentoAsync(dto.PedidoId, authorizationHeader, stoppingToken);
+                    if (!valoresRs.Status || valoresRs.Dados == null)
+                    {
+                        _logger.LogWarning(
+                            "Falha ao obter valores do Pedido (tentativa {Attempt}/{Attempts}). PedidoId: {PedidoId}. StatusCode: {StatusCode}. Msg: {Mensagem}",
+                            attempt, attempts, dto.PedidoId, valoresRs.StatusCode, valoresRs.Mensagem);
+
+                        if (attempt < attempts)
+                            await Task.Delay(TimeSpan.FromSeconds(Math.Max(1, rabbitMqOptions.RetryIntervalSeconds)), stoppingToken);
+
+                        continue;
+                    }
+
+                    dto = new PagamentoDto
+                    {
+                        Name = dto.Name,
+                        Email = dto.Email,
+                        PedidoId = dto.PedidoId,
+                        Valor = valoresRs.Dados.ValorTotalMensalidade,
+                        TaxaAdesao = valoresRs.Dados.ValorTotalTaxaAdesao,
+                        Periodicidade = dto.Periodicidade,
+                        MetodoPagamento = dto.MetodoPagamento,
+                        GalaxPayCustomerId = dto.GalaxPayCustomerId,
+                        GalaxPayCardId = dto.GalaxPayCardId,
+                        Observacao = dto.Observacao
+                    };
+
+                    var rs = await efetuarPagamentoService.EfetuarPagamento(dto, authorizationHeader: authorizationHeader, cancellationToken: stoppingToken);
                     if (rs.Status)
                     {
                         await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false, cancellationToken: stoppingToken);
