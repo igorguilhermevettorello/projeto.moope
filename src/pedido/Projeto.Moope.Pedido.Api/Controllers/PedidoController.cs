@@ -79,8 +79,11 @@ namespace Projeto.Moope.Pedido.Api.Controllers
 
             var quantidade = pedido.Quantidade;
 
-            var valorTotalTaxaAdesao = Math.Round(pedido.PlanoTaxaAdesao * quantidade, 2);
-            var mensalidadeTotal = Math.Round(pedido.PlanoValorComDesconto * quantidade, 2);
+            //var valorTotalTaxaAdesao = Math.Round(pedido.PlanoTaxaAdesao * quantidade, 2);
+            //var mensalidadeTotal = Math.Round(pedido.PlanoValorComDesconto * quantidade, 2);
+
+            var valorTotalTaxaAdesao = pedido.PlanoTaxaAdesaoTotal;
+            var mensalidadeTotal = pedido.PlanoValorTotal;
 
             var response = new PedidoValoresPagamentoResponseDto
             {
@@ -201,6 +204,40 @@ namespace Projeto.Moope.Pedido.Api.Controllers
             return NoContent();
         }
 
+        [HttpPatch("{id:guid}/galaxpayid/{galaxPayId:int}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> AtualizarGalaxPayId(Guid id, int galaxPayId)
+        {
+            if (id == Guid.Empty)
+            {
+                ModelState.AddModelError("Id", "ID do pedido é obrigatório");
+                return CustomResponse(ModelState);
+            }
+
+            if (galaxPayId <= 0)
+            {
+                ModelState.AddModelError("GalaxPayId", "GalaxPayId deve ser maior que zero");
+                return CustomResponse(ModelState);
+            }
+
+            var result = await _pedidoService.AtualizarGalaxPayIdAsync(id, galaxPayId);
+            if (!result.Status)
+            {
+                NotificarErro("Mensagem", result.Mensagem ?? "Erro ao atualizar GalaxPayId do pedido");
+
+                if (string.Equals(result.Mensagem, "Pedido não encontrado", StringComparison.OrdinalIgnoreCase))
+                    return NotFound(result.Mensagem);
+
+                return CustomResponse();
+            }
+
+            return NoContent();
+        }
+
         private static PedidoCreateResponseDto MapToResponseDto(PedidoModel pedido)
         {
             return new PedidoCreateResponseDto
@@ -217,8 +254,8 @@ namespace Projeto.Moope.Pedido.Api.Controllers
                 PlanoCodigo = pedido.PlanoCodigo,
                 PlanoTaxaAdesao = pedido.PlanoTaxaAdesao,
                 PlanoPercentualDesconto = pedido.PlanoPercentualDesconto,
-                PlanoValorComDesconto = pedido.PlanoValorComDesconto,
-                Total = pedido.Total,
+                PlanoValorTotal = pedido.PlanoValorTotal,
+                PlanoTaxaAdesaoTotal = pedido.PlanoTaxaAdesaoTotal,
                 StatusAssinatura = pedido.StatusAssinatura,
                 Status = pedido.Status,
                 StatusDescricao = pedido.StatusDescricao,
@@ -250,4 +287,3 @@ namespace Projeto.Moope.Pedido.Api.Controllers
         }
     }
 }
-

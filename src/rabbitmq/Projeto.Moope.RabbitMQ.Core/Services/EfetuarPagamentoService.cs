@@ -72,6 +72,7 @@ namespace Projeto.Moope.RabbitMQ.Core.Services
             var body = new {
                 request.Name,
                 request.Email,
+                request.ClienteId,
                 request.PedidoId,
                 request.Valor,
                 request.Periodicidade,
@@ -97,6 +98,11 @@ namespace Projeto.Moope.RabbitMQ.Core.Services
                     httpRequest.Headers.TryAddWithoutValidation("Authorization", authorizationHeader);
                 }
 
+                if (!string.IsNullOrWhiteSpace(request.IdempotencyKey))
+                {
+                    httpRequest.Headers.TryAddWithoutValidation("Idempotency-Key", request.IdempotencyKey);
+                }
+
                 using var response = await httpClient.SendAsync(httpRequest, cancellationToken);
                 var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
@@ -117,11 +123,73 @@ namespace Projeto.Moope.RabbitMQ.Core.Services
                     };
                 }
 
+                var galaxPayId = TryExtractGalaxPayIdAsInt(responseBody);
+                if (!galaxPayId.HasValue || galaxPayId.Value <= 0)
+                {
+                    logger.LogWarning(
+                        "Resposta inesperada do servico Pagamento (galaxPayId ausente/invalido). PedidoId: {PedidoId}. Body: {Body}",
+                        request.PedidoId,
+                        responseBody);
+
+                    return new ResultDto
+                    {
+                        Status = false,
+                        StatusCode = 502,
+                        Mensagem = "Resposta inesperada do servico Pagamento: galaxPayId nao retornado."
+                    };
+                }
+
+                if (string.IsNullOrWhiteSpace(apis.Pedido))
+                {
+                    return new ResultDto
+                    {
+                        Status = false,
+                        StatusCode = 500,
+                        Mensagem = "DownstreamApis:Pedido nao configurado."
+                    };
+                }
+
+                if (string.IsNullOrWhiteSpace(authorizationHeader))
+                {
+                    return new ResultDto
+                    {
+                        Status = false,
+                        StatusCode = 500,
+                        Mensagem = "Authorization header nao informado."
+                    };
+                }
+
+                var patchUrl = UrlHelper.Combine(apis.Pedido, $"/api/pedido/{request.PedidoId}/galaxpayid/{galaxPayId.Value}");
+                using var patchRequest = new HttpRequestMessage(HttpMethod.Patch, patchUrl);
+                patchRequest.Headers.TryAddWithoutValidation("Authorization", authorizationHeader);
+
+                using var patchResponse = await httpClient.SendAsync(patchRequest, cancellationToken);
+                var patchResponseBody = await patchResponse.Content.ReadAsStringAsync(cancellationToken);
+
+                if (!patchResponse.IsSuccessStatusCode)
+                {
+                    logger.LogWarning(
+                        "Falha ao atualizar GalaxPayId no servico Pedido. PedidoId: {PedidoId}. GalaxPayId: {GalaxPayId}. Status: {StatusCode}. Body: {Body}",
+                        request.PedidoId,
+                        galaxPayId.Value,
+                        (int)patchResponse.StatusCode,
+                        patchResponseBody);
+
+                    return new ResultDto
+                    {
+                        Status = false,
+                        StatusCode = (int)patchResponse.StatusCode,
+                        Mensagem = string.IsNullOrWhiteSpace(patchResponseBody)
+                            ? "Falha ao atualizar GalaxPayId no servico Pedido."
+                            : patchResponseBody
+                    };
+                }
+
                 return new ResultDto
                 {
                     Status = true,
                     StatusCode = (int)response.StatusCode,
-                    Mensagem = null
+                    Mensagem = string.Empty
                 };
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -142,6 +210,33 @@ namespace Projeto.Moope.RabbitMQ.Core.Services
                     StatusCode = 500,
                     Mensagem = "Erro inesperado ao efetuar pagamento."
                 };
+            }
+        }
+
+        private static int? TryExtractGalaxPayIdAsInt(string responseBody)
+        {
+            if (string.IsNullOrWhiteSpace(responseBody))
+                return null;
+
+            try
+            {
+                using var doc = JsonDocument.Parse(responseBody);
+                var root = doc.RootElement;
+                if (root.ValueKind != JsonValueKind.Object)
+                    return null;
+
+                if (!root.TryGetProperty("galaxPayId", out var prop))
+                    return null;
+
+                if (prop.ValueKind == JsonValueKind.Number && prop.TryGetInt32(out var n))
+                    return n;
+
+                var s = prop.ValueKind == JsonValueKind.String ? prop.GetString() : prop.ToString();
+                return int.TryParse(s, out var parsed) ? parsed : null;
+            }
+            catch (JsonException)
+            {
+                return null;
             }
         }
     }

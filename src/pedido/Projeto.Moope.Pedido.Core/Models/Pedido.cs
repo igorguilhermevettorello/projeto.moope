@@ -20,8 +20,9 @@ namespace Projeto.Moope.Pedido.Core.Models
         public string PlanoCodigo { get; set; }
         public decimal PlanoTaxaAdesao { get; set; }
         public decimal PlanoPercentualDesconto { get; set; }
-        public decimal PlanoValorComDesconto { get; set; }
-        public decimal Total { get; set; }
+        //public decimal PlanoValorComDesconto { get; set; }
+        public decimal PlanoValorTotal { get; set; }
+        public decimal PlanoTaxaAdesaoTotal { get; set; }
         public StatusAssinatura StatusAssinatura { get; set; }
         public string? Status { get; set; }
         public string? StatusDescricao { get; set; }

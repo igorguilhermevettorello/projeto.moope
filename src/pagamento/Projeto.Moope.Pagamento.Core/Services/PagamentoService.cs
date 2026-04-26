@@ -8,6 +8,7 @@ using Projeto.Moope.Pagamento.Core.Interfaces.Services;
 using Projeto.Moope.Pagamento.Core.Services.Models;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using PagamentoModel = Projeto.Moope.Pagamento.Core.Models.Pagamento;
 
 namespace Projeto.Moope.Pagamento.Core.Services
 {
@@ -145,6 +146,42 @@ namespace Projeto.Moope.Pagamento.Core.Services
             catch (Exception ex)
             {
                 return FalhaGateway(ex, "Assinatura", "Erro ao criar assinatura/contrato no gateway.");
+            }
+        }
+
+        public async Task<ResultDto<PagamentoModel>> RegistrarPagamentoAssinaturaSemPlanoAsync(
+            Guid clienteId,
+            string gatewayCustomerId,
+            string? gatewaySubscriptionId,
+            string? gatewayPlanId,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (clienteId == Guid.Empty)
+                    return new ResultDto<PagamentoModel> { Status = false, Mensagem = "clienteId é obrigatório." };
+
+                if (string.IsNullOrWhiteSpace(gatewayCustomerId))
+                    return new ResultDto<PagamentoModel> { Status = false, Mensagem = "gatewayCustomerId é obrigatório." };
+
+                var now = DateTime.UtcNow;
+                var entity = new PagamentoModel
+                {
+                    ClienteId = clienteId,
+                    GatewayCustomerId = gatewayCustomerId,
+                    GatewayPlanId = gatewayPlanId,
+                    GatewaySubscriptionId = gatewaySubscriptionId,
+                    Created = now,
+                    Updated = now
+                };
+
+                var saved = await _pagamentoRepository.SalvarAsync(entity);
+                return new ResultDto<PagamentoModel> { Status = true, Dados = saved };
+            }
+            catch (Exception ex)
+            {
+                Notificar("Pagamento", $"Erro ao registrar pagamento. {ex.Message}");
+                return new ResultDto<PagamentoModel> { Status = false, Mensagem = "Erro ao registrar pagamento." };
             }
         }
 

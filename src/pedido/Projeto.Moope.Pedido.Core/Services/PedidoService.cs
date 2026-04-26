@@ -21,9 +21,6 @@ namespace Projeto.Moope.Pedido.Core.Services
         private readonly ILogger<PedidoService> _logger;
         private readonly IConfiguration _configuration;
 
-        private decimal ValorTotalTaxaAdesao;
-        private decimal PlanoValorTotal;
-
         public PedidoService(
             IPedidoRepository pedidoRepository,
             IMediator mediator,
@@ -97,22 +94,22 @@ namespace Projeto.Moope.Pedido.Core.Services
 
             decimal planoTaxaAdesao = 0;
             decimal percentualTotalDescontos = 0;
-            decimal planoValorComDesconto = 0;
-            decimal totalCalculado = 0;
+            decimal planoValorTotal = 0; // com desconto aplicado aplicado quantidade
+            decimal planoTaxaAdesaoTotal = 0;
             if (plano.Plataforma)
             {
                 if (pedidoCreateDto.Quantidade > 40)
                 {
-                    totalCalculado = 790;
-                    PlanoValorTotal = 790;
+                    planoTaxaAdesaoTotal = 790;
+                    planoValorTotal = 790;
                 }
                 else
                 {
-                    totalCalculado = Math.Round((plano.Valor * pedidoCreateDto.Quantidade), 2);
-                    PlanoValorTotal = Math.Round((plano.Valor * pedidoCreateDto.Quantidade), 2);
+                    planoTaxaAdesaoTotal = Math.Round((plano.Valor * pedidoCreateDto.Quantidade), 2);
+                    planoValorTotal = Math.Round((plano.Valor * pedidoCreateDto.Quantidade), 2);
                 }
 
-                planoValorComDesconto = plano.Valor;
+                planoValorTotal = plano.Valor;
                 percentualTotalDescontos = 0;
                 //ValorTotalTaxaAdesao = 0;
             }
@@ -121,11 +118,8 @@ namespace Projeto.Moope.Pedido.Core.Services
                 var estadoIsentoTaxa = !string.IsNullOrWhiteSpace(pedidoCreateDto.Estado) && semTaxaAdesao.Contains(pedidoCreateDto.Estado);
                 planoTaxaAdesao = estadoIsentoTaxa ? 0 : (plano.TaxaAdesao ?? 0);
                 percentualTotalDescontos = _descontoService.ObterPercentualTotalDescontosAsync(codigosDesconto, pedidoCreateDto.TipoPessoa);
-                planoValorComDesconto = Math.Round(plano.Valor - ((plano.Valor * percentualTotalDescontos) / 100), 2);
-
-                totalCalculado = planoTaxaAdesao > 0 ?
-                    Math.Round((planoTaxaAdesao * pedidoCreateDto.Quantidade), 2)
-                        : Math.Round((planoValorComDesconto * pedidoCreateDto.Quantidade), 2);
+                planoValorTotal = Math.Round(Math.Round(plano.Valor - ((plano.Valor * percentualTotalDescontos) / 100), 2) * pedidoCreateDto.Quantidade, 2);
+                planoTaxaAdesaoTotal = estadoIsentoTaxa ? 0 : Math.Round((planoTaxaAdesao * pedidoCreateDto.Quantidade), 2);
 
                 //PlanoValorTotal = Math.Round((planoValorComDesconto * pedidoCreateDto.Quantidade), 2);
                 //ValorTotalTaxaAdesao = Math.Round((planoTaxaAdesao * pedidoCreateDto.Quantidade), 2);
@@ -139,14 +133,14 @@ namespace Projeto.Moope.Pedido.Core.Services
                 Quantidade = pedidoCreateDto.Quantidade,
                 TipoPessoa = pedidoCreateDto.TipoPessoa,
                 Estado = pedidoCreateDto.Estado,
-                Total = totalCalculado,
-                StatusAssinatura = Core.Enums.StatusAssinatura.WaitingPayment,
-                PlanoPercentualDesconto = percentualTotalDescontos,
-                PlanoValorComDesconto = planoValorComDesconto,
+                StatusAssinatura = Enums.StatusAssinatura.WaitingPayment,
                 PlanoCodigo = plano.Codigo,
                 PlanoDescricao = plano.Descricao,
                 PlanoValor = plano.Valor,
                 PlanoTaxaAdesao = plano.TaxaAdesao ?? 0,
+                PlanoPercentualDesconto = percentualTotalDescontos,
+                PlanoValorTotal = planoValorTotal,
+                PlanoTaxaAdesaoTotal = planoTaxaAdesaoTotal,
                 Created = DateTime.UtcNow,
                 Updated = DateTime.UtcNow,
             };
@@ -211,6 +205,56 @@ namespace Projeto.Moope.Pedido.Core.Services
                 {
                     Status = false,
                     Mensagem = "Erro ao atualizar transações do pedido"
+                };
+            }
+        }
+
+        public async Task<ResultDto> AtualizarGalaxPayIdAsync(Guid pedidoId, int galaxPayId)
+        {
+            try
+            {
+                if (pedidoId == Guid.Empty)
+                {
+                    return new ResultDto
+                    {
+                        Status = false,
+                        Mensagem = "Pedido inválido"
+                    };
+                }
+
+                if (galaxPayId <= 0)
+                {
+                    return new ResultDto
+                    {
+                        Status = false,
+                        Mensagem = "GalaxPayId inválido"
+                    };
+                }
+
+                var pedido = await _pedidoRepository.BuscarPorIdAsync(pedidoId);
+                if (pedido == null || pedido.Id == Guid.Empty)
+                {
+                    return new ResultDto
+                    {
+                        Status = false,
+                        Mensagem = "Pedido não encontrado"
+                    };
+                }
+
+                pedido.GalaxPayId = galaxPayId;
+                pedido.Updated = DateTime.UtcNow;
+
+                await _pedidoRepository.AtualizarAsync(pedido);
+                _ = await _pedidoRepository.UnitOfWork.Commit();
+
+                return new ResultDto { Status = true };
+            }
+            catch (Exception)
+            {
+                return new ResultDto
+                {
+                    Status = false,
+                    Mensagem = "Erro ao atualizar GalaxPayId do pedido"
                 };
             }
         }

@@ -6,6 +6,8 @@ namespace Projeto.Moope.Gateways.Core.DTOs.Venda
     {
         public string Name { get; init; }
         public string Email { get; init; }
+        public string? IdempotencyKey { get; init; }
+        public Guid ClienteId { get; init; }
         public Guid PedidoId { get; init; }
         public decimal Valor { get; init; }
         public decimal TaxaAdesao { get; init; }

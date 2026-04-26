@@ -117,65 +117,64 @@ namespace Projeto.Moope.RabbitMQ.Worker
                 }
 
                 var attempts = Math.Max(1, rabbitMqOptions.MaxRetryAttempts);
+
+                var tokenRs = await authClientTokenService.GetClientAccessTokenAsync(stoppingToken);
+                if (!tokenRs.Status || tokenRs.Dados == null || string.IsNullOrWhiteSpace(tokenRs.Dados.AccessToken))
+                {
+                    _logger.LogWarning(
+                        "Falha ao obter access token do Auth. PedidoId: {PedidoId}. StatusCode: {StatusCode}. Msg: {Mensagem}",
+                        dto.PedidoId, tokenRs.StatusCode, tokenRs.Mensagem);
+                    await channel.BasicNackAsync(deliveryTag: ea.DeliveryTag, multiple: false, requeue: true, cancellationToken: stoppingToken);
+                    return;
+                }
+
+                var authorizationHeader = $"Bearer {tokenRs.Dados.AccessToken}";
+
+                var valoresRs = await pedidoValoresPagamentoQueryService.ObterValoresPagamentoAsync(dto.PedidoId, authorizationHeader, stoppingToken);
+                if (!valoresRs.Status || valoresRs.Dados == null)
+                {
+                    _logger.LogWarning(
+                        "Falha ao obter valores do Pedido. PedidoId: {PedidoId}. StatusCode: {StatusCode}. Msg: {Mensagem}",
+                        dto.PedidoId, valoresRs.StatusCode, valoresRs.Mensagem);
+                    await channel.BasicNackAsync(deliveryTag: ea.DeliveryTag, multiple: false, requeue: true, cancellationToken: stoppingToken);
+                    return;
+                }
+
+                var pagamentoRequest = new PagamentoDto
+                {
+                    Name = dto.Name,
+                    Email = dto.Email,
+                    IdempotencyKey = dto.IdempotencyKey,
+                    ClienteId = dto.ClienteId,
+                    PedidoId = dto.PedidoId,
+                    Valor = valoresRs.Dados.ValorTotalMensalidade,
+                    TaxaAdesao = valoresRs.Dados.ValorTotalTaxaAdesao,
+                    Periodicidade = dto.Periodicidade,
+                    MetodoPagamento = dto.MetodoPagamento,
+                    GalaxPayCustomerId = dto.GalaxPayCustomerId,
+                    GalaxPayCardId = dto.GalaxPayCardId,
+                    Observacao = dto.Observacao
+                };
+
                 for (var attempt = 1; attempt <= attempts; attempt++)
                 {
-                    var tokenRs = await authClientTokenService.GetClientAccessTokenAsync(stoppingToken);
-                    if (!tokenRs.Status || tokenRs.Dados == null || string.IsNullOrWhiteSpace(tokenRs.Dados.AccessToken))
-                    {
-                        _logger.LogWarning(
-                            "Falha ao obter access token do Auth (tentativa {Attempt}/{Attempts}). PedidoId: {PedidoId}. StatusCode: {StatusCode}. Msg: {Mensagem}",
-                            attempt, attempts, dto.PedidoId, tokenRs.StatusCode, tokenRs.Mensagem);
-
-                        if (attempt < attempts)
-                            await Task.Delay(TimeSpan.FromSeconds(Math.Max(1, rabbitMqOptions.RetryIntervalSeconds)), stoppingToken);
-
-                        continue;
-                    }
-
-                    var authorizationHeader = $"Bearer {tokenRs.Dados.AccessToken}";
-
-                    var valoresRs = await pedidoValoresPagamentoQueryService.ObterValoresPagamentoAsync(dto.PedidoId, authorizationHeader, stoppingToken);
-                    if (!valoresRs.Status || valoresRs.Dados == null)
-                    {
-                        _logger.LogWarning(
-                            "Falha ao obter valores do Pedido (tentativa {Attempt}/{Attempts}). PedidoId: {PedidoId}. StatusCode: {StatusCode}. Msg: {Mensagem}",
-                            attempt, attempts, dto.PedidoId, valoresRs.StatusCode, valoresRs.Mensagem);
-
-                        if (attempt < attempts)
-                            await Task.Delay(TimeSpan.FromSeconds(Math.Max(1, rabbitMqOptions.RetryIntervalSeconds)), stoppingToken);
-
-                        continue;
-                    }
-
-                    dto = new PagamentoDto
-                    {
-                        Name = dto.Name,
-                        Email = dto.Email,
-                        PedidoId = dto.PedidoId,
-                        Valor = valoresRs.Dados.ValorTotalMensalidade,
-                        TaxaAdesao = valoresRs.Dados.ValorTotalTaxaAdesao,
-                        Periodicidade = dto.Periodicidade,
-                        MetodoPagamento = dto.MetodoPagamento,
-                        GalaxPayCustomerId = dto.GalaxPayCustomerId,
-                        GalaxPayCardId = dto.GalaxPayCardId,
-                        Observacao = dto.Observacao
-                    };
-
-                    var rs = await efetuarPagamentoService.EfetuarPagamento(dto, authorizationHeader: authorizationHeader, cancellationToken: stoppingToken);
+                    var rs = await efetuarPagamentoService.EfetuarPagamento(pagamentoRequest, authorizationHeader: authorizationHeader, cancellationToken: stoppingToken);
                     if (rs.Status)
                     {
                         await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false, cancellationToken: stoppingToken);
-                        _logger.LogInformation("Pagamento processado com sucesso. PedidoId: {PedidoId}. DeliveryTag: {DeliveryTag}", dto.PedidoId, ea.DeliveryTag);
-                        return;
+                        _logger.LogInformation("Pagamento processado com sucesso. PedidoId: {PedidoId}. DeliveryTag: {DeliveryTag}", pagamentoRequest.PedidoId, ea.DeliveryTag);
+                        attempt = attempts + 1;
                     }
-
-                    _logger.LogWarning(
-                        "Falha ao processar pagamento (tentativa {Attempt}/{Attempts}). PedidoId: {PedidoId}. StatusCode: {StatusCode}. Msg: {Mensagem}",
-                        attempt, attempts, dto.PedidoId, rs.StatusCode, rs.Mensagem);
-
-                    if (attempt < attempts)
+                    else
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(Math.Max(1, rabbitMqOptions.RetryIntervalSeconds)), stoppingToken);
+                        _logger.LogWarning(
+                            "Falha ao processar pagamento (tentativa {Attempt}/{Attempts}). PedidoId: {PedidoId}. StatusCode: {StatusCode}. Msg: {Mensagem}",
+                            attempt, attempts, pagamentoRequest.PedidoId, rs.StatusCode, rs.Mensagem);
+
+                        if (attempt < attempts)
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(Math.Max(1, rabbitMqOptions.RetryIntervalSeconds)), stoppingToken);
+                        }
                     }
                 }
 
@@ -183,7 +182,6 @@ namespace Projeto.Moope.RabbitMQ.Worker
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
-                // Evita perder a mensagem em shutdown: requeue.
                 try
                 {
                     await channel.BasicNackAsync(deliveryTag: ea.DeliveryTag, multiple: false, requeue: true, cancellationToken: CancellationToken.None);
@@ -204,22 +202,23 @@ namespace Projeto.Moope.RabbitMQ.Worker
         {
             try
             {
-                await channel.QueueDeclarePassiveAsync(queue: QueueName, cancellationToken: cancellationToken);
-            }
-            catch (OperationInterruptedException)
-            {
-                var arguments = new Dictionary<string, object?>
-                {
-                    ["x-queue-type"] = "stream"
-                };
-
+                // Declare (non-passive) é idempotente: cria se não existir; se existir com os mesmos parâmetros, não altera.
+                // Evita o 404 do QueueDeclarePassive que fecha o channel quando a fila não existe.
                 await channel.QueueDeclareAsync(
                     queue: QueueName,
                     durable: true,
                     exclusive: false,
                     autoDelete: false,
-                    arguments: arguments,
+                    arguments: null,
                     cancellationToken: cancellationToken);
+            }
+            catch (OperationInterruptedException ex) when (ex.ShutdownReason?.ReplyCode == 406)
+            {
+                // PRECONDITION_FAILED: a fila existe, mas com parâmetros diferentes (durable/exclusive/autoDelete/args).
+                // Nesse caso, falhamos de forma explícita para não mascarar o problema em loop de retry.
+                throw new InvalidOperationException(
+                    $"A fila '{QueueName}' já existe, porém com configuração incompatível. Detalhe do broker: '{ex.ShutdownReason?.ReplyText}'. Ajuste a fila no RabbitMQ ou alinhe os parâmetros do worker.",
+                    ex);
             }
         }
     }

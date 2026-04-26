@@ -39,11 +39,11 @@ namespace Projeto.Moope.Pedido.Infrastructure.Mapping
                 .IsRequired()
                 .HasColumnType("decimal(7,4)");
 
-            builder.Property(p => p.PlanoValorComDesconto)
+            builder.Property(p => p.PlanoValorTotal)
                 .IsRequired()
                 .HasColumnType("decimal(15,2)");
 
-            builder.Property(p => p.Total)
+            builder.Property(p => p.PlanoTaxaAdesaoTotal)
                 .IsRequired()
                 .HasColumnType("decimal(15,2)");
 

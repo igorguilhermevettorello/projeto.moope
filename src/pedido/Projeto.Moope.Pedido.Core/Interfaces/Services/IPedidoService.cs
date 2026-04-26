@@ -12,6 +12,7 @@ namespace Projeto.Moope.Pedido.Core.Interfaces.Services
         Task<PedidoModel?> BuscarPorIdComDadosAsync(Guid id);
         Task<ResultDto<PedidoModel>> SalvarAsync(PedidoCreateDto pedido);
         Task<ResultDto<PedidoModel>> AtualizarTransacoesAsync(Guid pedidoId, IEnumerable<TransacaoModel> transacoes);
+        Task<ResultDto> AtualizarGalaxPayIdAsync(Guid pedidoId, int galaxPayId);
     }
 }
 

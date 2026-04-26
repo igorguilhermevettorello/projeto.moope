@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Projeto.Moope.Core.DTOs;
 using Projeto.Moope.Pagamento.Core.Services.Models;
+using PagamentoModel = Projeto.Moope.Pagamento.Core.Models.Pagamento;
 
 namespace Projeto.Moope.Pagamento.Core.Interfaces.Services
 {
@@ -19,6 +20,13 @@ namespace Projeto.Moope.Pagamento.Core.Interfaces.Services
         Task<ResultDto<JsonElement>> CriarAssinaturaComPlanoAsync(CriarAssinaturaComPlanoGatewayRequestDto request, CancellationToken cancellationToken = default);
         Task<ResultDto<JsonElement>> CriarAssinaturaSemPlanoAsync(CriarAssinaturaSemPlanoGatewayRequestDto request, CancellationToken cancellationToken = default);
         Task<ResultDto<JsonElement>> CriarAssinaturaManualAsync(CriarAssinaturaManualGatewayRequestDto request, CancellationToken cancellationToken = default);
+
+        Task<ResultDto<PagamentoModel>> RegistrarPagamentoAssinaturaSemPlanoAsync(
+            Guid clienteId,
+            string gatewayCustomerId,
+            string? gatewaySubscriptionId,
+            string? gatewayPlanId,
+            CancellationToken cancellationToken = default);
 
         Task<ResultDto<JsonElement>> AdicionarTransacaoEmAssinaturaAsync(AdicionarTransacaoEmAssinaturaGatewayRequestDto request, CancellationToken cancellationToken = default);
         Task<ResultDto<JsonElement>> ListarTransacoesAsync(Dictionary<string, string?>? query, CancellationToken cancellationToken = default);

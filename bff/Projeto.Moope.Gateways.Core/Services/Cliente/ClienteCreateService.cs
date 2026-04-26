@@ -196,7 +196,7 @@ namespace Projeto.Moope.Gateways.Core.Services.Cliente
                 Dados = new ClienteCreateResultDto
                 {
                     ClienteId = clienteId.Value,
-                    EnderecoId = enderecoId.Value
+                    EnderecoId = enderecoId
                 }
             };
         }

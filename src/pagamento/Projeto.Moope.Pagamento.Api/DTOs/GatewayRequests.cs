@@ -35,6 +35,7 @@ namespace Projeto.Moope.Pagamento.Api.DTOs
     public class CriarAssinaturaRequestDto
     {
         public JsonElement Payload { get; set; }
+        public Guid ClienteId { get; init; }
         public string Name { get; init; }
         public string Email { get; init; }
         public Guid PedidoId { get; init; }

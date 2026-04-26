@@ -266,6 +266,8 @@ namespace Projeto.Moope.Gateways.Core.Services
             {
                 Name = request.NomeCliente,
                 Email = request.Email,
+                IdempotencyKey = idempotencyKey,
+                ClienteId = clienteId.Value,
                 PedidoId = pedidoId.Value,
                 Valor = total ?? 0,
                 TaxaAdesao = taxaAdesao ?? 0,

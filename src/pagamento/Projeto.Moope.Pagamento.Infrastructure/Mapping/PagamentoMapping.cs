@@ -28,8 +28,8 @@ namespace Projeto.Moope.Pagamento.Infrastructure.Mapping
             builder.Property(x => x.Created).IsRequired();
             builder.Property(x => x.Updated).IsRequired();
 
-            builder.HasIndex(x => x.ClienteId).IsUnique();
-            builder.HasIndex(x => x.GatewayCustomerId).IsUnique();
+            builder.HasIndex(x => x.ClienteId);
+            builder.HasIndex(x => x.GatewayCustomerId);
 
             builder.ToTable("Pagamento");
         }

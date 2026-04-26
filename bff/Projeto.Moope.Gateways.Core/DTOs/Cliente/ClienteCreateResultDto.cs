@@ -3,6 +3,6 @@
     public class ClienteCreateResultDto
     {
         public Guid ClienteId { get; set; }
-        public Guid EnderecoId { get; set; }
+        public Guid? EnderecoId { get; set; }
     }
 }
