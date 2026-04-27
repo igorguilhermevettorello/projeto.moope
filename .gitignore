@@ -29,3 +29,6 @@ Thumbs.db
 
 appsettings*.json
 
+# Generated SQL (merge script output)
+publish/database/merged.sql
+

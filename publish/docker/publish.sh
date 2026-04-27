@@ -70,6 +70,7 @@ services=(
   "pedido|6107|${script_dir}/pedido/publish.sh|${repo_root}/src/pedido/Projeto.Moope.Pedido.Api/appsettings.json|${repo_root}/src/pedido/Projeto.Moope.Pedido.Api/appsettings.${environment}.json"
   "plano|6108|${script_dir}/plano/publish.sh|${repo_root}/src/plano/Projeto.Moope.Plano.Api/appsettings.json|${repo_root}/src/plano/Projeto.Moope.Plano.Api/appsettings.${environment}.json"
   "vendedor|6109|${script_dir}/vendedor/publish.sh|${repo_root}/src/vendedor/Projeto.Moope.Vendedor.Api/appsettings.json|${repo_root}/src/vendedor/Projeto.Moope.Vendedor.Api/appsettings.${environment}.json"
+  "rabbitmq-worker|0|${script_dir}/rabbitmq/publish.sh|${repo_root}/src/rabbitmq/Projeto.Moope.RabbitMQ.Worker/appsettings.json|${repo_root}/src/rabbitmq/Projeto.Moope.RabbitMQ.Worker/appsettings.${environment}.json"
 )
 
 summary_lines=()

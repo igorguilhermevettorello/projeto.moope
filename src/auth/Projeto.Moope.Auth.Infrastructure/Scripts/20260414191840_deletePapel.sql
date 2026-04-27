@@ -1,7 +1,7 @@
-﻿CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory_Business` (
+﻿CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
     `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
     `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
-    CONSTRAINT `PK___EFMigrationsHistory_Business` PRIMARY KEY (`MigrationId`)
+    CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
 ) CHARACTER SET=utf8mb4;
 
 START TRANSACTION;
@@ -65,7 +65,7 @@ CREATE INDEX `IX_RefreshToken_Token` ON `RefreshToken` (`Token`);
 
 CREATE INDEX `IX_RefreshToken_UsuarioId` ON `RefreshToken` (`UsuarioId`);
 
-INSERT INTO `__EFMigrationsHistory_Business` (`MigrationId`, `ProductVersion`)
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('20260407013245_InitialBusiness', '8.0.0');
 
 COMMIT;
@@ -74,8 +74,7 @@ START TRANSACTION;
 
 DROP TABLE `Papel`;
 
-INSERT INTO `__EFMigrationsHistory_Business` (`MigrationId`, `ProductVersion`)
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('20260414191840_deletePapel', '8.0.0');
 
 COMMIT;
-

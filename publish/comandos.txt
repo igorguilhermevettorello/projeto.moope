@@ -6,6 +6,8 @@
 
 .\publish.ps1 -dockerHubUser "moopesc" -environment Staging -push
 
+
+
 # build + push
 .\publish\docker\pedido\publish.ps1 -dockerHubUser "seuuser" -environment Production -version 1.0.0 -push
 

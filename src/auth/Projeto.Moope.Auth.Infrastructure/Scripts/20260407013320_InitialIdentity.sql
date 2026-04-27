@@ -1,7 +1,7 @@
-﻿CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory_Identity` (
+﻿CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
     `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
     `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
-    CONSTRAINT `PK___EFMigrationsHistory_Identity` PRIMARY KEY (`MigrationId`)
+    CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
 ) CHARACTER SET=utf8mb4;
 
 START TRANSACTION;
@@ -93,8 +93,7 @@ CREATE INDEX `EmailIndex` ON `AspNetUsers` (`NormalizedEmail`);
 
 CREATE UNIQUE INDEX `UserNameIndex` ON `AspNetUsers` (`NormalizedUserName`);
 
-INSERT INTO `__EFMigrationsHistory_Identity` (`MigrationId`, `ProductVersion`)
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('20260407013320_InitialIdentity', '8.0.0');
 
 COMMIT;
-

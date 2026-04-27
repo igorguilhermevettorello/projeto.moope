@@ -4,13 +4,13 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
+using Projeto.Moope.Api.Utils;
 using Projeto.Moope.Cliente.Api.Configurations;
 using Projeto.Moope.Cliente.Api.DTOs;
 using Projeto.Moope.Cliente.Core.Interfaces.Services;
 using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
-using Projeto.Moope.Gateways.Api.Utils;
 using ClienteModel = Projeto.Moope.Cliente.Core.Models.Cliente;
 
 namespace Projeto.Moope.Cliente.Api.Controllers

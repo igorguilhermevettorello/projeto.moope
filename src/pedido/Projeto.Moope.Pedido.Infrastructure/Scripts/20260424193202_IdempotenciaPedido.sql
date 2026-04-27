@@ -102,4 +102,3 @@ INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('20260424193202_IdempotenciaPedido', '8.0.0');
 
 COMMIT;
-

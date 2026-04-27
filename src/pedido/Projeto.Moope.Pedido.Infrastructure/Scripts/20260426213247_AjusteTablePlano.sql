@@ -113,4 +113,3 @@ INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('20260426213247_AjusteTablePlano', '8.0.0');
 
 COMMIT;
-

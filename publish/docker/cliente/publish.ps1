@@ -22,7 +22,8 @@ if (-not (Test-Path $commonPath)) { throw "common.ps1 not found at: $commonPath"
 
 $serviceKey = "cliente"
 $servicePort = 6102
-$environmentSuffix = ($environment ?? "").Trim().ToLowerInvariant()
+$environmentValue = if ($null -eq $environment) { "" } else { $environment }
+$environmentSuffix = $environmentValue.Trim().ToLowerInvariant()
 if ([string]::IsNullOrWhiteSpace($environmentSuffix)) { $environmentSuffix = "production" }
 $imageName = "moope-$serviceKey-$environmentSuffix"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path

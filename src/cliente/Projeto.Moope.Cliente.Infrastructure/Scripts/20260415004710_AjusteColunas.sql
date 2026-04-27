@@ -37,13 +37,3 @@ INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('20260415004710_AjusteColunas', '8.0.0');
 
 COMMIT;
-
-START TRANSACTION;
-
-ALTER TABLE `Cliente` ADD `GalaxPayId` int NULL;
-
-INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
-VALUES ('20260421133910_AjusteColunaGalaxPay', '8.0.0');
-
-COMMIT;
-

@@ -8,19 +8,17 @@ START TRANSACTION;
 
 ALTER DATABASE CHARACTER SET utf8mb4;
 
-CREATE TABLE `Plano` (
+CREATE TABLE `Cliente` (
     `Id` char(36) COLLATE ascii_general_ci NOT NULL,
-    `Codigo` varchar(50) CHARACTER SET utf8mb4 NOT NULL,
-    `Descricao` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
-    `Valor` decimal(15,2) NOT NULL,
-    `TaxaAdesao` decimal(15,2) NULL,
-    `Status` tinyint(1) NOT NULL,
-    `Plataforma` tinyint(1) NOT NULL,
-    CONSTRAINT `PK_Plano` PRIMARY KEY (`Id`)
+    `Created` datetime(6) NOT NULL,
+    `Updated` datetime(6) NOT NULL,
+    `Telefone` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `TelefoneEmergencia` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `VendedorId` char(36) COLLATE ascii_general_ci NOT NULL,
+    CONSTRAINT `PK_Cliente` PRIMARY KEY (`Id`)
 ) CHARACTER SET=utf8mb4;
 
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
-VALUES ('20260408003555_Plano', '8.0.0');
+VALUES ('20260413211607_InitialCliente', '8.0.0');
 
 COMMIT;
-

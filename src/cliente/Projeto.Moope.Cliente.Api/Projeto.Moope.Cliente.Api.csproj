@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\bff\Projeto.Moope.Gateways.Api\Projeto.Moope.Gateways.Api.csproj" />
     <ProjectReference Include="..\..\..\core\Projeto.Moope.Api\Projeto.Moope.Api.csproj" />
     <ProjectReference Include="..\..\..\core\Projeto.Moope.Core\Projeto.Moope.Core.csproj" />
     <ProjectReference Include="..\Projeto.Moope.Cliente.Core\Projeto.Moope.Cliente.Core.csproj" />

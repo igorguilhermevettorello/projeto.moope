@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Reflection;
 
-namespace Projeto.Moope.Gateways.Api.Utils
+namespace Projeto.Moope.Api.Utils
 {
     public static class EnumHelper
     {
@@ -25,3 +25,4 @@ namespace Projeto.Moope.Gateways.Api.Utils
         }
     }
 }
+

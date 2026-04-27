@@ -83,6 +83,12 @@ $services = @(
     Script = Join-Path $PSScriptRoot "vendedor\publish.ps1";
     Appsettings = Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path "src\vendedor\Projeto.Moope.Vendedor.Api\appsettings.json";
     AppsettingsEnv = Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path "src\vendedor\Projeto.Moope.Vendedor.Api\appsettings.$environment.json";
+  },
+  @{
+    Key = "rabbitmq-worker"; Port = 0;
+    Script = Join-Path $PSScriptRoot "rabbitmq\publish.ps1";
+    Appsettings = Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path "src\rabbitmq\Projeto.Moope.RabbitMQ.Worker\appsettings.json";
+    AppsettingsEnv = Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path "src\rabbitmq\Projeto.Moope.RabbitMQ.Worker\appsettings.$environment.json";
   }
 )
 
@@ -115,14 +121,14 @@ foreach ($svc in $services) {
 
     Write-Host "Resolved version: $resolvedVersion"
 
-    $args = @{
+    $scriptArgs = @{
       dockerHubUser = $dockerHubUser
       environment = $environment
     }
-    if (-not [string]::IsNullOrWhiteSpace($version)) { $args.version = $version }
-    if ($push.IsPresent) { $args.push = $true }
+    if (-not [string]::IsNullOrWhiteSpace($version)) { $scriptArgs.version = $version }
+    if ($push.IsPresent) { $scriptArgs.push = $true }
 
-    & $scriptPath @args
+    & $scriptPath @scriptArgs
 
     $results += [PSCustomObject]@{ Service = $svcKey; Version = $resolvedVersion; Status = "OK" }
   } catch {

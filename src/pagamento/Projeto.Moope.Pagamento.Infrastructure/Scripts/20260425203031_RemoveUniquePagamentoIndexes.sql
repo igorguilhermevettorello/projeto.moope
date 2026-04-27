@@ -80,4 +80,3 @@ INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('20260425203031_RemoveUniquePagamentoIndexes', '8.0.0');
 
 COMMIT;
-

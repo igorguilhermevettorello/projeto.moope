@@ -44,4 +44,3 @@ INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('20260423170915_InitialPagamento', '8.0.0');
 
 COMMIT;
-

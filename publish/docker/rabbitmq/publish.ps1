@@ -20,20 +20,21 @@ $commonPath = Join-Path $PSScriptRoot "..\common.ps1"
 if (-not (Test-Path $commonPath)) { throw "common.ps1 not found at: $commonPath" }
 . $commonPath
 
-$serviceKey = "comodato"
-$servicePort = 6103
+$serviceKey = "rabbitmq-worker"
 $environmentValue = if ($null -eq $environment) { "" } else { $environment }
 $environmentSuffix = $environmentValue.Trim().ToLowerInvariant()
 if ([string]::IsNullOrWhiteSpace($environmentSuffix)) { $environmentSuffix = "production" }
 $imageName = "moope-$serviceKey-$environmentSuffix"
+
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
-$dockerfilePath = Join-Path $repoRoot "src\comodato\Projeto.Moope.Comodato.Api\Dockerfile"
+$dockerfilePath = Join-Path $repoRoot "src\rabbitmq\Projeto.Moope.RabbitMQ.Worker\Dockerfile"
 $buildContext = $repoRoot
-$appsettingsBasePath = Join-Path $repoRoot "src\comodato\Projeto.Moope.Comodato.Api\appsettings.json"
-$appsettingsEnvPath = Join-Path $repoRoot "src\comodato\Projeto.Moope.Comodato.Api\appsettings.$environment.json"
+
+$appsettingsBasePath = Join-Path $repoRoot "src\rabbitmq\Projeto.Moope.RabbitMQ.Worker\appsettings.json"
+$appsettingsEnvPath = Join-Path $repoRoot "src\rabbitmq\Projeto.Moope.RabbitMQ.Worker\appsettings.$environment.json"
 
 Write-Host ""
-Write-Host "== Moope :: $serviceKey (port $servicePort) =="
+Write-Host "== Moope :: $serviceKey =="
 Write-Host "Repo root: $repoRoot"
 Write-Host "Dockerfile: $dockerfilePath"
 Write-Host "Build context: $buildContext"
@@ -83,3 +84,4 @@ if ($push.IsPresent) {
   Write-Host ""
   Write-Host "Push skipped. Re-run with -push to publish."
 }
+
