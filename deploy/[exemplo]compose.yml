@@ -1,4 +1,15 @@
 services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER:-guest}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS:-guest}
+      - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_DEFAULT_VHOST:-/}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks: [moope]
+
   bff:
     restart: unless-stopped
     environment:
@@ -59,6 +70,22 @@ services:
       - ASPNETCORE_URLS=http://+:8080
     networks: [moope]
 
+  rabbitmq-worker:
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Staging}
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=${RABBITMQ_DEFAULT_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_DEFAULT_PASS:-guest}
+      - RabbitMQ__VirtualHost=${RABBITMQ_DEFAULT_VHOST:-/}
+    depends_on:
+      - rabbitmq
+    networks: [moope]
+
 networks:
   moope:
     driver: bridge
+
+volumes:
+  rabbitmq_data:

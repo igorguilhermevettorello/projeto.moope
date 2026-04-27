@@ -1,0 +1,2 @@
+# staging
+docker compose -f compose.staging.yml up -d

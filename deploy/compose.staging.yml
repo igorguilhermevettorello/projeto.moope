@@ -1,60 +1,136 @@
 services:
-  bff:
-    image: ${DOCKERHUB_USER:?}/moope-bff-staging:${BFF_TAG:-latest}
-    ports: ["6100:8080"]
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: moope-rabbitmq-staging
+    restart: unless-stopped
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      RABBITMQ_DEFAULT_USER: moope
+      RABBITMQ_DEFAULT_PASS: moope123
+    networks:
+      - moope-staging
+
+  bff:
+    image: moopesc/moope-bff-staging:latest
+    container_name: moope-bff-staging
+    restart: unless-stopped
+    ports:
+      - "6100:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Staging
+    networks:
+      - moope-staging
 
   auth:
-    image: ${DOCKERHUB_USER:?}/moope-auth-staging:${AUTH_TAG:-latest}
-    ports: ["6101:8080"]
+    image: moopesc/moope-auth-staging:latest
+    container_name: moope-auth-staging
+    restart: unless-stopped
+    ports:
+      - "6101:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      ASPNETCORE_ENVIRONMENT: Staging
+    networks:
+      - moope-staging
 
   cliente:
-    image: ${DOCKERHUB_USER:?}/moope-cliente-staging:${CLIENTE_TAG:-latest}
-    ports: ["6102:8080"]
+    image: moopesc/moope-cliente-staging:latest
+    container_name: moope-cliente-staging
+    restart: unless-stopped
+    ports:
+      - "6102:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      ASPNETCORE_ENVIRONMENT: Staging
+    networks:
+      - moope-staging
 
   comodato:
-    image: ${DOCKERHUB_USER:?}/moope-comodato-staging:${COMODATO_TAG:-latest}
-    ports: ["6103:8080"]
+    image: moopesc/moope-comodato-staging:latest
+    container_name: moope-comodato-staging
+    restart: unless-stopped
+    ports:
+      - "6103:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      ASPNETCORE_ENVIRONMENT: Staging
+    networks:
+      - moope-staging
 
   email:
-    image: ${DOCKERHUB_USER:?}/moope-email-staging:${EMAIL_TAG:-latest}
-    ports: ["6104:8080"]
+    image: moopesc/moope-email-staging:latest
+    container_name: moope-email-staging
+    restart: unless-stopped
+    ports:
+      - "6104:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      ASPNETCORE_ENVIRONMENT: Staging
+    networks:
+      - moope-staging
 
   endereco:
-    image: ${DOCKERHUB_USER:?}/moope-endereco-staging:${ENDERECO_TAG:-latest}
-    ports: ["6105:8080"]
+    image: moopesc/moope-endereco-staging:latest
+    container_name: moope-endereco-staging
+    restart: unless-stopped
+    ports:
+      - "6105:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      ASPNETCORE_ENVIRONMENT: Staging
+    networks:
+      - moope-staging
 
   pagamento:
-    image: ${DOCKERHUB_USER:?}/moope-pagamento-staging:${PAGAMENTO_TAG:-latest}
-    ports: ["6106:8080"]
+    image: moopesc/moope-pagamento-staging:latest
+    container_name: moope-pagamento-staging
+    restart: unless-stopped
+    ports:
+      - "6106:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      ASPNETCORE_ENVIRONMENT: Staging
+    networks:
+      - moope-staging
 
   pedido:
-    image: ${DOCKERHUB_USER:?}/moope-pedido-staging:${PEDIDO_TAG:-latest}
-    ports: ["6107:8080"]
+    image: moopesc/moope-pedido-staging:latest
+    container_name: moope-pedido-staging
+    restart: unless-stopped
+    ports:
+      - "6107:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      ASPNETCORE_ENVIRONMENT: Staging
+    networks:
+      - moope-staging
 
   plano:
-    image: ${DOCKERHUB_USER:?}/moope-plano-staging:${PLANO_TAG:-latest}
-    ports: ["6108:8080"]
+    image: moopesc/moope-plano-staging:latest
+    container_name: moope-plano-staging
+    restart: unless-stopped
+    ports:
+      - "6108:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      ASPNETCORE_ENVIRONMENT: Staging
+    networks:
+      - moope-staging
 
   vendedor:
-    image: ${DOCKERHUB_USER:?}/moope-vendedor-staging:${VENDEDOR_TAG:-latest}
-    ports: ["6109:8080"]
+    image: moopesc/moope-vendedor-staging:latest
+    container_name: moope-vendedor-staging
+    restart: unless-stopped
+    ports:
+      - "6109:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Staging
+      ASPNETCORE_ENVIRONMENT: Staging
+    networks:
+      - moope-staging
+
+  rabbitmq-worker:
+    image: moopesc/moope-rabbitmq-worker-staging:latest
+    container_name: moope-rabbitmq-worker-staging
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Staging
+    networks:
+      - moope-staging
+    depends_on:
+      - rabbitmq
+
+networks:
+  moope-staging:
+    name: moope-staging
+    driver: bridge
