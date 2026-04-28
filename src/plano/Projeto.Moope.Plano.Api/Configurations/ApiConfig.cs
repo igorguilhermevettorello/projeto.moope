@@ -28,7 +28,7 @@ namespace Projeto.Moope.Plano.Api.Configurations
                 options.AddPolicy("CorsStagingPolicy", policy =>
                 {
                     policy
-                        .WithOrigins("https://staging-compre.moope.com.br")
+                        .WithOrigins("https://staging-compre.moope.com.br", "https://staging-shop.moope.com.br")
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });

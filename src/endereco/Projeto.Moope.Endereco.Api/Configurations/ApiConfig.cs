@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Models;
 
 namespace Projeto.Moope.Endereco.Api.Configurations
 {
@@ -27,7 +28,7 @@ namespace Projeto.Moope.Endereco.Api.Configurations
                 options.AddPolicy("CorsStagingPolicy", policy =>
                 {
                     policy
-                        .WithOrigins("https://staging-compre.moope.com.br")
+                        .WithOrigins("https://staging-compre.moope.com.br", "https://staging-shop.moope.com.br")
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });
@@ -76,6 +77,29 @@ namespace Projeto.Moope.Endereco.Api.Configurations
             //                return Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Unhealthy("Disk check failed", ex);
             //            }
             //        }, tags: new[] { "live" });
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Projeto.Moope.Endereco.Api", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT: Bearer {token}",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            });
 
             return services;
         }

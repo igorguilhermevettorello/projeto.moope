@@ -4,12 +4,14 @@
 # build local
 .\publish\docker\pedido\publish.ps1 -dockerHubUser "seuuser" -environment Production -version 1.0.0
 
+.\publish\docker\pedido\publish.ps1 -dockerHubUser "moopesc" -environment Staging -push
 .\publish.ps1 -dockerHubUser "moopesc" -environment Staging -push
 
 
 
 # build + push
 .\publish\docker\pedido\publish.ps1 -dockerHubUser "seuuser" -environment Production -version 1.0.0 -push
+.\publish\docker\auth\publish.ps1 -dockerHubUser "moopesc" -environment Staging -push
 
 ## linux
 # build local
@@ -17,6 +19,7 @@
 
 # build + push
 ./publish/docker/pedido/publish.sh --dockerhub-user "seuuser" --environment Production --version 1.0.0 --push
+./publish/docker/pedido/publish.sh --dockerhub-user "seuuser" --environment Production
 
 --------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------

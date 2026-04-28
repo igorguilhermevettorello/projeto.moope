@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Projeto.Moope.Api.Controllers;
+using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Endereco.Api.DTOs;
@@ -10,6 +12,7 @@ namespace Projeto.Moope.Endereco.Api.Controllers
 {
     [ApiController]
     [Route("api/endereco")]
+    [Authorize]
     public class EnderecoController : MainController
     {
         private readonly IEnderecoService _enderecoService;
@@ -21,7 +24,6 @@ namespace Projeto.Moope.Endereco.Api.Controllers
         }
 
         [HttpGet]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(typeof(ListarEnderecoDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -44,7 +46,6 @@ namespace Projeto.Moope.Endereco.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(typeof(ListarEnderecoDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -70,7 +71,7 @@ namespace Projeto.Moope.Endereco.Api.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(typeof(ListarEnderecoDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -96,7 +97,7 @@ namespace Projeto.Moope.Endereco.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -107,7 +108,7 @@ namespace Projeto.Moope.Endereco.Api.Controllers
                 return BadRequest(ModelState);
 
             if (dto.Id == Guid.Empty)
-                return BadRequest("Id È obrigatÛrio.");
+                return BadRequest("Id ù obrigatùrio.");
 
             if (id != dto.Id)
                 return BadRequest("Id da URL deve corresponder ao Id do corpo.");
@@ -136,7 +137,7 @@ namespace Projeto.Moope.Endereco.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        //[Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

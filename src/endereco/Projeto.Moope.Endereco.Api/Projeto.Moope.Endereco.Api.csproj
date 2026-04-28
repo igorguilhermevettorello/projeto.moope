@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\core\Projeto.Moope.Core\Projeto.Moope.Core.csproj" />
     <ProjectReference Include="..\..\..\core\Projeto.Moope.Api\Projeto.Moope.Api.csproj" />
     <ProjectReference Include="..\Projeto.Moope.Endereco.Core\Projeto.Moope.Endereco.Core.csproj" />
     <ProjectReference Include="..\Projeto.Moope.Endereco.Infrastructure\Projeto.Moope.Endereco.Infrastructure.csproj" />
