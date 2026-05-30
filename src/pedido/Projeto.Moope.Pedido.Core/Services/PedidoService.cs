@@ -98,20 +98,36 @@ namespace Projeto.Moope.Pedido.Core.Services
             decimal planoTaxaAdesaoTotal = 0;
             if (plano.Plataforma)
             {
-                if (pedidoCreateDto.Quantidade > 40)
+                if (string.IsNullOrWhiteSpace(pedidoCreateDto.TipoPlataforma))
                 {
-                    planoTaxaAdesaoTotal = 790;
-                    planoValorTotal = 790;
-                }
-                else
-                {
-                    planoTaxaAdesaoTotal = Math.Round((plano.Valor * pedidoCreateDto.Quantidade), 2);
-                    planoValorTotal = Math.Round((plano.Valor * pedidoCreateDto.Quantidade), 2);
+                    return new ResultDto<PedidoModel>
+                    {
+                        Status = false,
+                        Mensagem = "Selecione o tipo de plataforma. Este campo é obrigatório para planos de plataforma."
+                    };
                 }
 
-                planoValorTotal = plano.Valor;
+                if (!pedidoCreateDto.Rastreamento.HasValue)
+                {
+                    return new ResultDto<PedidoModel>
+                    {
+                        Status = false,
+                        Mensagem = "Rastreamento é obrigatório para planos de plataforma"
+                    };
+                }
+
+                if (!TryObterTaxaAdesaoPlataforma(pedidoCreateDto.TipoPlataforma, pedidoCreateDto.Rastreamento.Value, out planoTaxaAdesaoTotal))
+                {
+                    return new ResultDto<PedidoModel>
+                    {
+                        Status = false,
+                        Mensagem = "TipoPlataforma inválido. Valores permitidos: company, company-hr, rental-company, complete"
+                    };
+                }
+
+                plano.Valor = planoTaxaAdesaoTotal;
+                planoValorTotal = Math.Round((planoTaxaAdesaoTotal * pedidoCreateDto.Quantidade), 2);
                 percentualTotalDescontos = 0;
-                //ValorTotalTaxaAdesao = 0;
             }
             else
             {
@@ -141,6 +157,8 @@ namespace Projeto.Moope.Pedido.Core.Services
                 PlanoPercentualDesconto = percentualTotalDescontos,
                 PlanoValorTotal = planoValorTotal,
                 PlanoTaxaAdesaoTotal = planoTaxaAdesaoTotal,
+                TipoPlataforma = pedidoCreateDto.TipoPlataforma,
+                Rastreamento = pedidoCreateDto.Rastreamento,
                 Created = DateTime.UtcNow,
                 Updated = DateTime.UtcNow,
             };
@@ -257,6 +275,24 @@ namespace Projeto.Moope.Pedido.Core.Services
                     Mensagem = "Erro ao atualizar GalaxPayId do pedido"
                 };
             }
+        }
+
+        private static bool TryObterTaxaAdesaoPlataforma(string tipoPlataforma, bool rastreamento, out decimal taxaAdesao)
+        {
+            taxaAdesao = (tipoPlataforma.Trim().ToLowerInvariant(), rastreamento) switch
+            {
+                ("company", true) => 49.90m,
+                ("company-hr", true) => 54.90m,
+                ("rental-company", true) => 56.90m,
+                ("complete", true) => 59.90m,
+                ("company", false) => 14.90m,
+                ("company-hr", false) => 19.90m,
+                ("rental-company", false) => 24.90m,
+                ("complete", false) => 29.90m,
+                _ => -1m
+            };
+
+            return taxaAdesao >= 0;
         }
     }
 }

@@ -142,7 +142,8 @@ namespace Projeto.Moope.Pedido.Api.Controllers
                 if (!result.Status)
                 {
                     await _idempotenciaService.MarcarFalhaAsync(inicio.IdempotenciaId, HttpContext.RequestAborted);
-                    return CustomResponse(result);
+                    NotificarErro("Mensagem", result.Mensagem ?? "Erro ao criar pedido");
+                    return CustomResponse();
                 }
 
                 var responseDto = MapToResponseDto(result.Dados!);
@@ -249,6 +250,8 @@ namespace Projeto.Moope.Pedido.Api.Controllers
                 Quantidade = pedido.Quantidade,
                 TipoPessoa = pedido.TipoPessoa,
                 Estado = pedido.Estado,
+                TipoPlataforma = pedido.TipoPlataforma,
+                Rastreamento = pedido.Rastreamento,
                 PlanoValor = pedido.PlanoValor,
                 PlanoDescricao = pedido.PlanoDescricao,
                 PlanoCodigo = pedido.PlanoCodigo,

@@ -31,6 +31,8 @@ namespace Projeto.Moope.Pedido.Core.Models
         public DateTime Updated { get; set; }
         public TipoPessoa TipoPessoa { get; set; }
         public string? Estado { get; set; }
+        public string? TipoPlataforma { get; set; }
+        public bool? Rastreamento { get; set; }
         public ICollection<Transacao> Transacoes { get; set; } = new List<Transacao>();
         public Desconto? Desconto { get; set; }
     }

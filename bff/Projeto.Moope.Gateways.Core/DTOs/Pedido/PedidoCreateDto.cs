@@ -10,6 +10,8 @@ namespace Projeto.Moope.Gateways.Core.DTOs.Pedido
         public int Quantidade { get; set; } = 0;    
         public TipoPessoa? TipoPessoa { get; set; }
         public string? Estado { get; set; }
+        public string? TipoPlataforma { get; set; }
+        public bool? Rastreamento { get; set; }
         public string? IdempotencyKey { get; set; }
     }
 }

@@ -10,5 +10,7 @@ namespace Projeto.Moope.Pedido.Core.DTOs.Pedido
         public int Quantidade { get; set; }
         public TipoPessoa TipoPessoa { get; set; }
         public string? Estado { get; set; }
+        public string? TipoPlataforma { get; set; }
+        public bool? Rastreamento { get; set; }
     }
 }

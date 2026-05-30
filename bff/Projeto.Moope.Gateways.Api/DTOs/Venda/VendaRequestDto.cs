@@ -50,6 +50,10 @@ namespace Projeto.Moope.Gateways.Api.DTOs.Venda
 
         public string? Estado { get; set; }
 
+        public string? TipoPlataforma { get; set; }
+
+        public bool? Rastreamento { get; set; }
+
         public List<string>? Descontos { get; set; }
 
         public string? ComodatoToken { get; set; }

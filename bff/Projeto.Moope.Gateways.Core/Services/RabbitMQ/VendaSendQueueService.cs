@@ -116,22 +116,19 @@ namespace Projeto.Moope.Gateways.Core.Services.RabbitMQ
         {
             try
             {
-                await channel.QueueDeclarePassiveAsync(queue: QueueName, cancellationToken: cancellationToken);
-            }
-            catch (OperationInterruptedException)
-            {
-                var arguments = new Dictionary<string, object?>
-                {
-                    ["x-queue-type"] = "stream"
-                };
-
                 await channel.QueueDeclareAsync(
                     queue: QueueName,
                     durable: true,
                     exclusive: false,
                     autoDelete: false,
-                    arguments: arguments,
+                    arguments: null,
                     cancellationToken: cancellationToken);
+            }
+            catch (OperationInterruptedException ex) when (ex.ShutdownReason?.ReplyCode == 406)
+            {
+                throw new InvalidOperationException(
+                    $"A fila '{QueueName}' já existe, porém com configuração incompatível. Detalhe do broker: '{ex.ShutdownReason?.ReplyText}'. Ajuste a fila no RabbitMQ ou alinhe os parâmetros do publisher.",
+                    ex);
             }
         }
     }

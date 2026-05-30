@@ -116,6 +116,13 @@ namespace Projeto.Moope.RabbitMQ.Worker
                     return;
                 }
 
+                var messageId = ea.BasicProperties?.MessageId;
+                _logger.LogInformation(
+                    "Mensagem recebida para processamento. DeliveryTag: {DeliveryTag}. MessageId: {MessageId}. PedidoId: {PedidoId}",
+                    ea.DeliveryTag,
+                    messageId,
+                    dto.PedidoId);
+
                 var attempts = Math.Max(1, rabbitMqOptions.MaxRetryAttempts);
 
                 var tokenRs = await authClientTokenService.GetClientAccessTokenAsync(stoppingToken);
@@ -163,7 +170,7 @@ namespace Projeto.Moope.RabbitMQ.Worker
                     {
                         await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false, cancellationToken: stoppingToken);
                         _logger.LogInformation("Pagamento processado com sucesso. PedidoId: {PedidoId}. DeliveryTag: {DeliveryTag}", pagamentoRequest.PedidoId, ea.DeliveryTag);
-                        attempt = attempts + 1;
+                        return;
                     }
                     else
                     {

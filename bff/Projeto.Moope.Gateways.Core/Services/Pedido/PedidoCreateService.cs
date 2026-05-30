@@ -63,7 +63,9 @@ namespace Projeto.Moope.Gateways.Core.Services.Pedido
                 request.PlanoId,
                 request.Quantidade,
                 request.TipoPessoa,
-                request.Estado
+                request.Estado,
+                request.TipoPlataforma,
+                request.Rastreamento
             };
 
             using var pedidoRequest = new HttpRequestMessage(HttpMethod.Post, pedidoUrl);

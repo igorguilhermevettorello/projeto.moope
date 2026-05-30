@@ -190,6 +190,8 @@ namespace Projeto.Moope.Gateways.Core.Services
                 Quantidade = request.Quantidade,
                 TipoPessoa = request.TipoPessoa,
                 Estado = request.Estado,
+                TipoPlataforma = request.TipoPlataforma,
+                Rastreamento = request.Rastreamento,
                 IdempotencyKey = idempotencyKey
             }, authBearerHeader, cancellationToken);
             if (!rsPedido.Status)

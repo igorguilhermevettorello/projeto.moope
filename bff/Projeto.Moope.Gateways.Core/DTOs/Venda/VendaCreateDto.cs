@@ -32,6 +32,10 @@ namespace Projeto.Moope.Gateways.Core.DTOs.Venda
 
         public string? Estado { get; init; }
 
+        public string? TipoPlataforma { get; init; }
+
+        public bool? Rastreamento { get; init; }
+
         public IReadOnlyList<string>? Descontos { get; init; }
 
         public string? ComodatoToken { get; init; }

@@ -23,6 +23,10 @@ namespace Projeto.Moope.Pedido.Api.DTOs
 
         public string? Estado { get; set; }
 
+        public string? TipoPlataforma { get; set; }
+
+        public bool? Rastreamento { get; set; }
+
         //[Required(ErrorMessage = "O valor do plano é obrigatório")]
         //[Range(0.01, double.MaxValue, ErrorMessage = "O valor do plano deve ser maior que zero")]
         //public decimal PlanoValor { get; set; }

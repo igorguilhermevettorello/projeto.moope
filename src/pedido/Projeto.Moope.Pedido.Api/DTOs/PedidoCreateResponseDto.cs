@@ -12,6 +12,8 @@ namespace Projeto.Moope.Pedido.Api.DTOs
         public int Quantidade { get; set; }
         public TipoPessoa TipoPessoa { get; set; }
         public string? Estado { get; set; }
+        public string? TipoPlataforma { get; set; }
+        public bool? Rastreamento { get; set; }
         public decimal PlanoValor { get; set; }
         public string PlanoDescricao { get; set; } = string.Empty;
         public string PlanoCodigo { get; set; } = string.Empty;
