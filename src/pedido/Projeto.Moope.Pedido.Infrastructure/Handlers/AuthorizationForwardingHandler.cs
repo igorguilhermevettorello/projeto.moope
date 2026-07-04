@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Projeto.Moope.Pedido.Infrastructure.Helpers;
 
 namespace Projeto.Moope.Pedido.Infrastructure.Handlers
 {
@@ -11,13 +13,20 @@ namespace Projeto.Moope.Pedido.Infrastructure.Handlers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var authorization = _httpContextAccessor.HttpContext?.Request.Headers.Authorization.ToString();
-            if (!string.IsNullOrWhiteSpace(authorization))
-                request.Headers.TryAddWithoutValidation("Authorization", authorization);
+            var httpContext = _httpContextAccessor.HttpContext;
+            if (httpContext != null)
+            {
+                var token = await httpContext.GetTokenAsync("access_token");
+                var authorizationHeader = !string.IsNullOrWhiteSpace(token)
+                    ? $"Bearer {token}"
+                    : httpContext.Request.Headers.Authorization.ToString();
 
-            return base.SendAsync(request, cancellationToken);
+                HttpAuthorizationHelper.Aplicar(request, authorizationHeader);
+            }
+
+            return await base.SendAsync(request, cancellationToken);
         }
     }
 }

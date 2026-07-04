@@ -6,7 +6,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApiConfig();
+builder.Services.AddAuthConfig(builder.Configuration, builder.Environment);
 builder.Services.AddConectionConfig(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
 builder.Services.Configure<SwaggerAuthConfig>(builder.Configuration.GetSection("SwaggerAuth"));
 builder.Services.RegisterServices(builder.Configuration);
 
@@ -27,6 +29,7 @@ else if (app.Environment.IsProduction())
     app.UseCors("CorsProductionPolicy");
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

@@ -74,3 +74,18 @@ dotnet ef migrations add InitialPagamento --project "src/pagamento/Projeto.Moope
 dotnet ef migrations script --project "src/pagamento/Projeto.Moope.Pagamento.Infrastructure/Projeto.Moope.Pagamento.Infrastructure.csproj" --startup-project "src/pagamento/Projeto.Moope.Pagamento.Api/Projeto.Moope.Pagamento.Api.csproj" --context "Projeto.Moope.Pagamento.Infrastructure.Data.AppPagamentoContext" --output "src/pagamento/Projeto.Moope.Pagamento.Infrastructure/Scripts/AppPagamentoDbContext_migrations.sql"
 
 dotnet ef migrations script --project "src/pagamento/Projeto.Moope.Pagamento.Infrastructure/Projeto.Moope.Pagamento.Infrastructure.csproj" --startup-project "src/pagamento/Projeto.Moope.Pagamento.Api/Projeto.Moope.Pagamento.Api.csproj" --context "Projeto.Moope.Pagamento.Infrastructure.Data.AppPagamentoContext" --output "src/pagamento/Projeto.Moope.Pagamento.Infrastructure/Scripts/20260425203031_RemoveUniquePagamentoIndexes.sql"
+
+
+# Comodato
+dotnet ef migrations add InitialComodato --project "src/comodato/Projeto.Moope.Comodato.Infrastructure/Projeto.Moope.Comodato.Infrastructure.csproj" --startup-project "src/comodato/Projeto.Moope.Comodato.Api/Projeto.Moope.Comodato.Api.csproj" --context "Projeto.Moope.Comodato.Infrastructure.Data.AppComodatoContext" --output-dir "Migrations"
+dotnet ef migrations script --project "src/comodato/Projeto.Moope.Comodato.Infrastructure/Projeto.Moope.Comodato.Infrastructure.csproj" --startup-project "src/comodato/Projeto.Moope.Comodato.Api/Projeto.Moope.Comodato.Api.csproj" --context "Projeto.Moope.Comodato.Infrastructure.Data.AppComodatoContext" --output "src/comodato/Projeto.Moope.Comodato.Infrastructure/Scripts/AppComodatoContext_migrations.sql"
+## dotnet ef database update --project "src/comodato/Projeto.Moope.Comodato.Infrastructure/Projeto.Moope.Comodato.Infrastructure.csproj" --startup-project "src/comodato/Projeto.Moope.Comodato.Api/Projeto.Moope.Comodato.Api.csproj" --context "Projeto.Moope.Comodato.Infrastructure.Data.AppComodatoContext"
+
+
+# Comodato
+dotnet ef migrations add InitialComodato --project "/src/comodato/Projeto.Moope.Comodato.Infrastructure/Projeto.Moope.Comodato.Infrastructure.csproj" --startup-project "src/comodato/Projeto.Moope.Comodato.Api/Projeto.Moope.Comodato.Api.csproj" --context "Projeto.Moope.Comodato.Infrastructure.Data.AppComodatoContext" --output-dir "Migrations"
+
+# Script SQL unico para producao (greenfield)
+.\publish\sql\generate-production-sql.ps1
+# Usar scripts existentes sem regenerar via dotnet ef:
+# .\publish\sql\generate-production-sql.ps1 -SkipRegenerate

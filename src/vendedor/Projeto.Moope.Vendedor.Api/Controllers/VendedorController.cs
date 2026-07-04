@@ -37,6 +37,24 @@ namespace Projeto.Moope.Vendedor.Api.Controllers
             //return Ok(result);
         }
 
+        [HttpGet("me/codigo-cupom")]
+        [Authorize(Roles = nameof(TipoUsuario.Vendedor))]
+        [ProducesResponseType(typeof(VendedorCodigoCupomDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> BuscarCodigoCupomLogado()
+        {
+            if (UsuarioId == Guid.Empty)
+                return Unauthorized();
+
+            var vendedor = await _vendedorService.BuscarPorIdAsync(UsuarioId);
+            if (vendedor == null)
+                return NotFound();
+
+            return Ok(new VendedorCodigoCupomDto { CodigoCupom = vendedor.CodigoCupom });
+        }
+
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(VendedorResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

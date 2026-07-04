@@ -21,6 +21,7 @@ namespace Projeto.Moope.Gateways.Api.Controllers
         private readonly IClienteGetByIdService _clienteGetByIdService;
         private readonly IClienteUpdateService _clienteUpdateService;
         private readonly IClienteDeleteService _clienteDeleteService;
+        private readonly IClienteListByVendedorService _clienteListByVendedorService;
 
         public ClienteBffController(
             IMapper mapper,
@@ -28,6 +29,7 @@ namespace Projeto.Moope.Gateways.Api.Controllers
             IClienteGetByIdService clienteGetByIdService,
             IClienteUpdateService clienteUpdateService,
             IClienteDeleteService clienteDeleteService,
+            IClienteListByVendedorService clienteListByVendedorService,
             INotificador notificador,
             IUser appUser)
             : base(notificador, appUser)
@@ -37,6 +39,7 @@ namespace Projeto.Moope.Gateways.Api.Controllers
             _clienteGetByIdService = clienteGetByIdService;
             _clienteUpdateService = clienteUpdateService;
             _clienteDeleteService = clienteDeleteService;
+            _clienteListByVendedorService = clienteListByVendedorService;
         }
 
         [HttpPost]
@@ -68,6 +71,23 @@ namespace Projeto.Moope.Gateways.Api.Controllers
                 ClienteId = resultado.Dados.ClienteId,
                 EnderecoId = resultado.Dados.EnderecoId
             });
+        }
+
+        [HttpGet("vendedor")]
+        [Authorize(Roles = nameof(TipoUsuario.Vendedor))]
+        [ProducesResponseType(typeof(IEnumerable<ClienteListItemDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status502BadGateway)]
+        public async Task<IActionResult> ListarPorVendedorLogado(CancellationToken cancellationToken)
+        {
+            var authorizationHeader = Request.Headers.Authorization.ToString();
+            var resultado = await _clienteListByVendedorService.ExecutarAsync(authorizationHeader, cancellationToken);
+
+            if (!resultado.Status)
+                return StatusCode(resultado.StatusCode, resultado.Mensagem);
+
+            return Ok(resultado.Dados ?? Array.Empty<ClienteListItemDto>());
         }
 
         [HttpGet("{id:guid}")]

@@ -34,6 +34,11 @@ namespace Projeto.Moope.Cliente.Core.Services
             return await _clienteRepository.BuscarClientesComDadosAsync<T>();
         }
 
+        public async Task<IEnumerable<T>> BuscarClientesPorVendedorComDadosAsync<T>(Guid vendedorId)
+        {
+            return await _clienteRepository.BuscarClientesPorVendedorComDadosAsync<T>(vendedorId);
+        }
+
         public async Task<T?> BuscarClientePorIdComDadosAsync<T>(Guid id)
         {
             return await _clienteRepository.BuscarClientePorIdComDadosAsync<T>(id);

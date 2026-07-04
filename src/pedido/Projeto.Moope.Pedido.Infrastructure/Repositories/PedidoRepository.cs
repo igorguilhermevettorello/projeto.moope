@@ -37,6 +37,14 @@ namespace Projeto.Moope.Pedido.Infrastructure.Repositories
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
+        public async Task<IReadOnlyList<PedidoModel>> ListarAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Pedidos
+                .AsNoTracking()
+                .OrderByDescending(p => p.Created)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<IEnumerable<PedidoModel>> BuscarTodosAsync()
         {
             return await _context.Pedidos.ToListAsync();

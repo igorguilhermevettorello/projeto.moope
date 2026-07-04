@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Projeto.Moope.Comodato.Core.Models;
 using Projeto.Moope.Core.Interfaces.Data;
 using ComodatoModel = Projeto.Moope.Comodato.Core.Models.Comodato;
 
@@ -9,6 +10,8 @@ namespace Projeto.Moope.Comodato.Infrastructure.Data
         public AppComodatoContext(DbContextOptions<AppComodatoContext> options) : base(options) { }
 
         public DbSet<ComodatoModel> Comodatos { get; set; }
+
+        public DbSet<ComodatoConvite> ComodatoConvites { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

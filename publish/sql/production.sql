@@ -1,0 +1,505 @@
+/*
+  Moope - Schema completo para producao (greenfield)
+  Gerado por: publish/sql/generate-production-sql.ps1
+  Repo root: C:\projetos\Moope\projeto.moope
+  Gerado em: 2026-06-15 20:33:00
+  DbContexts: 9
+  Migrations registradas: 20
+  Executar: mysql -u USER -p plataforma_moope < publish/sql/production.sql
+  ATENCAO: Executar primeiro em staging/backup antes de producao.
+*/
+
+START TRANSACTION;
+
+
+-- Auth Business (AppAuthContext)
+
+CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+    `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
+    `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
+    CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
+) CHARACTER SET=utf8mb4;
+
+ALTER DATABASE CHARACTER SET utf8mb4;
+
+CREATE TABLE `PessoaFisica` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `Nome` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `Cpf` varchar(14) CHARACTER SET utf8mb4 NOT NULL,
+    `Created` datetime(6) NOT NULL,
+    `Updated` datetime(6) NOT NULL,
+    CONSTRAINT `PK_PessoaFisica` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `PessoaJuridica` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `Cnpj` varchar(18) CHARACTER SET utf8mb4 NOT NULL,
+    `RazaoSocial` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `NomeFantasia` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `InscricaoEstadual` varchar(20) CHARACTER SET utf8mb4 NOT NULL,
+    `Created` datetime(6) NOT NULL,
+    `Updated` datetime(6) NOT NULL,
+    CONSTRAINT `PK_PessoaJuridica` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `RefreshToken` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `UsuarioId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `Token` varchar(500) CHARACTER SET utf8mb4 NOT NULL,
+    `ExpiresAt` datetime(6) NOT NULL,
+    `CreatedAt` datetime(6) NOT NULL,
+    `RevokedAt` datetime(6) NULL,
+    `ReplacedByToken` varchar(500) CHARACTER SET utf8mb4 NULL,
+    CONSTRAINT `PK_RefreshToken` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `Usuario` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `Nome` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `TipoUsuario` int NOT NULL,
+    `EnderecoId` char(36) COLLATE ascii_general_ci NULL,
+    `Created` datetime(6) NOT NULL,
+    `Updated` datetime(6) NOT NULL,
+    CONSTRAINT `PK_Usuario` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `Papel` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `UsuarioId` char(36) COLLATE ascii_general_ci NULL,
+    `TipoUsuario` int NOT NULL,
+    `Created` datetime(6) NOT NULL,
+    `Updated` datetime(6) NOT NULL,
+    CONSTRAINT `PK_Papel` PRIMARY KEY (`Id`),
+    CONSTRAINT `FK_Papel_Usuario_UsuarioId` FOREIGN KEY (`UsuarioId`) REFERENCES `Usuario` (`Id`) ON DELETE CASCADE
+) CHARACTER SET=utf8mb4;
+
+CREATE INDEX `IX_Papel_UsuarioId` ON `Papel` (`UsuarioId`);
+
+CREATE INDEX `IX_RefreshToken_Token` ON `RefreshToken` (`Token`);
+
+CREATE INDEX `IX_RefreshToken_UsuarioId` ON `RefreshToken` (`UsuarioId`);
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260407013245_InitialBusiness', '8.0.0');
+
+DROP TABLE `Papel`;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260414191840_deletePapel', '8.0.0');
+
+ALTER TABLE `Usuario` DROP COLUMN `EnderecoId`;
+
+ALTER TABLE `Usuario` DROP COLUMN `TipoUsuario`;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260415004544_AjusteColunas', '8.0.0');
+
+
+-- Auth Identity (AppIdentityDbContext)
+
+CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+    `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
+    `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
+    CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `AspNetRoles` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `Name` varchar(256) CHARACTER SET utf8mb4 NULL,
+    `NormalizedName` varchar(256) CHARACTER SET utf8mb4 NULL,
+    `ConcurrencyStamp` longtext CHARACTER SET utf8mb4 NULL,
+    CONSTRAINT `PK_AspNetRoles` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `AspNetUsers` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `UserName` varchar(256) CHARACTER SET utf8mb4 NULL,
+    `NormalizedUserName` varchar(256) CHARACTER SET utf8mb4 NULL,
+    `Email` varchar(256) CHARACTER SET utf8mb4 NULL,
+    `NormalizedEmail` varchar(256) CHARACTER SET utf8mb4 NULL,
+    `EmailConfirmed` tinyint(1) NOT NULL,
+    `PasswordHash` longtext CHARACTER SET utf8mb4 NULL,
+    `SecurityStamp` longtext CHARACTER SET utf8mb4 NULL,
+    `ConcurrencyStamp` longtext CHARACTER SET utf8mb4 NULL,
+    `PhoneNumber` longtext CHARACTER SET utf8mb4 NULL,
+    `PhoneNumberConfirmed` tinyint(1) NOT NULL,
+    `TwoFactorEnabled` tinyint(1) NOT NULL,
+    `LockoutEnd` datetime(6) NULL,
+    `LockoutEnabled` tinyint(1) NOT NULL,
+    `AccessFailedCount` int NOT NULL,
+    CONSTRAINT `PK_AspNetUsers` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `AspNetRoleClaims` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `RoleId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `ClaimType` longtext CHARACTER SET utf8mb4 NULL,
+    `ClaimValue` longtext CHARACTER SET utf8mb4 NULL,
+    CONSTRAINT `PK_AspNetRoleClaims` PRIMARY KEY (`Id`),
+    CONSTRAINT `FK_AspNetRoleClaims_AspNetRoles_RoleId` FOREIGN KEY (`RoleId`) REFERENCES `AspNetRoles` (`Id`) ON DELETE CASCADE
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `AspNetUserClaims` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `UserId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `ClaimType` longtext CHARACTER SET utf8mb4 NULL,
+    `ClaimValue` longtext CHARACTER SET utf8mb4 NULL,
+    CONSTRAINT `PK_AspNetUserClaims` PRIMARY KEY (`Id`),
+    CONSTRAINT `FK_AspNetUserClaims_AspNetUsers_UserId` FOREIGN KEY (`UserId`) REFERENCES `AspNetUsers` (`Id`) ON DELETE CASCADE
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `AspNetUserLogins` (
+    `LoginProvider` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `ProviderKey` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `ProviderDisplayName` longtext CHARACTER SET utf8mb4 NULL,
+    `UserId` char(36) COLLATE ascii_general_ci NOT NULL,
+    CONSTRAINT `PK_AspNetUserLogins` PRIMARY KEY (`LoginProvider`, `ProviderKey`),
+    CONSTRAINT `FK_AspNetUserLogins_AspNetUsers_UserId` FOREIGN KEY (`UserId`) REFERENCES `AspNetUsers` (`Id`) ON DELETE CASCADE
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `AspNetUserRoles` (
+    `UserId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `RoleId` char(36) COLLATE ascii_general_ci NOT NULL,
+    CONSTRAINT `PK_AspNetUserRoles` PRIMARY KEY (`UserId`, `RoleId`),
+    CONSTRAINT `FK_AspNetUserRoles_AspNetRoles_RoleId` FOREIGN KEY (`RoleId`) REFERENCES `AspNetRoles` (`Id`) ON DELETE CASCADE,
+    CONSTRAINT `FK_AspNetUserRoles_AspNetUsers_UserId` FOREIGN KEY (`UserId`) REFERENCES `AspNetUsers` (`Id`) ON DELETE CASCADE
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `AspNetUserTokens` (
+    `UserId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `LoginProvider` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `Name` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `Value` longtext CHARACTER SET utf8mb4 NULL,
+    CONSTRAINT `PK_AspNetUserTokens` PRIMARY KEY (`UserId`, `LoginProvider`, `Name`),
+    CONSTRAINT `FK_AspNetUserTokens_AspNetUsers_UserId` FOREIGN KEY (`UserId`) REFERENCES `AspNetUsers` (`Id`) ON DELETE CASCADE
+) CHARACTER SET=utf8mb4;
+
+CREATE INDEX `IX_AspNetRoleClaims_RoleId` ON `AspNetRoleClaims` (`RoleId`);
+
+CREATE UNIQUE INDEX `RoleNameIndex` ON `AspNetRoles` (`NormalizedName`);
+
+CREATE INDEX `IX_AspNetUserClaims_UserId` ON `AspNetUserClaims` (`UserId`);
+
+CREATE INDEX `IX_AspNetUserLogins_UserId` ON `AspNetUserLogins` (`UserId`);
+
+CREATE INDEX `IX_AspNetUserRoles_RoleId` ON `AspNetUserRoles` (`RoleId`);
+
+CREATE INDEX `EmailIndex` ON `AspNetUsers` (`NormalizedEmail`);
+
+CREATE UNIQUE INDEX `UserNameIndex` ON `AspNetUsers` (`NormalizedUserName`);
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260407013320_InitialIdentity', '8.0.0');
+
+
+-- Plano (AppPlanoContext)
+
+CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+    `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
+    `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
+    CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `Plano` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `Codigo` varchar(50) CHARACTER SET utf8mb4 NOT NULL,
+    `Descricao` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `Valor` decimal(15,2) NOT NULL,
+    `TaxaAdesao` decimal(15,2) NULL,
+    `Status` tinyint(1) NOT NULL,
+    `Plataforma` tinyint(1) NOT NULL,
+    CONSTRAINT `PK_Plano` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260408003555_Plano', '8.0.0');
+
+
+-- Vendedor (AppVendedorContext)
+
+CREATE TABLE `Vendedor` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `PercentualComissao` decimal(7,4) NOT NULL,
+    `ChavePix` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `CodigoCupom` varchar(100) CHARACTER SET utf8mb4 NOT NULL,
+    `Created` datetime(6) NOT NULL,
+    `Updated` datetime(6) NOT NULL,
+    `VendedorId` char(36) COLLATE ascii_general_ci NULL,
+    CONSTRAINT `PK_Vendedor` PRIMARY KEY (`Id`),
+    CONSTRAINT `FK_Vendedor_Vendedor_VendedorId` FOREIGN KEY (`VendedorId`) REFERENCES `Vendedor` (`Id`) ON DELETE RESTRICT
+) CHARACTER SET=utf8mb4;
+
+CREATE INDEX `IX_Vendedor_VendedorId` ON `Vendedor` (`VendedorId`);
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260408234935_InitialVendedor', '8.0.0');
+
+ALTER TABLE `Vendedor` ADD `EnderecoId` char(36) COLLATE ascii_general_ci NULL;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260415005730_AjusteColunas', '8.0.0');
+
+
+-- Endereco (AppEnderecoContext)
+
+CREATE TABLE `Endereco` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `Cep` varchar(10) CHARACTER SET utf8mb4 NOT NULL,
+    `Logradouro` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `Numero` varchar(10) CHARACTER SET utf8mb4 NOT NULL,
+    `Complemento` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `Bairro` varchar(100) CHARACTER SET utf8mb4 NOT NULL,
+    `Cidade` varchar(100) CHARACTER SET utf8mb4 NOT NULL,
+    `Estado` varchar(2) CHARACTER SET utf8mb4 NOT NULL,
+    `Created` datetime(6) NOT NULL,
+    `Updated` datetime(6) NOT NULL,
+    CONSTRAINT `PK_Endereco` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260409183729_InitialEndereco', '8.0.0');
+
+
+-- Cliente (AppClienteContext)
+
+CREATE TABLE `Cliente` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `Created` datetime(6) NOT NULL,
+    `Updated` datetime(6) NOT NULL,
+    `Telefone` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `TelefoneEmergencia` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `VendedorId` char(36) COLLATE ascii_general_ci NOT NULL,
+    CONSTRAINT `PK_Cliente` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260413211607_InitialCliente', '8.0.0');
+
+ALTER TABLE `Cliente` MODIFY COLUMN `VendedorId` char(36) COLLATE ascii_general_ci NULL;
+
+ALTER TABLE `Cliente` MODIFY COLUMN `TelefoneEmergencia` varchar(255) CHARACTER SET utf8mb4 NULL;
+
+ALTER TABLE `Cliente` MODIFY COLUMN `Telefone` varchar(255) CHARACTER SET utf8mb4 NULL;
+
+ALTER TABLE `Cliente` ADD `EnderecoId` char(36) COLLATE ascii_general_ci NULL;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260415004710_AjusteColunas', '8.0.0');
+
+ALTER TABLE `Cliente` ADD `GalaxPayId` int NULL;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260421133910_AjusteColunaGalaxPay', '8.0.0');
+
+
+-- Pedido (Projeto.Moope.Pedido.Infrastructure.Data.AppPedidoContext)
+
+CREATE TABLE `Pedido` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `ClienteId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `VendedorId` char(36) COLLATE ascii_general_ci NULL,
+    `PlanoId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `Quantidade` int NOT NULL,
+    `PlanoValor` decimal(15,2) NOT NULL,
+    `PlanoDescricao` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `PlanoCodigo` varchar(50) CHARACTER SET utf8mb4 NOT NULL,
+    `PlanoTaxaAdesao` decimal(15,2) NOT NULL,
+    `PlanoPercentualDesconto` decimal(7,4) NOT NULL,
+    `PlanoValorComDesconto` decimal(15,2) NOT NULL,
+    `Total` decimal(15,2) NOT NULL,
+    `StatusAssinatura` int NOT NULL,
+    `Status` varchar(50) CHARACTER SET utf8mb4 NULL,
+    `StatusDescricao` varchar(255) CHARACTER SET utf8mb4 NULL,
+    `GalaxPayId` int NULL,
+    `Created` datetime(6) NOT NULL,
+    `Updated` datetime(6) NOT NULL,
+    CONSTRAINT `PK_Pedido` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `Desconto` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `PedidoId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `ValorPercentual` decimal(7,4) NOT NULL,
+    `Descricao` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `TipoPessoa` int NOT NULL,
+    `CodigoDesconto` varchar(100) CHARACTER SET utf8mb4 NOT NULL,
+    `ValorDesconto` decimal(15,2) NULL,
+    `Ativo` tinyint(1) NOT NULL,
+    CONSTRAINT `PK_Desconto` PRIMARY KEY (`Id`),
+    CONSTRAINT `FK_Desconto_Pedido_PedidoId` FOREIGN KEY (`PedidoId`) REFERENCES `Pedido` (`Id`) ON DELETE CASCADE
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `Transacao` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `PedidoId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `Valor` decimal(15,2) NOT NULL,
+    `DataPagamento` datetime(6) NOT NULL,
+    `StatusPagamento` int NOT NULL,
+    `Status` varchar(50) CHARACTER SET utf8mb4 NULL,
+    `StatusDescricao` varchar(255) CHARACTER SET utf8mb4 NULL,
+    `GalaxPayId` int NULL,
+    `MetodoPagamento` varchar(50) CHARACTER SET utf8mb4 NOT NULL,
+    `Created` datetime(6) NOT NULL,
+    `Updated` datetime(6) NOT NULL,
+    CONSTRAINT `PK_Transacao` PRIMARY KEY (`Id`),
+    CONSTRAINT `FK_Transacao_Pedido_PedidoId` FOREIGN KEY (`PedidoId`) REFERENCES `Pedido` (`Id`) ON DELETE CASCADE
+) CHARACTER SET=utf8mb4;
+
+CREATE UNIQUE INDEX `IX_Desconto_PedidoId` ON `Desconto` (`PedidoId`);
+
+CREATE INDEX `IX_Transacao_PedidoId` ON `Transacao` (`PedidoId`);
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260420124106_InitialPedido', '8.0.0');
+
+ALTER TABLE `Pedido` ADD `Estado` varchar(50) CHARACTER SET utf8mb4 NULL;
+
+ALTER TABLE `Pedido` ADD `TipoPessoa` int NOT NULL DEFAULT 1;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260421012641_AddPedidoTipoPessoaEstado', '8.0.0');
+
+CREATE TABLE `IdempotenciaPedido` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `IdempotencyKey` varchar(100) CHARACTER SET utf8mb4 NOT NULL,
+    `Scope` varchar(50) CHARACTER SET utf8mb4 NOT NULL,
+    `RequestHash` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `Status` varchar(20) CHARACTER SET utf8mb4 NOT NULL,
+    `ResponseStatusCode` int NULL,
+    `ResponseBody` text CHARACTER SET utf8mb4 NULL,
+    `ResourceId` varchar(100) CHARACTER SET utf8mb4 NULL,
+    `ResourceType` varchar(50) CHARACTER SET utf8mb4 NULL,
+    `CreatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `UpdatedAt` datetime(6) NOT NULL,
+    CONSTRAINT `PK_IdempotenciaPedido` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+CREATE UNIQUE INDEX `UQ_Idempotency` ON `IdempotenciaPedido` (`IdempotencyKey`, `Scope`);
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260424193202_IdempotenciaPedido', '8.0.0');
+
+ALTER TABLE `Pedido` RENAME COLUMN `Total` TO `PlanoValorTotal`;
+
+ALTER TABLE `Pedido` RENAME COLUMN `PlanoValorComDesconto` TO `PlanoTaxaAdesaoTotal`;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260426213247_AjusteTablePlano', '8.0.0');
+
+ALTER TABLE `Pedido` ADD `Rastreamento` tinyint(1) NULL;
+
+ALTER TABLE `Pedido` ADD `TipoPlataforma` varchar(50) CHARACTER SET utf8mb4 NULL;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260530003149_AjustePedidoPlataforma', '8.0.0');
+
+
+-- Pagamento (Projeto.Moope.Pagamento.Infrastructure.Data.AppPagamentoContext)
+
+CREATE TABLE `IdempotenciaPagamento` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `IdempotencyKey` varchar(100) CHARACTER SET utf8mb4 NOT NULL,
+    `Scope` varchar(50) CHARACTER SET utf8mb4 NOT NULL,
+    `RequestHash` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `Status` varchar(20) CHARACTER SET utf8mb4 NOT NULL,
+    `ResponseStatusCode` int NULL,
+    `ResponseBody` text CHARACTER SET utf8mb4 NULL,
+    `ResourceId` varchar(100) CHARACTER SET utf8mb4 NULL,
+    `ResourceType` varchar(50) CHARACTER SET utf8mb4 NULL,
+    `CreatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `UpdatedAt` datetime(6) NOT NULL,
+    CONSTRAINT `PK_IdempotenciaPagamento` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `Pagamento` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `ClienteId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `GatewayCustomerId` varchar(100) CHARACTER SET utf8mb4 NOT NULL,
+    `GatewayPlanId` varchar(100) CHARACTER SET utf8mb4 NULL,
+    `GatewaySubscriptionId` varchar(100) CHARACTER SET utf8mb4 NULL,
+    `Created` datetime(6) NOT NULL,
+    `Updated` datetime(6) NOT NULL,
+    CONSTRAINT `PK_Pagamento` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+CREATE UNIQUE INDEX `UQ_Idempotency_Pagamento` ON `IdempotenciaPagamento` (`IdempotencyKey`, `Scope`);
+
+CREATE UNIQUE INDEX `IX_Pagamento_ClienteId` ON `Pagamento` (`ClienteId`);
+
+CREATE UNIQUE INDEX `IX_Pagamento_GatewayCustomerId` ON `Pagamento` (`GatewayCustomerId`);
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260423170915_InitialPagamento', '8.0.0');
+
+CREATE TABLE `IntencaoPagamento` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `Valor` decimal(18,2) NOT NULL,
+    `Moeda` varchar(3) CHARACTER SET utf8mb4 NOT NULL,
+    `Status` varchar(20) CHARACTER SET utf8mb4 NOT NULL,
+    `MetodoPagamento` varchar(20) CHARACTER SET utf8mb4 NOT NULL,
+    `ExpiresAt` datetime(6) NOT NULL,
+    `CreatedAt` datetime(6) NOT NULL,
+    `UpdatedAt` datetime(6) NOT NULL,
+    CONSTRAINT `PK_IntencaoPagamento` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+CREATE INDEX `IX_IntencaoPagamento_ExpiresAt` ON `IntencaoPagamento` (`ExpiresAt`);
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260424232553_IntencaoPagamento', '8.0.0');
+
+ALTER TABLE `Pagamento` DROP INDEX `IX_Pagamento_ClienteId`;
+
+ALTER TABLE `Pagamento` DROP INDEX `IX_Pagamento_GatewayCustomerId`;
+
+CREATE INDEX `IX_Pagamento_ClienteId` ON `Pagamento` (`ClienteId`);
+
+CREATE INDEX `IX_Pagamento_GatewayCustomerId` ON `Pagamento` (`GatewayCustomerId`);
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260425203031_RemoveUniquePagamentoIndexes', '8.0.0');
+
+
+-- Comodato (Projeto.Moope.Comodato.Infrastructure.Data.AppComodatoContext)
+
+CREATE TABLE `Comodato` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `ClienteId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `ProdutoNome` varchar(120) CHARACTER SET utf8mb4 NOT NULL,
+    `Valor` decimal(15,2) NOT NULL,
+    `CriadoEm` datetime(6) NOT NULL,
+    `Status` int NOT NULL,
+    CONSTRAINT `PK_Comodato` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `ComodatoConvite` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `TokenHash` varchar(128) CHARACTER SET utf8mb4 NOT NULL,
+    `CreatedByAdminId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `PlanoId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `Quantidade` int NOT NULL,
+    `Valor` decimal(15,2) NOT NULL,
+    `VendedorId` char(36) COLLATE ascii_general_ci NULL,
+    `CriadoEm` datetime(6) NOT NULL,
+    `ExpiradoEm` datetime(6) NOT NULL,
+    `Status` int NOT NULL,
+    `AbertoEm` datetime(6) NULL,
+    `ConsumidoEm` datetime(6) NULL,
+    `ConsumidoPorClienteId` char(36) COLLATE ascii_general_ci NULL,
+    `ClienteEmail` varchar(255) CHARACTER SET utf8mb4 NULL,
+    `ClienteDocumento` varchar(20) CHARACTER SET utf8mb4 NULL,
+    `ComodatoId` char(36) COLLATE ascii_general_ci NULL,
+    `Estado` varchar(50) CHARACTER SET utf8mb4 NULL,
+    `DataPagamento` datetime(6) NULL,
+    CONSTRAINT `PK_ComodatoConvite` PRIMARY KEY (`Id`),
+    CONSTRAINT `FK_ComodatoConvite_Comodato_ComodatoId` FOREIGN KEY (`ComodatoId`) REFERENCES `Comodato` (`Id`) ON DELETE SET NULL
+) CHARACTER SET=utf8mb4;
+
+CREATE INDEX `IX_ComodatoConvite_ComodatoId` ON `ComodatoConvite` (`ComodatoId`);
+
+CREATE UNIQUE INDEX `IX_ComodatoConvite_TokenHash` ON `ComodatoConvite` (`TokenHash`);
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20260606120000_InitialComodato', '8.0.0');
+
+COMMIT;

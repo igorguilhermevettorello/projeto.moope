@@ -72,6 +72,11 @@ if [[ ! -f "${dockerfile_path}" ]]; then
   exit 1
 fi
 
+if [[ ! -f "${appsettings_env}" ]]; then
+  echo "[${service_key}] appsettings for environment '${environment}' not found at: ${appsettings_env}" >&2
+  exit 1
+fi
+
 resolved_version="$(resolve_app_version "${service_key}" "${environment}" "${appsettings_base}" "${appsettings_env}" "${version}")"
 echo "Resolved version: ${resolved_version}"
 
@@ -85,6 +90,7 @@ echo " - ${latest_tag}"
 
 docker build \
   --file "${dockerfile_path}" \
+  --build-arg "BUILD_ENVIRONMENT=${environment}" \
   --tag "${version_tag}" \
   --tag "${latest_tag}" \
   "${build_context}"

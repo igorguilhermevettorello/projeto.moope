@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using Projeto.Moope.Api.Controllers;
+using Projeto.Moope.Core.Enums;
 using Projeto.Moope.Core.Interfaces.Identity;
 using Projeto.Moope.Core.Interfaces.Notificacao;
 using Projeto.Moope.Pedido.Api.DTOs;
@@ -20,12 +21,14 @@ namespace Projeto.Moope.Pedido.Api.Controllers
     public class PedidoController : MainController
     {
         private readonly IPedidoService _pedidoService;
+        private readonly IPedidoListService _pedidoListService;
         private readonly IIdempotenciaService _idempotenciaService;
         private readonly IGeradorHashRequisicao _geradorHashRequisicao;
         private readonly IMapper _mapper;
 
         public PedidoController(
             IPedidoService pedidoService,
+            IPedidoListService pedidoListService,
             IIdempotenciaService idempotenciaService,
             IGeradorHashRequisicao geradorHashRequisicao,
             IMapper mapper,
@@ -33,9 +36,25 @@ namespace Projeto.Moope.Pedido.Api.Controllers
             IUser appUser) : base(notificador, appUser)
         {
             _pedidoService = pedidoService;
+            _pedidoListService = pedidoListService;
             _idempotenciaService = idempotenciaService;
             _geradorHashRequisicao = geradorHashRequisicao;
             _mapper = mapper;
+        }
+
+        [HttpGet]
+        [Authorize(Roles = nameof(TipoUsuario.Administrador))]
+        [ProducesResponseType(typeof(IEnumerable<PedidoListItemDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status502BadGateway)]
+        public async Task<IActionResult> Listar(CancellationToken cancellationToken)
+        {
+            var resultado = await _pedidoListService.ListarAsync(cancellationToken);
+            if (!resultado.Status)
+                return StatusCode(resultado.StatusCode, resultado.Mensagem);
+
+            return Ok(resultado.Dados ?? Array.Empty<PedidoListItemDto>());
         }
 
         [HttpGet("{id:guid}")]

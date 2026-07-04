@@ -94,6 +94,7 @@ services:
       - "6107:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Staging
+      PlanoApi__BaseUrl: http://plano:8080
     networks:
       - moope-staging
 
@@ -124,11 +125,31 @@ services:
     container_name: moope-rabbitmq-worker-staging
     restart: unless-stopped
     environment:
+      DOTNET_ENVIRONMENT: Staging
       ASPNETCORE_ENVIRONMENT: Staging
+      RabbitMQ__HostName: ${RABBITMQ_HOST:-147.93.70.24}
+      RabbitMQ__Port: ${RABBITMQ_PORT:-5673}
+      RabbitMQ__UserName: ${RABBITMQ_USER:-hml-administrador}
+      RabbitMQ__Password: ${RABBITMQ_PASSWORD:?RABBITMQ_PASSWORD is required}
+      RabbitMQ__VirtualHost: ${RABBITMQ_VHOST:-/}
+      DownstreamApis__Auth: https://auth-staging-compre.moope.com.br
+      DownstreamApis__Pedido: https://pedido-staging-compre.moope.com.br
+      DownstreamApis__Pagamento: https://pagamento-staging-compre.moope.com.br
+      DownstreamApis__Cliente: https://cliente-staging-compre.moope.com.br
+      DownstreamApis__Endereco: https://endereco-staging-compre.moope.com.br
+      DownstreamApis__Plano: https://plano-staging-compre.moope.com.br
+      DownstreamApis__Vendedor: https://vendedor-staging-compre.moope.com.br
+      DownstreamApis__AuthClientId: ${RABBITMQ_WORKER_AUTH_CLIENT_ID:?RABBITMQ_WORKER_AUTH_CLIENT_ID is required}
+      DownstreamApis__AuthClientSecret: ${RABBITMQ_WORKER_AUTH_CLIENT_SECRET:?RABBITMQ_WORKER_AUTH_CLIENT_SECRET is required}
+      DownstreamApis__ClienteApiKey: ${RABBITMQ_WORKER_CLIENTE_API_KEY:?RABBITMQ_WORKER_CLIENTE_API_KEY is required}
     networks:
       - moope-staging
     depends_on:
       - rabbitmq
+      - auth
+      - pedido
+      - pagamento
+      - cliente
 
 networks:
   moope-staging:

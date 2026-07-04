@@ -12,6 +12,7 @@ namespace Projeto.Moope.Cliente.Core.Interfaces.Services
         Task<ResultDto<ClienteModel>> SalvarAsync(ClienteModel cliente);
         Task<ResultDto<ClienteModel>> AtualizarAsync(ClienteModel cliente);
         Task<IEnumerable<T>> BuscarClientesComDadosAsync<T>();
+        Task<IEnumerable<T>> BuscarClientesPorVendedorComDadosAsync<T>(Guid vendedorId);
         Task<T?> BuscarClientePorIdComDadosAsync<T>(Guid id);
         Task<T?> BuscarClientePorEmailComDadosAsync<T>(string email);
         Task<bool> RemoverAsync(Guid id);

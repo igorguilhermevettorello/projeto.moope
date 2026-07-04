@@ -49,6 +49,7 @@ services:
     ports: ["7107:8080"]
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - PlanoApi__BaseUrl=http://plano:8080
 
   plano:
     image: ${DOCKERHUB_USER:?}/moope-plano-production:${PLANO_TAG:-latest}

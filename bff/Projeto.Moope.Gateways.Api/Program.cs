@@ -54,6 +54,7 @@ builder.Services.AddScoped<IClienteCreateService, ClienteCreateService>();
 builder.Services.AddScoped<IClienteGetByIdService, ClienteGetByIdService>();
 builder.Services.AddScoped<IClienteUpdateService, ClienteUpdateService>();
 builder.Services.AddScoped<IClienteDeleteService, ClienteDeleteService>();
+builder.Services.AddScoped<IClienteListByVendedorService, ClienteListByVendedorService>();
 builder.Services.AddScoped<IVendedorCreateService, VendedorCreateService>();
 builder.Services.AddScoped<IVendedorGetByIdService, VendedorGetByIdService>();
 builder.Services.AddScoped<IVendedorUpdateService, VendedorUpdateService>();
@@ -66,6 +67,7 @@ builder.Services.AddScoped<IClienteGalaxPayUpdateService, ClienteGalaxPayUpdateS
 builder.Services.AddScoped<IClienteGalaxPayCreateService, ClienteGalaxPayCreateService>();
 builder.Services.AddScoped<ICartaoGalaxPayCreateService, CartaoGalaxPayCreateService>();
 builder.Services.AddScoped<IPedidoCreateService, PedidoCreateService>();
+builder.Services.AddScoped<IPedidoListService, PedidoListService>();
 builder.Services.AddScoped<IPagamentoIntencaoGetByIdService, PagamentoIntencaoGetByIdService>();
 builder.Services.AddScoped<IUser, AspNetUser>();
 
@@ -76,14 +78,17 @@ app.UseHttpsRedirection();
 
 if (app.Environment.IsDevelopment())
 {
+    Console.WriteLine("Using CORS Development Policy");
     app.UseCors("CorsDevelopmentPolicy");
 }
 else if (app.Environment.IsStaging())
 {
+    Console.WriteLine("Using CORS Staging Policy");
     app.UseCors("CorsStagingPolicy");
 }
 else if (app.Environment.IsProduction())
 {
+    Console.WriteLine("Using CORS Production Policy");
     app.UseCors("CorsProductionPolicy");
 }
 

@@ -8,6 +8,7 @@ namespace Projeto.Moope.Pedido.Core.Interfaces.Repositories
     {
         Task<PedidoModel?> BuscarPorIdAsNotrackingAsync(Guid id);
         Task<PedidoModel?> BuscarPorIdComTransacoesEDescontoAsync(Guid id);
+        Task<IReadOnlyList<PedidoModel>> ListarAsync(CancellationToken cancellationToken = default);
         Task<IEnumerable<TransacaoModel>> BuscarTransacoesPorPedidoIdAsync(Guid pedidoId);
         Task<bool> RemoverTransacoesPorPedidoIdAsync(Guid pedidoId);
         Task<IEnumerable<TransacaoModel>> SalvarTransacoesAsync(IEnumerable<TransacaoModel> transacoes);

@@ -5,13 +5,17 @@
 .\publish\docker\pedido\publish.ps1 -dockerHubUser "seuuser" -environment Production -version 1.0.0
 
 .\publish\docker\pedido\publish.ps1 -dockerHubUser "moopesc" -environment Staging -push
-.\publish.ps1 -dockerHubUser "moopesc" -environment Staging -push
+.\publish\docker\publish.ps1 -dockerHubUser "moopesc" -environment Staging -push
 
 
 
 # build + push
 .\publish\docker\pedido\publish.ps1 -dockerHubUser "seuuser" -environment Production -version 1.0.0 -push
 .\publish\docker\auth\publish.ps1 -dockerHubUser "moopesc" -environment Staging -push
+.\publish\docker\pagamento\publish.ps1 -dockerHubUser "moopesc" -environment Staging -push
+
+.\publish\docker\publish.ps1 -dockerHubUser "moopesc" -environment Production -push
+.\publish\docker\pagamento\publish.ps1 -dockerHubUser "moopesc" -environment Production -push
 
 ## linux
 # build local
@@ -35,7 +39,9 @@ Rodar todos (master), cada um com sua própria versão
 .\publish\docker\publish.ps1 -dockerHubUser "seuuser" -environment Production
 
 Rodar todos (master) com push
-.\publish\docker\publish.ps1 -dockerHubUser "seuuser" -environment Production -push
+.\publish\docker\publish.ps1 -dockerHubUser "moopesc" -environment Production -push
+.\publish\docker\publish.ps1 -dockerHubUser "moopesc" -environment Staging -push
+.\publish\docker\pagamento\publish.ps1 -dockerHubUser "moopesc" -environment Production -push
 
 Linux/macOS (master)
 ./publish/docker/publish.sh --dockerhub-user "seuuser" --environment Production --push

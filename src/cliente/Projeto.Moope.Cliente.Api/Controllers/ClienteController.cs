@@ -44,6 +44,20 @@ namespace Projeto.Moope.Cliente.Api.Controllers
             return Ok(clientes);
         }
 
+        [HttpGet("vendedor")]
+        [Authorize(Roles = nameof(TipoUsuario.Vendedor))]
+        [ProducesResponseType(typeof(IEnumerable<ClienteQueryDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> BuscarPorVendedorLogado()
+        {
+            if (UsuarioId == Guid.Empty)
+                return Unauthorized();
+
+            var clientes = await _clienteService.BuscarClientesPorVendedorComDadosAsync<ClienteQueryDto>(UsuarioId);
+            return Ok(clientes);
+        }
+
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ClienteResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

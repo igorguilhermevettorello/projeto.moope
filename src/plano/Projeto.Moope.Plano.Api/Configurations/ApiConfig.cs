@@ -17,7 +17,10 @@ namespace Projeto.Moope.Plano.Api.Configurations
                 options.AddPolicy("CorsDevelopmentPolicy", policy =>
                 {
                     policy
-                        .WithOrigins("http://localhost:4200", "http://localhost:4000")
+                        .WithOrigins(
+                            "http://localhost:4200", 
+                            "http://localhost:4000",
+                            "https://localhost:6107")
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });
@@ -28,7 +31,10 @@ namespace Projeto.Moope.Plano.Api.Configurations
                 options.AddPolicy("CorsStagingPolicy", policy =>
                 {
                     policy
-                        .WithOrigins("https://staging-compre.moope.com.br", "https://staging-shop.moope.com.br")
+                        .WithOrigins(
+                            "https://staging-compre.moope.com.br", 
+                            "https://staging-shop.moope.com.br",
+                            "https://pedido-staging-compre.moope.com.br")
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });
@@ -39,7 +45,10 @@ namespace Projeto.Moope.Plano.Api.Configurations
                 options.AddPolicy("CorsProductionPolicy", policy =>
                 {
                     policy
-                        .WithOrigins("https://compre.moope.com.br")
+                        .WithOrigins(
+                            "https://compre.moope.com.br",
+                            "https://api-portal-pedido.moope.com.br"
+                         )
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });

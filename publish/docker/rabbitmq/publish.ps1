@@ -44,6 +44,10 @@ if (-not (Test-Path $dockerfilePath)) {
   throw "Dockerfile not found at: $dockerfilePath"
 }
 
+if (-not (Test-Path $appsettingsEnvPath)) {
+  throw "[$serviceKey] appsettings for environment '$environment' not found at: $appsettingsEnvPath"
+}
+
 $version = Resolve-AppVersion `
   -serviceKey $serviceKey `
   -environment $environment `
@@ -63,6 +67,7 @@ Write-Host " - $latestTag"
 
 docker build `
   --file $dockerfilePath `
+  --build-arg "BUILD_ENVIRONMENT=$environmentValue" `
   --tag $versionTag `
   --tag $latestTag `
   $buildContext
